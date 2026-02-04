@@ -37,7 +37,7 @@ pip install -r requirements.txt
 # Configure in sun_set.py:
 year = 2024     # Analysis year
 day1 = 1        # Monday (1-7)
-day2 = 5        # Friday 
+day2 = 5        # Friday
 ```
 
 ---
@@ -81,7 +81,7 @@ day2 = 5        # Пятница
 
 ## 📸 Пример вывода / Sample Output
 
-**Текст:**  
+**Текст:**
 
 ```plaintext
 Город: Voronezh

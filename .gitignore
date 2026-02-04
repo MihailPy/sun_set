@@ -1,2 +1,26 @@
-file/
-.venv/
+# Local environment variables (contains secrets)
+.env
+.env.local
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Build and output directories
+dist/
+build/
+out/
+bin/
+
+# Logs and databases
+*.log
+*.sqlite
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor settings
+.vscode/
+.idea/
+*.swp
