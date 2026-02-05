@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["astral>=3.2", "pillow>=12.1.0"]
+dependencies = [
+    "astral>=3.2",
+    "pillow>=12.1.0",
+    "pyqt6>=6.10.2",
+]
 
 # Секция для запуска через uv run start-app
 [project.scripts]
