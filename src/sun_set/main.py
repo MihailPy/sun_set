@@ -1,5 +1,6 @@
 import json
-from src.city import City, load_from_json, save_to_json
+from sun_set.models.city import City
+from sun_set.api.file_manager import load_from_json, save_to_json
 
 
 def main():

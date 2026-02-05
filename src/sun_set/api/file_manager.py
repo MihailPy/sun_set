@@ -1,18 +1,8 @@
-from dataclasses import dataclass
 import json
+from sun_set.models.city import City
 
 
-@dataclass
-class City:
-    name: str
-    region: str
-    lat: float
-    lon: float
-    timezone: str
-    elevation: int
-
-
-def save_to_json(cities: list[City], filename: str):
+def save_to_json(cities: list[City], filename: str):  # noqa: F821
     with open(filename, "w") as f:
         json.dump([vars(c) for c in cities], f)
 

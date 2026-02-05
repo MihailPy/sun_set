@@ -2,8 +2,8 @@ lint:
 		uv run pre-commit run --all
 
 run:
-		uv run main.py
+		uv run start-app
 
 all:
 		uv run pre-commit run --all
-		uv run main.py
+		uv run start-app
