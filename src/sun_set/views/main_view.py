@@ -1,5 +1,5 @@
 # pyright: reportUnknownMemberType=false
-from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -14,50 +14,8 @@ from PyQt6.QtWidgets import (
 
 from sun_set.api.file_manager import load_from_json
 from sun_set.models.city import City
-
-
-class CityTableModel(QAbstractTableModel):
-    def __init__(self, cities: list[City]) -> None:
-        super().__init__()
-        self.cities = cities
-        self.headers = ["Город", "Регион", "Широта", "Высота", "Timezone", "Высота ASL"]
-
-    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        return len(self.cities)
-
-    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        return len(self.headers)
-
-    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
-        if role == Qt.ItemDataRole.DisplayRole:
-            city = self.cities[index.row()]
-
-            if index.column() == 0:
-                return city.name
-            if index.column() == 1:
-                return city.region
-            if index.column() == 2:
-                return str(city.lat)
-            if index.column() == 3:
-                return str(city.lon)
-            if index.column() == 4:
-                return city.timezone
-            if index.column() == 5:
-                return str(city.elevation)
-        return None
-
-    def headerData(
-        self,
-        section: int,
-        orientation: Qt.Orientation,
-        role: int = Qt.ItemDataRole.DisplayRole,
-    ):
-        if (
-            role == Qt.ItemDataRole.DisplayRole
-            and orientation == Qt.Orientation.Horizontal
-        ):
-            return self.headers[section]
-        return None
+from sun_set.models.table_model import CityTableModel
+from sun_set.views.delegates.custom_delegate import CityDelegate
 
 
 class MainWindow(QMainWindow):
@@ -77,6 +35,11 @@ class MainWindow(QMainWindow):
         self.btn_choose_file.clicked.connect(self.open_file_dialog)
         self.main_layout.addWidget(self.btn_choose_file)
 
+        self.btn_add_city = QPushButton("Добавить город")
+        self.btn_add_city.setToolTip("Добавить город в таблицу")
+        self.btn_add_city.clicked.connect(self.add_city_in_table)
+        self.main_layout.addWidget(self.btn_add_city)
+
         # 3. Приветственная надпись
         self.hello_label = QLabel("Выберите файл для загрузки данных")
         self.hello_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -85,6 +48,7 @@ class MainWindow(QMainWindow):
         # 4. Заготовка под таблицу (пока пустая)
         self.table_view = QTableView()
         self.table_view.hide()  # Прячем, пока нет данных
+        self.table_view.setItemDelegate(CityDelegate(self.table_view))
         self.main_layout.addWidget(self.table_view)
 
     def open_file_dialog(self):
@@ -122,6 +86,27 @@ class MainWindow(QMainWindow):
 
             # Опционально: растянуть колонки по содержимому
             self.table_view.resizeColumnsToContents()
+
+    def add_city_in_table(self):
+        new_city = City(
+            name="Новый город",
+            region="-",
+            lat=0.0,
+            lon=0.0,
+            timezone="UTC",
+            elevation=0,
+        )
+        # Если модель еще не была создана (например, при первом нажатии)
+        if not hasattr(self, "model") or self.model is None:
+            self.cities = [new_city]
+            self.model = CityTableModel(self.cities)
+            self.table_view.setModel(self.model)
+            self.table_view.show()
+        else:
+            # Если модель уже есть, просто добавляем в неё данные
+            self.model.addCity(new_city)
+
+        self.table_view.resizeColumnsToContents()
 
 
 class CustomDialog(QDialog):

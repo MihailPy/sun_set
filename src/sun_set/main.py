@@ -1,7 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication
-from sun_set.views.main_view import MainWindow
 
+from PyQt6.QtWidgets import QApplication
+
+from sun_set.views.main_view import MainWindow
 
 
 def main():
@@ -10,7 +11,7 @@ def main():
     #     print(f"{cities}")
     #     cities = []
 
-    # if isinstance(cities, list):  # type: ignore
+    # if isinstance(cities, list):   type: ignore
     #     if not cities:
     #         city = City("Moscow", "Moscow", 55.7558, 37.6173, "Europe/Moscow", 156)
     #         cities.append(city)

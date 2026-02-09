@@ -1,4 +1,5 @@
 import json
+
 from sun_set.models.city import City
 
 
