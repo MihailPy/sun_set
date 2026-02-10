@@ -40,8 +40,15 @@ class MainWindow(QMainWindow):
         self.btn_add_city.clicked.connect(self.add_city_in_table)
         self.main_layout.addWidget(self.btn_add_city)
 
+        self.btn_del_city = QPushButton("Удалить города")
+        self.btn_del_city.setToolTip("Удалить выбранные города")
+        self.btn_del_city.clicked.connect(self.delete_selected_cities)
+        self.main_layout.addWidget(self.btn_del_city)
+
         # 3. Приветственная надпись
-        self.hello_label = QLabel("Выберите файл для загрузки данных")
+        self.hello_label = QLabel(
+            """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
+        )
         self.hello_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.main_layout.addWidget(self.hello_label)
 
@@ -104,11 +111,27 @@ class MainWindow(QMainWindow):
             self.model = CityTableModel(self.cities)
             self.table_view.setModel(self.model)
             self.table_view.show()
+            self.hello_label.hide()
         else:
             # Если модель уже есть, просто добавляем в неё данные
             self.model.addCity(new_city)
+            if len(self.cities) == 1:
+                self.hello_label.hide()
+                self.table_view.show()
 
+        print(f"{self.cities}")
         self.table_view.resizeColumnsToContents()
+
+    def delete_selected_cities(self):
+        if hasattr(self, "model") and self.model is not None:
+            self.model.removeCheckedCities()
+            self.table_view.resizeColumnsToContents()
+            self.cities = self.model.cities
+            if len(self.cities) == 0:
+                self.table_view.hide()
+                header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+                self.table_view.setHorizontalHeader(header)
+                self.hello_label.show()
 
 
 class CustomDialog(QDialog):

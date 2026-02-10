@@ -52,7 +52,7 @@ class CheckBoxHeader(QHeaderView):
 
             model = self.model()
             if isinstance(model, CityTableModel):
-                model.select_all(self.is_checked)
+                model.selectAll(self.is_checked)
         else:
             super().mousePressEvent(e)
 
@@ -176,12 +176,23 @@ class CityTableModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), last_row, last_row)
         self.cities.append(city)
         self.checked_states.append(False)
+        print(f"{self.checked_states}")
         self.endInsertRows()  # Завершаем вставку
 
-    def select_all(self, state: bool) -> None:
+    def selectAll(self, state: bool) -> None:
         self.checked_states = [state] * len(self.cities)
         self.dataChanged.emit(
             self.index(0, 0),
             self.index(len(self.cities) - 1, 0),
             [Qt.ItemDataRole.CheckStateRole],
         )
+
+    def removeCheckedCities(self):
+        indices_to_remove = [i for i, val in enumerate(self.checked_states) if val]
+        indices_to_remove.sort(reverse=True)
+
+        for row in indices_to_remove:
+            self.beginRemoveRows(QModelIndex(), row, row)
+            del self.cities[row]
+            del self.checked_states[row]
+            self.endRemoveRows()

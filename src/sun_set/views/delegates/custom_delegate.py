@@ -8,11 +8,11 @@ class CityDelegate(QStyledItemDelegate):
         col = index.column()
 
         # Настраиваем валидаторы в зависимости от колонки
-        if col in (2, 3):  # Широта и Долгота (float)
+        if col in (3, 4):  # Широта и Долгота (float)
             validator = QDoubleValidator(parent)
             validator.setNotation(QDoubleValidator.Notation.StandardNotation)
             editor.setValidator(validator)
-        elif col == 5:  # Высота ASL (int)
+        elif col == 6:  # Высота ASL (int)
             validator = QIntValidator(parent)
             editor.setValidator(validator)
 
