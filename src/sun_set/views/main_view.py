@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 
 from sun_set.api.file_manager import load_from_json
 from sun_set.models.city import City
-from sun_set.models.table_model import CityTableModel
+from sun_set.models.table_model import CheckBoxHeader, CityTableModel
 from sun_set.views.delegates.custom_delegate import CityDelegate
 
 
@@ -47,6 +47,8 @@ class MainWindow(QMainWindow):
 
         # 4. Заготовка под таблицу (пока пустая)
         self.table_view = QTableView()
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
         self.table_view.hide()  # Прячем, пока нет данных
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
         self.main_layout.addWidget(self.table_view)

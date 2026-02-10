@@ -1,15 +1,76 @@
 import typing
 
+from PyQt6 import QtGui
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt6.QtWidgets import QHeaderView, QStyle, QStyleOptionButton
 
 from sun_set.models.city import City
+
+
+class CheckBoxHeader(QHeaderView):
+    def __init__(self, orientation, parent=None):
+        super().__init__(orientation, parent)
+        self.is_checked = False
+
+    def paintSection(self, painter, rect, logicalIndex):
+        # 1. Проверяем, что painter существует
+        if painter is None:
+            return
+
+        painter.save()
+        super().paintSection(painter, rect, logicalIndex)
+        painter.restore()
+
+        if logicalIndex == 0:
+            style = self.style()
+            # 2. Проверяем наличие стиля
+            if style is None:
+                return
+
+            option = QStyleOptionButton()
+            # Исправлена ошибка в кавычках adjusted
+            option.rect = rect.adjusted(5, 5, -5, -5)
+            option.state = (
+                QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
+            )
+
+            if self.is_checked:
+                option.state |= QStyle.StateFlag.State_On
+            else:
+                option.state |= QStyle.StateFlag.State_Off
+
+            style.drawControl(QStyle.ControlElement.CE_CheckBox, option, painter)
+
+    def mousePressEvent(self, e: QtGui.QMouseEvent | None) -> None:
+        if e is None:
+            super().mousePressEvent(e)
+            return
+
+        if self.logicalIndexAt(e.pos()) == 0:
+            self.is_checked = not self.is_checked
+            self.updateSection(0)
+
+            model = self.model()
+            if isinstance(model, CityTableModel):
+                model.select_all(self.is_checked)
+        else:
+            super().mousePressEvent(e)
 
 
 class CityTableModel(QAbstractTableModel):
     def __init__(self, cities: list[City]) -> None:
         super().__init__()
         self.cities = cities
-        self.headers = ["Город", "Регион", "Широта", "Высота", "Timezone", "Высота ASL"]
+        self.headers = [
+            "",
+            "Город",
+            "Регион",
+            "Широта",
+            "Высота",
+            "Timezone",
+            "Высота ASL",
+        ]
+        self.checked_states = [False] * len(cities)
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.cities)
@@ -19,8 +80,41 @@ class CityTableModel(QAbstractTableModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         base_flags = super().flags(index)
-
+        if index.column() == 0:
+            # Добавляем флаг именно здесь
+            return base_flags | Qt.ItemFlag.ItemIsUserCheckable
         return base_flags | Qt.ItemFlag.ItemIsEditable
+
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return None
+
+        if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
+            return (
+                Qt.CheckState.Checked
+                if self.checked_states[index.row()]
+                else Qt.CheckState.Unchecked
+            )
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
+            if index.column() == 0:
+                return None
+
+            city = self.cities[index.row()]
+            col = index.column()
+            if col == 1:
+                return city.name
+            if col == 2:
+                return city.region
+            if col == 3:
+                return str(city.lat)
+            if col == 4:
+                return str(city.lon)
+            if col == 5:
+                return city.timezone
+            if col == 6:
+                return str(city.elevation)
+            city = self.cities[index.row()]
+        return None
 
     def setData(
         self,
@@ -28,29 +122,30 @@ class CityTableModel(QAbstractTableModel):
         value: typing.Any,
         role: int = Qt.ItemDataRole.EditRole,
     ) -> bool:
-        if role == Qt.ItemDataRole.EditRole:
-            # Убираем лишние пробелы
-            value = value.strip() if isinstance(value, str) else value
-            if (
-                not value and index.column() <= 1
-            ):  # Пример: название города не может быть пустым
-                return False
+        if not index.isValid():
+            return False
 
+        if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
+            self.checked_states[index.row()] = value == Qt.CheckState.Checked.value
+            self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])
+            return True
+
+        if role == Qt.ItemDataRole.EditRole:
             city = self.cities[index.row()]
             col = index.column()
 
             try:
-                if col == 0:
+                if col == 1:
                     city.name = value
-                elif col == 1:
-                    city.region = value
                 elif col == 2:
-                    city.lat = float(value.replace(",", "."))  # Замена запятой на точку
+                    city.region = value
                 elif col == 3:
-                    city.lon = float(value.replace(",", "."))
+                    city.lat = float(value.replace(",", "."))  # Замена запятой на точку
                 elif col == 4:
-                    city.timezone = value
+                    city.lon = float(value.replace(",", "."))
                 elif col == 5:
+                    city.timezone = value
+                elif col == 6:
                     city.elevation = int(value)
 
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
@@ -59,24 +154,6 @@ class CityTableModel(QAbstractTableModel):
                 # Здесь можно вызвать сигнал для статус-бара: "Ошибка формата данных"
                 return False
         return False
-
-    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
-        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            city = self.cities[index.row()]
-
-            if index.column() == 0:
-                return city.name
-            if index.column() == 1:
-                return city.region
-            if index.column() == 2:
-                return str(city.lat)
-            if index.column() == 3:
-                return str(city.lon)
-            if index.column() == 4:
-                return city.timezone
-            if index.column() == 5:
-                return str(city.elevation)
-        return None
 
     def headerData(
         self,
@@ -98,4 +175,13 @@ class CityTableModel(QAbstractTableModel):
         # Уведомляем представление о начале вставки данных
         self.beginInsertRows(QModelIndex(), last_row, last_row)
         self.cities.append(city)
+        self.checked_states.append(False)
         self.endInsertRows()  # Завершаем вставку
+
+    def select_all(self, state: bool) -> None:
+        self.checked_states = [state] * len(self.cities)
+        self.dataChanged.emit(
+            self.index(0, 0),
+            self.index(len(self.cities) - 1, 0),
+            [Qt.ItemDataRole.CheckStateRole],
+        )
