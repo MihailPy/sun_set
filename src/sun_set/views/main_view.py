@@ -72,14 +72,16 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        result = load_from_json(file_path)
-        if isinstance(result, str):
-            dlg = CustomDialog(result)
+        result, error = load_from_json(file_path)
+        if error != None:
+            dlg = CustomDialog(error)
             if dlg.exec():
                 self.open_file_dialog()
             return
 
-        if not isinstance(self.cities, str):
+        if result != None:
+            self.cities = result
+
             self.hello_label.hide()
 
             # Настраиваем модель и показываем таблицу
