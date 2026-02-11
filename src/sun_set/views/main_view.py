@@ -61,31 +61,25 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.table_view)
 
     def open_file_dialog(self):
-        while True:
-            # Вызываем окно выбора файла
-            file_path, _ = QFileDialog.getOpenFileName(
-                self,
-                "Выберите файл",
-                "",
-                "Текстовые файлы (*.json)",
-            )
+        # Вызываем окно выбора файла
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите файл",
+            "",
+            "Текстовые файлы (*.json)",
+        )
 
-            if not file_path:
-                break
+        if not file_path:
+            return
 
-            if file_path:
-                self.cities = load_from_json(file_path)
-                print(f"{self.cities}")
-                if isinstance(self.cities, str):
-                    dlg = CustomDialog(self.cities)
-                    if dlg.exec():
-                        continue
-                    else:
-                        break
-                else:
-                    break
+        result = load_from_json(file_path)
+        if isinstance(result, str):
+            dlg = CustomDialog(result)
+            if dlg.exec():
+                self.open_file_dialog()
+            return
+
         if not isinstance(self.cities, str):
-            # Скрываем надпись "Hello"
             self.hello_label.hide()
 
             # Настраиваем модель и показываем таблицу
@@ -93,7 +87,6 @@ class MainWindow(QMainWindow):
             self.table_view.setModel(self.model)
             self.table_view.show()
 
-            # Опционально: растянуть колонки по содержимому
             self.table_view.resizeColumnsToContents()
 
     def add_city_in_table(self):

@@ -113,7 +113,6 @@ class CityTableModel(QAbstractTableModel):
                 return city.timezone
             if col == 6:
                 return str(city.elevation)
-            city = self.cities[index.row()]
         return None
 
     def setData(
