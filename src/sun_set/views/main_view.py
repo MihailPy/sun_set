@@ -1,12 +1,15 @@
 # pyright: reportUnknownMemberType=false
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
     QLabel,
     QMainWindow,
+    QMenuBar,
     QPushButton,
+    QStatusBar,
     QTableView,
     QVBoxLayout,
     QWidget,
@@ -30,21 +33,32 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout(self.central_widget)
 
         self.file_path = None
-        # 2. Кнопка (лучше добавить её в макет, а не через setGeometry)
-        self.btn_choose_file = QPushButton("Выбрать файл")
-        self.btn_choose_file.setToolTip("Импортировать города из файла")
-        self.btn_choose_file.clicked.connect(self.open_file_dialog)
-        self.main_layout.addWidget(self.btn_choose_file)
 
-        self.btn_save_file = QPushButton("Сохранить файл")
-        self.btn_save_file.setToolTip("Сохранить города в файл")
-        self.btn_save_file.clicked.connect(self.save_file)
-        self.main_layout.addWidget(self.btn_save_file)
+        self.btn_choose_file = QAction("Открыть файл", self)
+        self.btn_choose_file.setToolTip("Открыть файл с городами")
+        self.btn_choose_file.setShortcut(QKeySequence("Ctrl+O"))
+        self.btn_choose_file.triggered.connect(self.open_file_dialog)
 
-        self.btn_save_file_as = QPushButton("Сохранить файл как...")
+        self.btn_save_file = QAction("Сохранить файл", self)
+        self.btn_save_file.setStatusTip("Сохранить файл с городами")
+        self.btn_save_file.setShortcut(QKeySequence("Ctrl+S"))
+        self.btn_save_file.triggered.connect(self.save_file)
+
+        self.btn_save_file_as = QAction("Сохранить файл как...", self)
         self.btn_save_file_as.setToolTip("Сохранить города в новый файл")
-        self.btn_save_file_as.clicked.connect(self.save_file_as)
-        self.main_layout.addWidget(self.btn_save_file_as)
+        self.btn_save_file_as.setShortcut(QKeySequence("Shift+Ctrl+S"))
+        self.btn_save_file_as.triggered.connect(self.save_file_as)
+
+        self.setStatusBar(QStatusBar(self))
+
+        menu = QMenuBar(self)
+        self.setMenuBar(menu)
+
+        file_menu = menu.addMenu("&Файл")
+        if file_menu:
+            file_menu.addAction(self.btn_choose_file)
+            file_menu.addAction(self.btn_save_file)
+            file_menu.addAction(self.btn_save_file_as)
 
         self.btn_add_city = QPushButton("Добавить город")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
@@ -56,7 +70,6 @@ class MainWindow(QMainWindow):
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
         self.main_layout.addWidget(self.btn_del_city)
 
-        # 3. Приветственная надпись
         self.hello_label = QLabel(
             """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
         )
@@ -73,17 +86,17 @@ class MainWindow(QMainWindow):
 
     def open_file_dialog(self):
         # Вызываем окно выбора файла
-        self.file_path, _ = QFileDialog.getOpenFileName(
+        file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Выберите файл",
             "",
             "JSON Files (*.json)",
         )
 
-        if not self.file_path:
+        if not file_path:
             return
 
-        result, error = load_from_json(self.file_path)
+        result, error = load_from_json(file_path)
         if error != None:
             dlg = CustomDialog(error)
             if dlg.exec():
@@ -91,11 +104,11 @@ class MainWindow(QMainWindow):
             return
 
         if result != None:
+            self.file_path = file_path
             self.cities = result
 
             self.hello_label.hide()
 
-            # Настраиваем модель и показываем таблицу
             self.model = CityTableModel(self.cities)
             self.table_view.setModel(self.model)
             self.table_view.show()
@@ -109,11 +122,12 @@ class MainWindow(QMainWindow):
             save_to_json(self.cities, self.file_path)
 
     def save_file_as(self):
-        self.file_path, _ = QFileDialog.getSaveFileName(
+        file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить файл как...", "", "JSON Files (*.json)"
         )
-        if self.file_path:
-            save_to_json(self.cities, self.file_path)
+        if file_path:
+            save_to_json(self.cities, file_path)
+            self.file_path = file_path
 
     def add_city_in_table(self):
         new_city = City(
