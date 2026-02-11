@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sun_set.api.file_manager import load_from_json
+from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.models.city import City
 from sun_set.models.table_model import CheckBoxHeader, CityTableModel
 from sun_set.views.delegates.custom_delegate import CityDelegate
@@ -29,11 +29,22 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
+        self.file_path = None
         # 2. Кнопка (лучше добавить её в макет, а не через setGeometry)
         self.btn_choose_file = QPushButton("Выбрать файл")
         self.btn_choose_file.setToolTip("Импортировать города из файла")
         self.btn_choose_file.clicked.connect(self.open_file_dialog)
         self.main_layout.addWidget(self.btn_choose_file)
+
+        self.btn_save_file = QPushButton("Сохранить файл")
+        self.btn_save_file.setToolTip("Сохранить города в файл")
+        self.btn_save_file.clicked.connect(self.save_file)
+        self.main_layout.addWidget(self.btn_save_file)
+
+        self.btn_save_file_as = QPushButton("Сохранить файл как...")
+        self.btn_save_file_as.setToolTip("Сохранить города в новый файл")
+        self.btn_save_file_as.clicked.connect(self.save_file_as)
+        self.main_layout.addWidget(self.btn_save_file_as)
 
         self.btn_add_city = QPushButton("Добавить город")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
@@ -62,17 +73,17 @@ class MainWindow(QMainWindow):
 
     def open_file_dialog(self):
         # Вызываем окно выбора файла
-        file_path, _ = QFileDialog.getOpenFileName(
+        self.file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Выберите файл",
             "",
-            "Текстовые файлы (*.json)",
+            "JSON Files (*.json)",
         )
 
-        if not file_path:
+        if not self.file_path:
             return
 
-        result, error = load_from_json(file_path)
+        result, error = load_from_json(self.file_path)
         if error != None:
             dlg = CustomDialog(error)
             if dlg.exec():
@@ -90,6 +101,19 @@ class MainWindow(QMainWindow):
             self.table_view.show()
 
             self.table_view.resizeColumnsToContents()
+
+    def save_file(self):
+        if not self.file_path:
+            self.save_file_as()
+        else:
+            save_to_json(self.cities, self.file_path)
+
+    def save_file_as(self):
+        self.file_path, _ = QFileDialog.getSaveFileName(
+            self, "Сохранить файл как...", "", "JSON Files (*.json)"
+        )
+        if self.file_path:
+            save_to_json(self.cities, self.file_path)
 
     def add_city_in_table(self):
         new_city = City(
