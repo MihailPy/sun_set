@@ -7,3 +7,6 @@ run:
 all:
 		uv run pre-commit run --all
 		uv run start-app
+
+pyt:
+		uv run pytest

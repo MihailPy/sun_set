@@ -12,7 +12,11 @@ start-app = "sun_set.main:main"
 
 # Ваши инструменты разработки (оставляем как было)
 [dependency-groups]
-dev = ["pre-commit>=4.5.1"]
+dev = ["pre-commit>=4.5.1", "pytest>=9.0.2"]
+
+[tool.ty.src]
+exclude = ["tests/**"]
+
 
 # Настройка сборки: позволяет uv "видеть" пакет внутри src
 [build-system]
