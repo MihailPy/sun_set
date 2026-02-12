@@ -7,7 +7,6 @@ class CityDelegate(QStyledItemDelegate):
         editor = QLineEdit(parent)
         col = index.column()
 
-        # Настраиваем валидаторы в зависимости от колонки
         if col in (3, 4):  # Широта и Долгота (float)
             validator = QDoubleValidator(parent)
             validator.setNotation(QDoubleValidator.Notation.StandardNotation)

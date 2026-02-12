@@ -1,4 +1,3 @@
-# pyright: reportUnknownMemberType=false
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
