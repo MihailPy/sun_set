@@ -10,3 +10,9 @@ all:
 
 pyt:
 		uv run pytest
+
+cov:
+		uv run pytest --cov=src --cov-report=term-missing
+
+coverage:
+		uv run pytest --cov=src --cov-report=term-missing --cov-report=html
