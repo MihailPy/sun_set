@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
@@ -11,6 +13,7 @@ from PyQt6.QtWidgets import (
     QMenuBar,
     QPushButton,
     QSizePolicy,
+    QSpinBox,
     QStatusBar,
     QTableView,
     QVBoxLayout,
@@ -64,19 +67,31 @@ class MainWindow(QMainWindow):
 
         city_group = QGroupBox("Города")
         city_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        btn_group_layout = QHBoxLayout()
+        city_group_layout = QHBoxLayout()
         self.btn_add_city = QPushButton("Добавить город")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
         self.btn_add_city.clicked.connect(self.add_city_in_table)
-        btn_group_layout.addWidget(self.btn_add_city)
+        city_group_layout.addWidget(self.btn_add_city)
 
         self.btn_del_city = QPushButton("Удалить города")
         self.btn_del_city.setToolTip("Удалить выбранные города")
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
-        btn_group_layout.addWidget(self.btn_del_city)
+        city_group_layout.addWidget(self.btn_del_city)
 
-        city_group.setLayout(btn_group_layout)
+        city_group.setLayout(city_group_layout)
         self.main_layout.addWidget(city_group)
+
+        date_group = QGroupBox("Даты")
+        date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        date_group_layout = QHBoxLayout()
+        current_year = datetime.now().year
+        self.year_spinbox = QSpinBox()
+        self.year_spinbox.setRange(current_year - 50, current_year + 50)
+        self.year_spinbox.setValue(current_year + 1)
+        date_group_layout.addWidget(QLabel("Год:"))
+        date_group_layout.addWidget(self.year_spinbox)
+        date_group.setLayout(date_group_layout)
+        self.main_layout.addWidget(date_group)
 
         self.hello_label = QLabel(
             """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
