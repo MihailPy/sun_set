@@ -4,11 +4,13 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
     QMenuBar,
     QPushButton,
+    QSizePolicy,
     QStatusBar,
     QTableView,
     QVBoxLayout,
@@ -60,19 +62,21 @@ class MainWindow(QMainWindow):
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
 
-        self.buttons_layout = QHBoxLayout()
+        city_group = QGroupBox("Города")
+        city_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        btn_group_layout = QHBoxLayout()
         self.btn_add_city = QPushButton("Добавить город")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
         self.btn_add_city.clicked.connect(self.add_city_in_table)
-        self.buttons_layout.addWidget(self.btn_add_city)
+        btn_group_layout.addWidget(self.btn_add_city)
 
         self.btn_del_city = QPushButton("Удалить города")
         self.btn_del_city.setToolTip("Удалить выбранные города")
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
-        self.buttons_layout.addWidget(self.btn_del_city)
+        btn_group_layout.addWidget(self.btn_del_city)
 
-        self.buttons_layout.addStretch()
-        self.main_layout.addLayout(self.buttons_layout)
+        city_group.setLayout(btn_group_layout)
+        self.main_layout.addWidget(city_group)
 
         self.hello_label = QLabel(
             """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
