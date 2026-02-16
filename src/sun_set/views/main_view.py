@@ -3,6 +3,7 @@ from datetime import datetime
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
@@ -81,7 +82,7 @@ class MainWindow(QMainWindow):
         city_group.setLayout(city_group_layout)
         self.main_layout.addWidget(city_group)
 
-        date_group = QGroupBox("Даты")
+        date_group = QGroupBox("Настройки для сбора закатов")
         date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         date_group_layout = QHBoxLayout()
         current_year = datetime.now().year
@@ -90,6 +91,30 @@ class MainWindow(QMainWindow):
         self.year_spinbox.setValue(current_year + 1)
         date_group_layout.addWidget(QLabel("Год:"))
         date_group_layout.addWidget(self.year_spinbox)
+
+        days = [
+            ("Пн", 0),
+            ("Вт", 1),
+            ("Ср", 2),
+            ("Чт", 3),
+            ("Пт", 4),
+            ("Сб", 5),
+            ("Вс", 6),
+        ]
+
+        self.combo_weekday1 = QComboBox()
+        self.combo_weekday2 = QComboBox()
+        for name, value in days:
+            self.combo_weekday1.addItem(name, value)
+            self.combo_weekday2.addItem(name, value)
+
+        self.combo_weekday1.setCurrentIndex(4)
+        self.combo_weekday2.setCurrentIndex(5)
+        date_group_layout.addWidget(QLabel("Интересующие дни 1:"))
+        date_group_layout.addWidget(self.combo_weekday1)
+        date_group_layout.addWidget(QLabel("2:"))
+        date_group_layout.addWidget(self.combo_weekday2)
+
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
