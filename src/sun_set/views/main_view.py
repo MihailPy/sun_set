@@ -67,19 +67,41 @@ class MainWindow(QMainWindow):
             file_menu.addAction(self.btn_save_file_as)
 
         city_group = QGroupBox("Города")
-        city_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        city_group_layout = QHBoxLayout()
+        city_group.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
+        )
+        city_main_layout = QVBoxLayout()
+
+        city_btn_group_layout = QHBoxLayout()
         self.btn_add_city = QPushButton("Добавить город")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
         self.btn_add_city.clicked.connect(self.add_city_in_table)
-        city_group_layout.addWidget(self.btn_add_city)
+        city_btn_group_layout.addWidget(self.btn_add_city)
 
         self.btn_del_city = QPushButton("Удалить города")
         self.btn_del_city.setToolTip("Удалить выбранные города")
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
-        city_group_layout.addWidget(self.btn_del_city)
+        city_btn_group_layout.addWidget(self.btn_del_city)
+        city_btn_group_layout.addStretch()
 
-        city_group.setLayout(city_group_layout)
+        city_main_layout.addLayout(city_btn_group_layout)
+
+        self.initial_prompt_text = QLabel(
+            """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
+        )
+        self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        city_main_layout.addWidget(self.initial_prompt_text)
+
+        # 4. Заготовка под таблицу (пока пустая)
+        self.table_view = QTableView()
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
+        self.table_view.hide()  # Прячем, пока нет данных
+        self.table_view.setItemDelegate(CityDelegate(self.table_view))
+        city_main_layout.addWidget(self.table_view)
+
+        city_group.setLayout(city_main_layout)
+
         self.main_layout.addWidget(city_group)
 
         date_group = QGroupBox("Настройки для сбора закатов")
@@ -118,20 +140,6 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
-        self.hello_label = QLabel(
-            """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
-        )
-        self.hello_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.main_layout.addWidget(self.hello_label)
-
-        # 4. Заготовка под таблицу (пока пустая)
-        self.table_view = QTableView()
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-        self.table_view.hide()  # Прячем, пока нет данных
-        self.table_view.setItemDelegate(CityDelegate(self.table_view))
-        self.main_layout.addWidget(self.table_view)
-
     def open_file_dialog(self):
         # Вызываем окно выбора файла
         file_path, _ = QFileDialog.getOpenFileName(
@@ -155,7 +163,7 @@ class MainWindow(QMainWindow):
             self.file_path = file_path
             self.cities = result
 
-            self.hello_label.hide()
+            self.initial_prompt_text.hide()
 
             self.model = CityTableModel(self.cities)
             self.table_view.setModel(self.model)
@@ -192,12 +200,12 @@ class MainWindow(QMainWindow):
             self.model = CityTableModel(self.cities)
             self.table_view.setModel(self.model)
             self.table_view.show()
-            self.hello_label.hide()
+            self.initial_prompt_text.hide()
         else:
             # Если модель уже есть, просто добавляем в неё данные
             self.model.addCity(new_city)
             if len(self.cities) == 1:
-                self.hello_label.hide()
+                self.initial_prompt_text.hide()
                 self.table_view.show()
 
         print(f"{self.cities}")
@@ -212,7 +220,7 @@ class MainWindow(QMainWindow):
                 self.table_view.hide()
                 header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
                 self.table_view.setHorizontalHeader(header)
-                self.hello_label.show()
+                self.initial_prompt_text.show()
 
 
 class CustomDialog(QDialog):
