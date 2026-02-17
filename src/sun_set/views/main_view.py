@@ -140,6 +140,16 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
+        self.btn_get_sunset_info = QPushButton("Обновить", self)
+        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
+        self.main_layout.addWidget(self.btn_get_sunset_info)
+
+    def initiate_sunset_fetch(self):
+        print(
+            f"{self.cities=} {self.year_spinbox.value()=} {self.combo_weekday1.currentText()=} {self.combo_weekday2.currentText()=}"
+        )
+        return None
+
     def open_file_dialog(self):
         # Вызываем окно выбора файла
         file_path, _ = QFileDialog.getOpenFileName(
@@ -208,7 +218,6 @@ class MainWindow(QMainWindow):
                 self.initial_prompt_text.hide()
                 self.table_view.show()
 
-        print(f"{self.cities}")
         self.table_view.resizeColumnsToContents()
 
     def delete_selected_cities(self):
