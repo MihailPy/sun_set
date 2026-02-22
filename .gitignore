@@ -29,3 +29,6 @@ __pycache__/
 *.pyc
 
 cities.json
+
+sun_set.py
+sun_set_city.py

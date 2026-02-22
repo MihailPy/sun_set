@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
 )
 
 from sun_set.api.file_manager import load_from_json, save_to_json
+from sun_set.core.astronmy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.table_model import CheckBoxHeader, CityTableModel
 from sun_set.views.delegates.custom_delegate import CityDelegate
@@ -148,6 +149,12 @@ class MainWindow(QMainWindow):
         print(
             f"{self.cities=} {self.year_spinbox.value()=} {self.combo_weekday1.currentText()=} {self.combo_weekday2.currentText()=}"
         )
+        city = self.cities[0]
+        year = self.year_spinbox.value()
+        weekday1 = self.combo_weekday1.currentIndex()
+        weekday2 = self.combo_weekday2.currentIndex()
+        result = get_city_sunset(city, year, weekday1, weekday2)
+        print(f"{result=}")
         return None
 
     def open_file_dialog(self):
