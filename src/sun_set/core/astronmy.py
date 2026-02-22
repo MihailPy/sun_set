@@ -6,6 +6,7 @@ from astral import Observer
 from astral.sun import sunset
 
 from sun_set.models.city import City
+from sun_set.models.sunset import MonthData, Source, SunsetEntry
 
 
 def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> list:
@@ -21,15 +22,19 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> list
             weekday = data.weekday()
 
             if weekday == weekday1 or weekday == weekday2:
-                day_s = f"{day:02d}"
+                # day_s = f"{day:02d}"
 
                 obs = Observer(city.lat, city.lon, city.elevation)
                 city_tz = ZoneInfo(city.timezone)
                 res = sunset(obs, date=data, tzinfo=city_tz)
                 hour = int(res.time().hour)
                 minute = f"{int(res.time().minute):02d}"
-                sunset_city_month.append((day_s, f"{hour}:{minute}"))
-        sunset_city_year.append(sunset_city_month)
+                res_day = SunsetEntry(
+                    day, weekday, f"{hour}:{minute}", Source.CALCULATED
+                )
+                sunset_city_month.append(res_day)
+        res_month = MonthData(month, sunset_city_month)
+        sunset_city_year.append(res_month)
         sunset_city_month = []
 
     return sunset_city_year
