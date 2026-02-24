@@ -6,11 +6,10 @@ from astral import Observer
 from astral.sun import sunset
 
 from sun_set.models.city import City
-from sun_set.models.sunset import MonthData, Source, SunsetEntry
+from sun_set.models.sunset import MonthData, Source, SunsetEntry, YearData
 
 
-def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> list:
-    print(f"{city=} {year=} {weekday1=} {weekday2=}")
+def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> YearData:
 
     sunset_city_year = []
     sunset_city_month = []
@@ -37,4 +36,4 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> list
         sunset_city_year.append(res_month)
         sunset_city_month = []
 
-    return sunset_city_year
+    return YearData(year, Source.CALCULATED, sunset_city_year)

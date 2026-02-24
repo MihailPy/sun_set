@@ -25,3 +25,10 @@ class SunsetEntry:
 class MonthData:
     month: int
     days: list[SunsetEntry]  # noqa: F821
+
+
+@dataclass
+class YearData:
+    year: int
+    source: Source
+    months: list[MonthData]
