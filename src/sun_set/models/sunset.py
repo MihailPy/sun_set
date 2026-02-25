@@ -31,4 +31,5 @@ class MonthData:
 class YearData:
     year: int
     source: Source
-    months: list[MonthData]
+    hash_before_edit: int | None
+    months: list[MonthData] | None

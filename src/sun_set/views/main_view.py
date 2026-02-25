@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
 from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronmy import get_city_sunset
 from sun_set.models.city import City
+from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import CheckBoxHeader, CityTableModel
 from sun_set.views.delegates.custom_delegate import CityDelegate
 
@@ -153,9 +154,7 @@ class MainWindow(QMainWindow):
         year = self.year_spinbox.value()
         weekday1 = self.combo_weekday1.currentIndex()
         weekday2 = self.combo_weekday2.currentIndex()
-        result = get_city_sunset(city, year, weekday1, weekday2)
-        print(f"{result=}")
-        return None
+        city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
 
     def open_file_dialog(self):
         # Вызываем окно выбора файла
@@ -210,6 +209,12 @@ class MainWindow(QMainWindow):
             lon=0.0,
             timezone="UTC",
             elevation=0,
+            sunset_data=YearData(
+                year=self.year_spinbox.value(),
+                source=Source.CALCULATED,
+                hash_before_edit=None,
+                months=None,
+            ),
         )
         # Если модель еще не была создана (например, при первом нажатии)
         if not hasattr(self, "model") or self.model is None:

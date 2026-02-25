@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from sun_set.models.sunset import YearData
+
 
 @dataclass
 class City:
@@ -9,3 +11,7 @@ class City:
     lon: float
     timezone: str
     elevation: int
+    sunset_data: YearData
+
+    def __hash__(self) -> int:
+        return hash((self.lat, self.lon, self.timezone, self.elevation))

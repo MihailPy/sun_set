@@ -1,11 +1,23 @@
 import json
+from dataclasses import asdict
+from enum import Enum
 
 from sun_set.models.city import City
 
 
+def custom_asdict_factory(data):
+    def convert_value(obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return obj
+
+    return {k: convert_value(v) for k, v in data}
+
+
 def save_to_json(cities: list[City], filename: str):  # noqa: F821
     with open(filename, "w") as f:
-        json.dump([vars(c) for c in cities], f)
+        data_to_save = [asdict(c, dict_factory=custom_asdict_factory) for c in cities]
+        json.dump(data_to_save, f, ensure_ascii=False, indent=4)
 
 
 def load_from_json(filename: str) -> tuple[list[City] | None, str | None]:

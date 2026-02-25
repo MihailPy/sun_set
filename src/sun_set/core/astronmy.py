@@ -27,8 +27,6 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
                 res = sunset(obs, date=current_date, tzinfo=city_tz)
 
                 time_str = res.strftime("%H:%M")
-                # hour = int(res.time().hour)
-                # minute = f"{int(res.time().minute):02d}"
                 res_day = SunsetEntry(
                     day, current_date.weekday(), time_str, Source.CALCULATED
                 )
@@ -37,4 +35,4 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
         if sunset_city_month:
             sunset_city_year.append(MonthData(month, sunset_city_month))
 
-    return YearData(year, Source.CALCULATED, sunset_city_year)
+    return YearData(year, Source.CALCULATED, hash(city), sunset_city_year)
