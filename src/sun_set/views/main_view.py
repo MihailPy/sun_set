@@ -25,7 +25,11 @@ from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronmy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
-from sun_set.models.table_model import CheckBoxHeader, CityTableModel
+from sun_set.models.table_model import (
+    CheckBoxHeader,
+    CityTableModel,
+    StatusActionDelegate,
+)
 from sun_set.views.delegates.custom_delegate import CityDelegate
 
 
@@ -100,6 +104,9 @@ class MainWindow(QMainWindow):
         self.table_view.setHorizontalHeader(header)
         self.table_view.hide()  # Прячем, пока нет данных
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
+        self.status_delegate = StatusActionDelegate(self.table_view)
+        self.table_view.setItemDelegateForColumn(7, self.status_delegate)
+        self.status_delegate.buttonClicked.connect(self.handle_city_update)
         city_main_layout.addWidget(self.table_view)
 
         city_group.setLayout(city_main_layout)
@@ -145,6 +152,16 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info = QPushButton("Обновить", self)
         self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
         self.main_layout.addWidget(self.btn_get_sunset_info)
+
+    def handle_city_update(self, row: int):
+        # Получаем модель (предполагаем, что она уже установлена)
+        model = self.table_view.model()
+        if isinstance(model, CityTableModel):
+            city = model.cities[row]
+            print(f"Запуск обновления для города: {city.name} (строка {row})")
+
+            # Здесь ваша логика запроса данных заката
+            # Например: self.fetch_sunset_data(city)
 
     def initiate_sunset_fetch(self):
         print(

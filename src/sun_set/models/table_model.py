@@ -1,10 +1,87 @@
 import typing
 
 from PyQt6 import QtGui
-from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from PyQt6.QtWidgets import QHeaderView, QStyle, QStyleOptionButton
+from PyQt6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QRect, Qt, pyqtSignal
+from PyQt6.QtGui import QMouseEvent  # Needed for type checking
+from PyQt6.QtWidgets import (
+    QApplication,
+    QHeaderView,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionButton,
+)
 
 from sun_set.models.city import City
+
+
+class StatusActionDelegate(QStyledItemDelegate):
+    buttonClicked = pyqtSignal(int)
+
+    def paint(self, painter, option, index):
+        if painter is None:
+            return
+
+        self.initStyleOption(option, index)
+        painter.save()
+
+        button_width = 80
+        margin = 5
+
+        btn_rect = QRect(
+            option.rect.right() - button_width - margin,
+            option.rect.top() + margin,
+            button_width,
+            option.rect.height() - 2 * margin,
+        )
+
+        text_rect = QRect(
+            option.rect.left() + margin,
+            option.rect.top(),
+            option.rect.width() - button_width - 3 * margin,
+            option.rect.height(),
+        )
+
+        status_text = f"✅ {index.data() or 'Загружено'}"
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter, status_text)
+
+        btn_option = QStyleOptionButton()
+        btn_option.rect = btn_rect
+        btn_option.text = "Обновить"
+        btn_option.state = (
+            QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
+        )
+
+        # Safe access to style
+        style = option.widget.style() if option.widget else QApplication.style()
+        if style:
+            style.drawControl(QStyle.ControlElement.CE_PushButton, btn_option, painter)
+
+        painter.restore()
+
+    def editorEvent(self, event, model, option, index) -> bool:
+        # 1. Null check for Pyright
+        if event is None:
+            return False
+
+        # 2. Check event type
+        if event.type() == QEvent.Type.MouseButtonRelease:
+            # 3. Cast to QMouseEvent to access position()
+            if isinstance(event, QMouseEvent):
+                button_width = 80
+                margin = 5
+                btn_rect = QRect(
+                    option.rect.right() - button_width - margin,
+                    option.rect.top() + margin,
+                    button_width,
+                    option.rect.height() - 2 * margin,
+                )
+
+                # Use position().toPoint() for PyQt6 compatibility
+                if btn_rect.contains(event.position().toPoint()):
+                    self.buttonClicked.emit(index.row())
+                    return True
+
+        return super().editorEvent(event, model, option, index)
 
 
 class CheckBoxHeader(QHeaderView):
@@ -69,6 +146,7 @@ class CityTableModel(QAbstractTableModel):
             "Высота",
             "Timezone",
             "Высота ASL",
+            "Данные заката",
         ]
         self.checked_states = [False] * len(cities)
 
