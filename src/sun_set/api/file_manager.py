@@ -33,5 +33,5 @@ def load_from_json(filename: str) -> tuple[list[City] | None, str | None]:
     except PermissionError:
         return None, "Ошибка: Нет прав доступа для чтения этого файла."
 
-    except Exception as e:
-        return None, f"Неизвестная ошибка: {e}"
+    except TypeError as e:
+        return None, f"Ошибка в структуре данных файла: {e}"
