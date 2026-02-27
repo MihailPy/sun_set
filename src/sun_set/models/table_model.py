@@ -1,7 +1,15 @@
 import typing
 
 from PyQt6 import QtGui
-from PyQt6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QRect, Qt, pyqtSignal
+from PyQt6.QtCore import (
+    QAbstractTableModel,
+    QEvent,
+    QModelIndex,
+    QRect,
+    QSize,
+    Qt,
+    pyqtSignal,
+)
 from PyQt6.QtGui import QMouseEvent  # Needed for type checking
 from PyQt6.QtWidgets import (
     QApplication,
@@ -17,66 +25,81 @@ from sun_set.models.city import City
 class StatusActionDelegate(QStyledItemDelegate):
     buttonClicked = pyqtSignal(int)
 
+    # Определим константы в одном месте
+    BTN_WIDTH = 100
+    MARGIN = 5
+
+    def sizeHint(self, option, index) -> QSize:
+        # 1. Считаем ширину текста
+        status_text = f"✅ {index.data() or 'Загружено'}"
+        text_width = option.fontMetrics.horizontalAdvance(status_text)
+
+        # 2. Итоговая ширина = текст + кнопка + отступы
+        total_width = text_width + self.BTN_WIDTH + (self.MARGIN * 4)
+
+        # 3. Высота (берем стандартную или чуть больше для кнопки)
+        # base_size = super().sizeHint(option, index)
+        return QSize(total_width, 40)
+
     def paint(self, painter, option, index):
         if painter is None:
             return
-
         self.initStyleOption(option, index)
         painter.save()
-
-        button_width = 80
-        margin = 5
-
+        v_margin = 1
         btn_rect = QRect(
-            option.rect.right() - button_width - margin,
-            option.rect.top() + margin,
-            button_width,
-            option.rect.height() - 2 * margin,
+            option.rect.right() - self.BTN_WIDTH - self.MARGIN,
+            option.rect.top() + v_margin,
+            self.BTN_WIDTH,
+            option.rect.height() - 2 * v_margin,
         )
 
         text_rect = QRect(
-            option.rect.left() + margin,
+            option.rect.left() + self.MARGIN,
             option.rect.top(),
-            option.rect.width() - button_width - 3 * margin,
+            option.rect.width() - self.BTN_WIDTH - (self.MARGIN * 3),
             option.rect.height(),
         )
 
         status_text = f"✅ {index.data() or 'Загружено'}"
-        painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter, status_text)
+        # AlignLeft гарантирует, что текст не "уедет" под кнопку
+        painter.drawText(
+            text_rect,
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+            status_text,
+        )
 
         btn_option = QStyleOptionButton()
         btn_option.rect = btn_rect
-        btn_option.text = "Обновить"
+        btn_option.text = "Просмотреть"
+        # Добавляем State_Raised, это часто заставляет macOS рисовать объем
         btn_option.state = (
-            QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
+            QStyle.StateFlag.State_Enabled
+            | QStyle.StateFlag.State_Active
+            | QStyle.StateFlag.State_Raised
         )
 
-        # Safe access to style
         style = option.widget.style() if option.widget else QApplication.style()
         if style:
+            # Сначала рисуем саму кнопку (рамку и фон)
             style.drawControl(QStyle.ControlElement.CE_PushButton, btn_option, painter)
 
         painter.restore()
 
     def editorEvent(self, event, model, option, index) -> bool:
-        # 1. Null check for Pyright
         if event is None:
             return False
 
-        # 2. Check event type
         if event.type() == QEvent.Type.MouseButtonRelease:
-            # 3. Cast to QMouseEvent to access position()
             if isinstance(event, QMouseEvent):
-                button_width = 80
-                margin = 5
+                # Используем ТЕ ЖЕ константы для проверки клика
                 btn_rect = QRect(
-                    option.rect.right() - button_width - margin,
-                    option.rect.top() + margin,
-                    button_width,
-                    option.rect.height() - 2 * margin,
+                    option.rect.right() - self.BTN_WIDTH - self.MARGIN,
+                    option.rect.top() + self.MARGIN,
+                    self.BTN_WIDTH,
+                    option.rect.height() - 2 * self.MARGIN,
                 )
 
-                # Use position().toPoint() for PyQt6 compatibility
                 if btn_rect.contains(event.position().toPoint()):
                     self.buttonClicked.emit(index.row())
                     return True
@@ -161,6 +184,8 @@ class CityTableModel(QAbstractTableModel):
         if index.column() == 0:
             # Добавляем флаг именно здесь
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
+        if index.column() == 7:
+            return Qt.ItemFlag.ItemIsEnabled
         return base_flags | Qt.ItemFlag.ItemIsEditable
 
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):

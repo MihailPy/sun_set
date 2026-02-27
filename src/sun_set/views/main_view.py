@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QGroupBox,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QMainWindow,
     QMenuBar,
@@ -37,7 +38,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Sun set")
-        self.resize(600, 400)  # Увеличил размер для таблицы
+        self.resize(700, 400)  # Увеличил размер для таблицы
 
         # 1. Создаем центральный виджет и главный макет
         self.central_widget = QWidget()
@@ -102,6 +103,7 @@ class MainWindow(QMainWindow):
         self.table_view = QTableView()
         header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
         self.table_view.setHorizontalHeader(header)
+        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
         self.table_view.hide()  # Прячем, пока нет данных
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
         self.status_delegate = StatusActionDelegate(self.table_view)
