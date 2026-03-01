@@ -2,6 +2,8 @@ import json
 from dataclasses import asdict
 from enum import Enum
 
+from dacite import Config, from_dict
+
 from sun_set.models.city import City
 
 
@@ -23,7 +25,13 @@ def save_to_json(cities: list[City], filename: str):  # noqa: F821
 def load_from_json(filename: str) -> tuple[list[City] | None, str | None]:
     try:
         with open(filename) as f:
-            return [City(**data) for data in json.load(f)], None
+            data_list = json.load(f)
+            config = Config(cast=[Enum])
+            cities = [
+                from_dict(data_class=City, data=item, config=config)
+                for item in data_list
+            ]
+            return cities, None
     except FileNotFoundError:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
 
