@@ -32,6 +32,7 @@ from sun_set.models.table_model import (
     StatusActionDelegate,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
+from sun_set.views.sunset_table_view import YearEditorWindow
 
 
 class MainWindow(QMainWindow):
@@ -162,13 +163,12 @@ class MainWindow(QMainWindow):
             city = model.cities[row]
             print(f"Запуск обновления для города: {city.name} (строка {row})")
 
+            self.extra_window = YearEditorWindow(city)
+            self.extra_window.show()
             # Здесь ваша логика запроса данных заката
             # Например: self.fetch_sunset_data(city)
 
     def initiate_sunset_fetch(self):
-        print(
-            f"{self.cities=} {self.year_spinbox.value()=} {self.combo_weekday1.currentText()=} {self.combo_weekday2.currentText()=}"
-        )
         city = self.cities[0]
         year = self.year_spinbox.value()
         weekday1 = self.combo_weekday1.currentIndex()
