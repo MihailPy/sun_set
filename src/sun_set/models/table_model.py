@@ -31,7 +31,7 @@ class StatusActionDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index) -> QSize:
         # 1. Считаем ширину текста
-        status_text = f"✅ {index.data() or 'Загружено'}"
+        status_text = f"{index.data() or 'Загружено'}"
         text_width = option.fontMetrics.horizontalAdvance(status_text)
 
         # 2. Итоговая ширина = текст + кнопка + отступы
@@ -61,7 +61,7 @@ class StatusActionDelegate(QStyledItemDelegate):
             option.rect.height(),
         )
 
-        status_text = f"✅ {index.data() or 'Загружено'}"
+        status_text = f"{index.data() or 'Загружено'}"
         # AlignLeft гарантирует, что текст не "уедет" под кнопку
         painter.drawText(
             text_rect,

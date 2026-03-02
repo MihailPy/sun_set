@@ -39,15 +39,17 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Sun set")
-        self.resize(700, 400)  # Увеличил размер для таблицы
+        self.resize(700, 400)
 
         # 1. Создаем центральный виджет и главный макет
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
+        # Переменная путь к json файлу
         self.file_path = None
 
+        # Создание кнопок для меню бар "Файл"
         self.btn_choose_file = QAction("Открыть файл", self)
         self.btn_choose_file.setToolTip("Открыть файл с городами")
         self.btn_choose_file.setShortcut(QKeySequence("Ctrl+O"))
@@ -65,15 +67,18 @@ class MainWindow(QMainWindow):
 
         self.setStatusBar(QStatusBar(self))
 
+        # Создание меню бар "Файл"
         menu = QMenuBar(self)
         self.setMenuBar(menu)
-
         file_menu = menu.addMenu("&Файл")
+
+        # Добавление в меню бар "Файл" кнопок
         if file_menu:
             file_menu.addAction(self.btn_choose_file)
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
 
+        # Создание группы для таблицы и кнопок городов
         city_group = QGroupBox("Города")
         city_group.setSizePolicy(
             QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
@@ -100,7 +105,7 @@ class MainWindow(QMainWindow):
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         city_main_layout.addWidget(self.initial_prompt_text)
 
-        # 4. Заготовка под таблицу (пока пустая)
+        # Добавление и настройка таблицы
         self.table_view = QTableView()
         header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
         self.table_view.setHorizontalHeader(header)

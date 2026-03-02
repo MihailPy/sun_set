@@ -62,13 +62,14 @@ class YearEditorWindow(QWidget):
             time_item = QTableWidgetItem(entry.time)
             if entry.source == Source.EDITED:
                 time_item.setBackground(QColor(255, 255, 200))
+                time_item.setForeground(QColor(0, 0, 0))
 
             table.setItem(row, 0, day_item)
             table.setItem(row, 1, weekday_item)
             table.setItem(row, 2, time_item)
 
         # Растягиваем колонки
-        table.horizontalHeader().setStretchLastSection(True)
+        table.horizontalHeader().setStretchLastSection(False)
 
         layout.addWidget(table)
         widget.setLayout(layout)
@@ -87,7 +88,9 @@ class YearEditorWindow(QWidget):
             # Обновляем объект данных напрямую
             month_data.days[row].time = new_time
             month_data.days[row].source = Source.EDITED
+            self.city.sunset_data.source = Source.EDITED
             item.setBackground(QColor(255, 255, 200))
+            item.setForeground(QColor(0, 0, 0))
             print(
                 f"Обновлено: {month_data.month} месяц, день {month_data.days[row].day} -> {new_time}"
             )
