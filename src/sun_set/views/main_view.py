@@ -115,6 +115,7 @@ class MainWindow(QMainWindow):
         self.status_delegate = StatusActionDelegate(self.table_view)
         self.table_view.setItemDelegateForColumn(7, self.status_delegate)
         self.status_delegate.buttonClicked.connect(self.handle_city_update)
+
         city_main_layout.addWidget(self.table_view)
 
         city_group.setLayout(city_main_layout)
@@ -161,6 +162,21 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
         self.main_layout.addWidget(self.btn_get_sunset_info)
 
+    def on_data_changed(self, top_left, bottom_right, roles):
+        city = self.model.cities[top_left.row()]
+        print(f"Изменен город: {city.name}")
+
+        if hash(city) != city.sunset_data.hash_before_edit:
+            print(f"{hash(city)=} {city.sunset_data.hash_before_edit=}")
+            print(f"Нужно переполучить данные о заходе солнца города: {city.name}")
+            index = self.model.index(top_left.row(), 7)
+            self.model.setData(index, "Неактуальные данные", Qt.ItemDataRole.EditRole)
+            # year = self.year_spinbox.value()
+            # weekday1 = self.combo_weekday1.currentIndex()
+            # weekday2 = self.combo_weekday2.currentIndex()
+
+            # city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+
     def handle_city_update(self, row: int):
         # Получаем модель (предполагаем, что она уже установлена)
         model = self.table_view.model()
@@ -206,6 +222,7 @@ class MainWindow(QMainWindow):
             self.initial_prompt_text.hide()
 
             self.model = CityTableModel(self.cities)
+            self.model.dataChanged.connect(self.on_data_changed)
             self.table_view.setModel(self.model)
             self.table_view.show()
 
@@ -244,6 +261,7 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "model") or self.model is None:
             self.cities = [new_city]
             self.model = CityTableModel(self.cities)
+            self.model.dataChanged.connect(self.on_data_changed)
             self.table_view.setModel(self.model)
             self.table_view.show()
             self.initial_prompt_text.hide()
