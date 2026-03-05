@@ -164,10 +164,8 @@ class MainWindow(QMainWindow):
 
     def on_data_changed(self, top_left, bottom_right, roles):
         city = self.model.cities[top_left.row()]
-        print(f"Изменен город: {city.name}")
 
         if hash(city) != city.sunset_data.hash_before_edit:
-            print(f"{hash(city)=} {city.sunset_data.hash_before_edit=}")
             print(f"Нужно переполучить данные о заходе солнца города: {city.name}")
             index = self.model.index(top_left.row(), 7)
             self.model.setData(index, "Неактуальные данные", Qt.ItemDataRole.EditRole)

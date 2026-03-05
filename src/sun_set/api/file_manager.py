@@ -30,7 +30,12 @@ def load_from_json(filename: str) -> tuple[list[City] | None, str | None]:
             cities = [
                 from_dict(data_class=City, data=item, config=config)
                 for item in data_list
+                if isinstance(item, dict)
             ]
+            # cities = [
+            #     from_dict(data_class=City, data=item, config=config)
+            #     for item in data_list
+            # ]
             return cities, None
     except FileNotFoundError:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."

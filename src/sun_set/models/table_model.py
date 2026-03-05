@@ -172,6 +172,7 @@ class CityTableModel(QAbstractTableModel):
             "Данные заката",
         ]
         self.checked_states = [False] * len(cities)
+        self.status_overrides = {}
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.cities)
@@ -216,6 +217,14 @@ class CityTableModel(QAbstractTableModel):
                 return city.timezone
             if col == 6:
                 return str(city.elevation)
+            if col == 7:
+                row = index.row()
+                if row in self.status_overrides:
+                    return self.status_overrides[row]
+
+                # Если нет — показываем что-то стандартное на основе YearData
+                year_data = self.cities[row].sunset_data
+                return f"Данные {year_data.year}" if year_data else "Загружено"
         return None
 
     def setData(
@@ -249,6 +258,10 @@ class CityTableModel(QAbstractTableModel):
                     city.timezone = value
                 elif col == 6:
                     city.elevation = int(value)
+                elif col == 7:
+                    if self.status_overrides.get(index.row()) == value:
+                        return True
+                    self.status_overrides[index.row()] = str(value)
 
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
                 return True
