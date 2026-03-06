@@ -164,16 +164,16 @@ class MainWindow(QMainWindow):
 
     def on_data_changed(self, top_left, bottom_right, roles):
         city = self.model.cities[top_left.row()]
-
+        index = self.model.index(top_left.row(), 7)
         if hash(city) != city.sunset_data.hash_before_edit:
             print(f"Нужно переполучить данные о заходе солнца города: {city.name}")
-            index = self.model.index(top_left.row(), 7)
-            self.model.setData(index, "Неактуальные данные", Qt.ItemDataRole.EditRole)
+            self.model.setData(index, "⚠️ Неактуальные данные", Qt.ItemDataRole.EditRole)
             # year = self.year_spinbox.value()
             # weekday1 = self.combo_weekday1.currentIndex()
             # weekday2 = self.combo_weekday2.currentIndex()
-
             # city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+        else:
+            self.model.setData(index, "✅ Загружено", Qt.ItemDataRole.EditRole)
 
     def handle_city_update(self, row: int):
         # Получаем модель (предполагаем, что она уже установлена)

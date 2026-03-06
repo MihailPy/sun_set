@@ -61,6 +61,7 @@ class StatusActionDelegate(QStyledItemDelegate):
             option.rect.height(),
         )
 
+        print(f"{index.data()=}")
         status_text = f"{index.data() or 'Загружено'}"
         # AlignLeft гарантирует, что текст не "уедет" под кнопку
         painter.drawText(
@@ -222,9 +223,11 @@ class CityTableModel(QAbstractTableModel):
                 if row in self.status_overrides:
                     return self.status_overrides[row]
 
-                # Если нет — показываем что-то стандартное на основе YearData
-                year_data = self.cities[row].sunset_data
-                return f"Данные {year_data.year}" if year_data else "Загружено"
+                city = self.cities[row]
+                if hash(city) != city.sunset_data.hash_before_edit:
+                    return "⚠️ Неактуальные данные"
+                else:
+                    return "✅ Загружено"
         return None
 
     def setData(
