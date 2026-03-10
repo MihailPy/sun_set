@@ -23,22 +23,22 @@ from sun_set.models.city import City
 
 
 class StatusActionDelegate(QStyledItemDelegate):
-    buttonClicked = pyqtSignal(int)
+    buttonClicked = pyqtSignal(int, str)
 
     # Определим константы в одном месте
     BTN_WIDTH = 100
     MARGIN = 5
+    ButtonTextRole = Qt.ItemDataRole.UserRole + 1
 
     def sizeHint(self, option, index) -> QSize:
-        # 1. Считаем ширину текста
-        status_text = f"{index.data() or 'Загружено'}"
+        status_text = f"{index.data() or '✅ Загружено'}"
+        # btn_text = index.data(Qt.ItemDataRole.UserRole + 1) or "Просмотреть"
+
         text_width = option.fontMetrics.horizontalAdvance(status_text)
+        # btn_text_width = option.fontMetrics.horizontalAdvance(btn_text)
 
-        # 2. Итоговая ширина = текст + кнопка + отступы
-        total_width = text_width + self.BTN_WIDTH + (self.MARGIN * 4)
+        total_width = text_width + self.BTN_WIDTH + (self.MARGIN * 6)
 
-        # 3. Высота (берем стандартную или чуть больше для кнопки)
-        # base_size = super().sizeHint(option, index)
         return QSize(total_width, 40)
 
     def paint(self, painter, option, index):
@@ -61,8 +61,7 @@ class StatusActionDelegate(QStyledItemDelegate):
             option.rect.height(),
         )
 
-        print(f"{index.data()=}")
-        status_text = f"{index.data() or 'Загружено'}"
+        status_text = f"{index.data() or '✅ Загружено'}"
         # AlignLeft гарантирует, что текст не "уедет" под кнопку
         painter.drawText(
             text_rect,
@@ -70,9 +69,10 @@ class StatusActionDelegate(QStyledItemDelegate):
             status_text,
         )
 
+        btn_text = index.data(self.ButtonTextRole) or "Просмотреть"
         btn_option = QStyleOptionButton()
         btn_option.rect = btn_rect
-        btn_option.text = "Просмотреть"
+        btn_option.text = btn_text
         # Добавляем State_Raised, это часто заставляет macOS рисовать объем
         btn_option.state = (
             QStyle.StateFlag.State_Enabled
@@ -102,7 +102,8 @@ class StatusActionDelegate(QStyledItemDelegate):
                 )
 
                 if btn_rect.contains(event.position().toPoint()):
-                    self.buttonClicked.emit(index.row())
+                    btn_text = index.data(self.ButtonTextRole) or "Просмотреть"
+                    self.buttonClicked.emit(index.row(), btn_text)
                     return True
 
         return super().editorEvent(event, model, option, index)
@@ -174,6 +175,7 @@ class CityTableModel(QAbstractTableModel):
         ]
         self.checked_states = [False] * len(cities)
         self.status_overrides = {}
+        self._updating = False
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.cities)
@@ -193,7 +195,11 @@ class CityTableModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return None
-
+        if role == Qt.ItemDataRole.UserRole + 1:
+            city = self.cities[index.row()]
+            if hash(city) != city.sunset_data.hash_before_edit:
+                return "Обновить"
+            return "Просмотреть"
         if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
             return (
                 Qt.CheckState.Checked
@@ -262,14 +268,10 @@ class CityTableModel(QAbstractTableModel):
                 elif col == 6:
                     city.elevation = int(value)
                 elif col == 7:
-                    if self.status_overrides.get(index.row()) == value:
-                        return True
                     self.status_overrides[index.row()] = str(value)
-
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
                 return True
             except ValueError:
-                # Здесь можно вызвать сигнал для статус-бара: "Ошибка формата данных"
                 return False
         return False
 
@@ -294,7 +296,6 @@ class CityTableModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), last_row, last_row)
         self.cities.append(city)
         self.checked_states.append(False)
-        print(f"{self.checked_states}")
         self.endInsertRows()  # Завершаем вставку
 
     def selectAll(self, state: bool) -> None:

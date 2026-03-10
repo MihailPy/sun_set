@@ -163,29 +163,48 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.btn_get_sunset_info)
 
     def on_data_changed(self, top_left, bottom_right, roles):
+        if hasattr(self, "_updating") and self._updating:
+            return
+
+        self._updating = True
+
         city = self.model.cities[top_left.row()]
         index = self.model.index(top_left.row(), 7)
+
         if hash(city) != city.sunset_data.hash_before_edit:
-            print(f"Нужно переполучить данные о заходе солнца города: {city.name}")
-            self.model.setData(index, "⚠️ Неактуальные данные", Qt.ItemDataRole.EditRole)
-            # year = self.year_spinbox.value()
-            # weekday1 = self.combo_weekday1.currentIndex()
-            # weekday2 = self.combo_weekday2.currentIndex()
-            # city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+            self.model.status_overrides[index.row()] = "⚠️ Неактуальные данные"
+            self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
         else:
-            self.model.setData(index, "✅ Загружено", Qt.ItemDataRole.EditRole)
+            self.model.status_overrides[index.row()] = "✅ Загружено"
+            self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
 
-    def handle_city_update(self, row: int):
-        # Получаем модель (предполагаем, что она уже установлена)
-        model = self.table_view.model()
-        if isinstance(model, CityTableModel):
-            city = model.cities[row]
-            print(f"Запуск обновления для города: {city.name} (строка {row})")
+        self.table_view.resizeColumnToContents(7)
 
+        self._updating = False
+
+    def handle_city_update(self, row: int, text: str):
+        city = self.model.cities[row]
+        if text == "Просмотреть":
             self.extra_window = YearEditorWindow(city)
             self.extra_window.show()
-            # Здесь ваша логика запроса данных заката
-            # Например: self.fetch_sunset_data(city)
+
+        if text == "Обновить":
+            print(f"Запуск обновления для города: {city.name} (строка {row})")
+            year = self.year_spinbox.value()
+            weekday1 = self.combo_weekday1.currentIndex()
+            weekday2 = self.combo_weekday2.currentIndex()
+
+            city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+
+            city.sunset_data.hash_before_edit = hash(city)
+
+            index = self.model.index(row, 7)
+            if row in self.model.status_overrides:
+                del self.model.status_overrides[row]
+
+            self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+
+        self.table_view.resizeColumnToContents(7)
 
     def initiate_sunset_fetch(self):
         city = self.cities[0]
