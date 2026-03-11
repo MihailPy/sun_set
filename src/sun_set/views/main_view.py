@@ -207,11 +207,13 @@ class MainWindow(QMainWindow):
         self.table_view.resizeColumnToContents(7)
 
     def initiate_sunset_fetch(self):
-        city = self.cities[0]
         year = self.year_spinbox.value()
         weekday1 = self.combo_weekday1.currentIndex()
         weekday2 = self.combo_weekday2.currentIndex()
-        city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+        if hasattr(self, "model") and self.model is not None:
+            updated_rows = self.model.updateCheckedCities(year, weekday1, weekday2)
+            if updated_rows:
+                self.table_view.resizeColumnToContents(7)
 
     def open_file_dialog(self):
         # Вызываем окно выбора файла

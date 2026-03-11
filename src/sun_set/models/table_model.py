@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (
     QStyleOptionButton,
 )
 
+from sun_set.core.astronmy import get_city_sunset
 from sun_set.models.city import City
 
 
@@ -315,3 +316,19 @@ class CityTableModel(QAbstractTableModel):
             del self.cities[row]
             del self.checked_states[row]
             self.endRemoveRows()
+
+    def updateCheckedCities(self, year: int, weekday1: int, weekday2: int):
+        indices_to_update = [i for i, val in enumerate(self.checked_states) if val]
+
+        for row in indices_to_update:
+            city = self.cities[row]
+            city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+            if row in self.status_overrides:
+                del self.status_overrides[row]
+        if indices_to_update:
+            first_row = min(indices_to_update)
+            last_row = max(indices_to_update)
+            top_left = self.index(first_row, 7)
+            bottom_right = self.index(last_row, 7)
+            self.dataChanged.emit(top_left, bottom_right, [Qt.ItemDataRole.DisplayRole])
+        return indices_to_update
