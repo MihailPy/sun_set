@@ -85,15 +85,16 @@ class YearEditorWindow(QWidget):
         if item.column() == 2:
             row = item.row()
             new_time = item.text()
-            # Обновляем объект данных напрямую
-            month_data.days[row].time = new_time
-            month_data.days[row].source = Source.EDITED
-            self.city.sunset_data.source = Source.EDITED
-            item.setBackground(QColor(255, 255, 200))
-            item.setForeground(QColor(0, 0, 0))
-            print(
-                f"Обновлено: {month_data.month} месяц, день {month_data.days[row].day} -> {new_time}"
-            )
+            if new_time != month_data.days[row].time:
+                # Обновляем объект данных напрямую
+                month_data.days[row].time = new_time
+                month_data.days[row].source = Source.EDITED
+                self.city.sunset_data.source = Source.EDITED
+                item.setBackground(QColor(255, 255, 200))
+                item.setForeground(QColor(0, 0, 0))
+                print(
+                    f"Обновлено: {month_data.month} месяц, день {month_data.days[row].day} -> {new_time}"
+                )
 
     def get_month_name(self, n):
         months = [

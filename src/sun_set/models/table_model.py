@@ -232,7 +232,7 @@ class CityTableModel(QAbstractTableModel):
 
                 city = self.cities[row]
                 if hash(city) != city.sunset_data.hash_before_edit:
-                    return "⚠️ Неактуальные данные"
+                    return "❗️ Неактуальные данные"
                 else:
                     return "✅ Загружено"
         return None

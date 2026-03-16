@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Sun set")
-        self.resize(700, 400)
+        self.resize(800, 400)
 
         # 1. Создаем центральный виджет и главный макет
         self.central_widget = QWidget()
@@ -172,11 +172,15 @@ class MainWindow(QMainWindow):
         index = self.model.index(top_left.row(), 7)
 
         if hash(city) != city.sunset_data.hash_before_edit:
-            self.model.status_overrides[index.row()] = "⚠️ Неактуальные данные"
+            self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
             self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
         else:
-            self.model.status_overrides[index.row()] = "✅ Загружено"
-            self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+            if city.sunset_data.source == Source.CALCULATED:
+                self.model.status_overrides[index.row()] = "✅ Загружено"
+                self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+            elif city.sunset_data.source == Source.EDITED:
+                self.model.status_overrides[index.row()] = "⚠️ Изменено"
+                self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
 
         self.table_view.resizeColumnToContents(7)
 
