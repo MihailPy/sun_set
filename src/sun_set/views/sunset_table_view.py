@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QTableWidget,
@@ -13,6 +13,8 @@ from sun_set.models.sunset import Source
 
 
 class YearEditorWindow(QWidget):
+    dataChanged = pyqtSignal()
+
     def __init__(self, city: City):
         super().__init__()
         self.city = city
@@ -92,6 +94,9 @@ class YearEditorWindow(QWidget):
                 self.city.sunset_data.source = Source.EDITED
                 item.setBackground(QColor(255, 255, 200))
                 item.setForeground(QColor(0, 0, 0))
+
+                self.dataChanged.emit()
+
                 print(
                     f"Обновлено: {month_data.month} месяц, день {month_data.days[row].day} -> {new_time}"
                 )

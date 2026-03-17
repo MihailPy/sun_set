@@ -171,28 +171,40 @@ class MainWindow(QMainWindow):
         city = self.model.cities[top_left.row()]
         index = self.model.index(top_left.row(), 7)
 
-        if hash(city) != city.sunset_data.hash_before_edit:
+        if (
+            hash(city) != city.sunset_data.hash_before_edit
+            and city.sunset_data.source != Source.EDITED
+        ):
             self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
-            self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+            self.model.setData(index, False, StatusActionDelegate.ViewEnabledRole)
+            self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
+            # self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
         else:
             if city.sunset_data.source == Source.CALCULATED:
                 self.model.status_overrides[index.row()] = "✅ Загружено"
-                self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+                self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
+                self.model.setData(index, False, StatusActionDelegate.UpdateEnabledRole)
+                # self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
             elif city.sunset_data.source == Source.EDITED:
                 self.model.status_overrides[index.row()] = "⚠️ Изменено"
-                self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+                self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
+                self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
+                # self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
 
         self.table_view.resizeColumnToContents(7)
 
         self._updating = False
 
-    def handle_city_update(self, row: int, text: str):
+    def handle_city_update(self, row: int, action_type: str):
         city = self.model.cities[row]
-        if text == "Просмотреть":
+        if action_type == "view":
             self.extra_window = YearEditorWindow(city)
+            self.extra_window.dataChanged.connect(
+                lambda: self.on_city_data_changed(row)
+            )
             self.extra_window.show()
 
-        if text == "Обновить":
+        if action_type == "update":
             print(f"Запуск обновления для города: {city.name} (строка {row})")
             year = self.year_spinbox.value()
             weekday1 = self.combo_weekday1.currentIndex()
@@ -206,9 +218,44 @@ class MainWindow(QMainWindow):
             if row in self.model.status_overrides:
                 del self.model.status_overrides[row]
 
-            self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+            index = self.model.index(row, 7)
+            self.model.dataChanged.emit(
+                index,
+                index,
+                [
+                    Qt.ItemDataRole.DisplayRole,
+                    StatusActionDelegate.UpdateEnabledRole,
+                    StatusActionDelegate.ViewEnabledRole,
+                ],
+            )
 
         self.table_view.resizeColumnToContents(7)
+
+    def on_city_data_changed(self, row: int):
+        """Обработчик изменения данных города через окно редактирования"""
+        print(f"Данные города {row} изменены в окне редактирования")
+
+        # Обновляем hash после редактирования
+        city = self.model.cities[row]
+        city.sunset_data.hash_before_edit = hash(city)
+
+        # Обновляем отображение строки
+        self.update_city_row_display(row)
+
+        self.table_view.resizeColumnToContents(7)
+
+    def update_city_row_display(self, row: int):
+        """Вспомогательный метод для обновления отображения строки"""
+        index = self.model.index(row, 7)
+        self.model.dataChanged.emit(
+            index,
+            index,
+            [
+                Qt.ItemDataRole.DisplayRole,
+                StatusActionDelegate.UpdateEnabledRole,
+                StatusActionDelegate.ViewEnabledRole,
+            ],
+        )
 
     def initiate_sunset_fetch(self):
         year = self.year_spinbox.value()
