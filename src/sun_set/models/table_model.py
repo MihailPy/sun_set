@@ -263,7 +263,7 @@ class CityTableModel(QAbstractTableModel):
         if role == StatusActionDelegate.UpdateEnabledRole:
             city = self.cities[index.row()]
             if (
-                hash(city) != city.sunset_data.hash_before_edit
+                city.get_stable_hash() != city.sunset_data.hash_before_edit
                 or city.sunset_data.source == Source.EDITED
             ):
                 return True
@@ -300,10 +300,7 @@ class CityTableModel(QAbstractTableModel):
                     return self.status_overrides[row]
 
                 city = self.cities[row]
-                if (
-                    hash(city) != city.sunset_data.hash_before_edit
-                    and city.sunset_data.source != Source.EDITED
-                ):
+                if city.get_stable_hash() != city.sunset_data.hash_before_edit:
                     return "❗️ Неактуальные данные"
                 else:
                     if city.sunset_data.source == Source.CALCULATED:
@@ -406,7 +403,7 @@ class CityTableModel(QAbstractTableModel):
         for row in indices_to_update:
             city = self.cities[row]
             city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
-            city.sunset_data.hash_before_edit = hash(city)
+            city.sunset_data.hash_before_edit = city.get_stable_hash()
             if row in self.status_overrides:
                 del self.status_overrides[row]
 
@@ -436,7 +433,7 @@ class CityTableModel(QAbstractTableModel):
         elif action == "update":
             # Логика обновления
             city = self.cities[row]
-            if hash(city) != city.sunset_data.hash_before_edit:
+            if city.get_stable_hash() != city.sunset_data.hash_before_edit:
                 # Обновляем только один город
                 city.sunset_data = get_city_sunset(
                     city, 2024, 1, 2

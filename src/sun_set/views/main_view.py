@@ -171,10 +171,7 @@ class MainWindow(QMainWindow):
         city = self.model.cities[top_left.row()]
         index = self.model.index(top_left.row(), 7)
 
-        if (
-            hash(city) != city.sunset_data.hash_before_edit
-            and city.sunset_data.source != Source.EDITED
-        ):
+        if city.get_stable_hash() != city.sunset_data.hash_before_edit:
             self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
             self.model.setData(index, False, StatusActionDelegate.ViewEnabledRole)
             self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
@@ -212,7 +209,7 @@ class MainWindow(QMainWindow):
 
             city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
 
-            city.sunset_data.hash_before_edit = hash(city)
+            city.sunset_data.hash_before_edit = city.get_stable_hash()
 
             index = self.model.index(row, 7)
             if row in self.model.status_overrides:
@@ -237,7 +234,7 @@ class MainWindow(QMainWindow):
 
         # Обновляем hash после редактирования
         city = self.model.cities[row]
-        city.sunset_data.hash_before_edit = hash(city)
+        city.sunset_data.hash_before_edit = city.get_stable_hash()
 
         # Обновляем отображение строки
         self.update_city_row_display(row)

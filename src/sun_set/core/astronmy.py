@@ -35,4 +35,4 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
         if sunset_city_month:
             sunset_city_year.append(MonthData(month, sunset_city_month))
 
-    return YearData(year, Source.CALCULATED, hash(city), sunset_city_year)
+    return YearData(year, Source.CALCULATED, city.get_stable_hash(), sunset_city_year)
