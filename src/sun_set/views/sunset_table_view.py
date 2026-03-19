@@ -71,7 +71,9 @@ class YearEditorWindow(QWidget):
             table.setItem(row, 2, time_item)
 
         # Растягиваем колонки
-        table.horizontalHeader().setStretchLastSection(False)
+        header = table.horizontalHeader()
+        if header is not None:
+            header.setStretchLastSection(True)
 
         layout.addWidget(table)
         widget.setLayout(layout)

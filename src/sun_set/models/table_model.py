@@ -256,7 +256,11 @@ class CityTableModel(QAbstractTableModel):
 
         # Роли для делегата StatusActionDelegate
         if role == StatusActionDelegate.ViewEnabledRole:
-            if self.cities[index.row()].sunset_data.hash_before_edit:
+            city = self.cities[index.row()]
+            if (
+                self.cities[index.row()].sunset_data.hash_before_edit
+                and city.get_stable_hash() == city.sunset_data.hash_before_edit
+            ):
                 return True
             return False
 

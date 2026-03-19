@@ -86,21 +86,26 @@ class MainWindow(QMainWindow):
         city_main_layout = QVBoxLayout()
 
         city_btn_group_layout = QHBoxLayout()
-        self.btn_add_city = QPushButton("Добавить город")
+        self.btn_add_city = QPushButton("Добавить")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
         self.btn_add_city.clicked.connect(self.add_city_in_table)
         city_btn_group_layout.addWidget(self.btn_add_city)
 
-        self.btn_del_city = QPushButton("Удалить города")
+        self.btn_del_city = QPushButton("Удалить")
         self.btn_del_city.setToolTip("Удалить выбранные города")
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
         city_btn_group_layout.addWidget(self.btn_del_city)
+
+        self.btn_get_sunset_info = QPushButton("Обновить", self)
+        self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
+        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
+        city_btn_group_layout.addWidget(self.btn_get_sunset_info)
         city_btn_group_layout.addStretch()
 
         city_main_layout.addLayout(city_btn_group_layout)
 
         self.initial_prompt_text = QLabel(
-            """Выберите файл для загрузки данных городов, или нажмите 'Добавить город'"""
+            """Выберите файл для загрузки данных городов, или нажмите 'Добавить'"""
         )
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         city_main_layout.addWidget(self.initial_prompt_text)
@@ -122,7 +127,7 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(city_group)
 
-        date_group = QGroupBox("Настройки для сбора закатов")
+        date_group = QGroupBox("Настройки для сбора данных закатов")
         date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         date_group_layout = QHBoxLayout()
         current_year = datetime.now().year
@@ -158,10 +163,6 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
-        self.btn_get_sunset_info = QPushButton("Обновить", self)
-        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
-        self.main_layout.addWidget(self.btn_get_sunset_info)
-
     def on_data_changed(self, top_left, bottom_right, roles):
         if hasattr(self, "_updating") and self._updating:
             return
@@ -175,18 +176,15 @@ class MainWindow(QMainWindow):
             self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
             self.model.setData(index, False, StatusActionDelegate.ViewEnabledRole)
             self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
-            # self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
         else:
             if city.sunset_data.source == Source.CALCULATED:
                 self.model.status_overrides[index.row()] = "✅ Загружено"
                 self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
                 self.model.setData(index, False, StatusActionDelegate.UpdateEnabledRole)
-                # self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
             elif city.sunset_data.source == Source.EDITED:
                 self.model.status_overrides[index.row()] = "⚠️ Изменено"
                 self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
                 self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
-                # self.model.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
 
         self.table_view.resizeColumnToContents(7)
 
