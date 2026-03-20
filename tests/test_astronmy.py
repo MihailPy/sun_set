@@ -24,7 +24,54 @@ def polar_city():
     return city
 
 
-# 2. Теперь сам тест
+@pytest.fixture
+def normal_city():
+    """Фикстура, возвращающая объект City для Москвы."""
+    # lat = 55.7558, lon = 37.6173, elevation = 170, timezone = 'Europe/Moscow'
+    city = City(
+        name="Moscow",
+        region="Russia",
+        lat=55.7558,
+        lon=37.6173,
+        timezone="Europe/Moscow",
+        elevation=170,
+        sunset_data=YearData(
+            year=2024, source=Source.CALCULATED, hash_before_edit=None, months=None
+        ),
+    )
+    return city
+
+
+@pytest.mark.parametrize(
+    "weekday1,weekday2",
+    [
+        pytest.param(0, 1),
+        pytest.param(1, 2),
+        pytest.param(6, 2),
+        pytest.param(4, 5),
+        pytest.param(4, 4),
+    ],
+)
+def test_get_city_sunset_normal_city(normal_city, weekday1, weekday2):
+    """
+    Тест проверяет что при нормальных данных функция выдает
+    объект YearData, с нужными данными.
+    """
+    year = 2024
+
+    result = get_city_sunset(normal_city, year, weekday1, weekday2)
+
+    assert type(result) is YearData
+    assert result.year is year
+    assert result.hash_before_edit is not None
+    assert result.months is not None
+    assert len(result.months) == 12
+    assert result.months[0].days[0].weekday in {weekday1, weekday2}
+    assert result.months[0].days[1].weekday in {weekday1, weekday2}
+    assert result.months[3].days[2].weekday in {weekday1, weekday2}
+    assert result.months[8].days[3].weekday in {weekday1, weekday2}
+
+
 def test_get_city_sunset_polar_day(polar_city, monkeypatch):
     """
     Тест проверяет, что функция выбрасывает исключение AstralError
