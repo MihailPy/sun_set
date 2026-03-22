@@ -11,6 +11,7 @@ from sun_set.models.sunset import MonthData, Source, SunsetEntry, YearData
 
 def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> YearData:
     obs = Observer(city.lat, city.lon, city.elevation)
+    # ModuleNotFoundError: No module named 'tzdata'
     city_tz = ZoneInfo(city.timezone)
     weekdays_to_check = {weekday1, weekday2}
 
@@ -24,12 +25,17 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
             current_date = datetime.date(year, month, day)
 
             if current_date.weekday() in weekdays_to_check:
-                res = sunset(obs, date=current_date, tzinfo=city_tz)
+                try:
+                    res = sunset(obs, date=current_date, tzinfo=city_tz)
+                    time_str = res.strftime("%H:%M")
+                    res_day = SunsetEntry(
+                        day, current_date.weekday(), time_str, Source.CALCULATED
+                    )
+                except ValueError:
+                    res_day = SunsetEntry(
+                        day, current_date.weekday(), "00:00", Source.ERROR_POLAR
+                    )
 
-                time_str = res.strftime("%H:%M")
-                res_day = SunsetEntry(
-                    day, current_date.weekday(), time_str, Source.CALCULATED
-                )
                 sunset_city_month.append(res_day)
 
         if sunset_city_month:

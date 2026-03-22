@@ -11,6 +11,10 @@ all:
 pyt:
 		uv run pytest
 
+pytv:
+		uv run pytest -v
+
+
 cov:
 		uv run pytest --cov=src --cov-report=term-missing
 

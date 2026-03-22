@@ -1,3 +1,6 @@
+import calendar
+import datetime
+
 import pytest
 
 from sun_set.core.astronmy import get_city_sunset
@@ -77,19 +80,61 @@ def test_get_city_sunset_polar_day(polar_city, monkeypatch):
     Тест проверяет, что функция выбрасывает исключение AstralError
     для города за полярным кругом в июне.
     """
+    call_count = 0
+    year = 2024
+    weekday1, weekday2 = 0, 1  # Понедельник и вторник
+
+    # Вычисляем ожидаемое количество вызовов
+    expected_calls = 0
+    for month in range(1, 13):
+        _, last_day = calendar.monthrange(year, month)
+        for day in range(1, last_day + 1):
+            current_date = datetime.date(year, month, day)
+            if current_date.weekday() in {weekday1, weekday2}:
+                expected_calls += 1
 
     # 2.1 Определяем функцию-заглушку (mock), которая всегда падает
     def mock_sunset(*args, **kwargs):
         """Заглушка, имитирующая ошибку библиотеки astral."""
-        raise ValueError("Солнце не садится (полярный день)")
+        nonlocal call_count
+        call_count += 1
+        date_val = kwargs.get("date")
+
+        if date_val and date_val.month == 6:
+            raise ValueError("Солнце не садится (полярный день)")
+
+        return datetime.time(18, 0)
 
     # 2.2 Подменяем настоящую функцию sunset на нашу заглушку
-    monkeypatch.setattr("astral.sun.sunset", mock_sunset)
+    monkeypatch.setattr("sun_set.core.astronmy.sunset", mock_sunset)
 
-    # 2.3 Вызываем тестируемую функцию с данными для июня (например, year=2024, month=6)
-    year = 2024
-    weekday1 = 0  # Понедельник
-    weekday2 = 1  # Вторник
+    # 2.3 Вызываем тестируемую функцию с данными для июня (например, year=2024, weekday1=0, weekday2=1)
+    result = get_city_sunset(polar_city, year, weekday1, weekday2)
 
-    with pytest.raises(ValueError):
-        get_city_sunset(polar_city, year, weekday1, weekday2)
+    # Проверяем структуру
+    assert isinstance(result, YearData), "Result should be YearData"
+    assert result.months is not None, "Months should not be None"
+
+    # Проверяем, что июнь присутствует и все его дни имеют статус ошибки
+    june_data = None
+    for month_data in result.months:
+        if month_data.month == 6:
+            june_data = month_data
+            break
+
+    assert june_data is not None, "June should be present in result"
+    assert len(june_data.days) > 0, "June should have at least one selected weekday"
+
+    # Проверяем каждый день в июне
+    for day_entry in june_data.days:
+        assert day_entry.source == Source.ERROR_POLAR, (
+            f"Day {day_entry.day} in June should have ERROR_POLAR status"
+        )
+        assert day_entry.time == "00:00", (
+            f"Day {day_entry.day} in June should have time 00:00"
+        )
+
+    # Проверяем, что функция была вызвана для ВСЕХ выбранных дней недели
+    assert call_count == expected_calls, (
+        f"Expected {expected_calls} sunset calls, got {call_count}"
+    )

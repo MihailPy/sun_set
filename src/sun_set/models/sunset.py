@@ -11,6 +11,7 @@ class AutoName(Enum):
 class Source(Enum):
     CALCULATED = auto()
     EDITED = auto()
+    ERROR_POLAR = auto()
 
 
 @dataclass
