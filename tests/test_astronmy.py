@@ -1,5 +1,6 @@
 import calendar
 import datetime
+from zoneinfo import ZoneInfoNotFoundError
 
 import pytest
 
@@ -179,3 +180,14 @@ def test_get_city_sunset_duplicate_weekdays(normal_city, weekday):
     year = 2024
     with pytest.raises(ValueError):
         get_city_sunset(normal_city, year, weekday, weekday)
+
+
+def test_get_city_sunset_invalid_timezone(normal_city):
+    """
+    Проверяем, что функция корректно обрабатывает несуществующую временную зону.
+    """
+    # Меняем timezone в normal_city на невалидную
+    normal_city.timezone = "Invalid/Timezone"
+
+    with pytest.raises(ZoneInfoNotFoundError):
+        get_city_sunset(normal_city, 2024, 0, 1)
