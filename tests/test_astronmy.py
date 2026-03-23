@@ -78,7 +78,7 @@ def test_get_city_sunset_normal_city(normal_city, weekday1, weekday2):
 
 def test_get_city_sunset_polar_day(polar_city, monkeypatch):
     """
-    Тест проверяет, что функция выбрасывает исключение AstralError
+    Тест проверяет, что функция помечает данные как ERROR_POLAR
     для города за полярным кругом в июне.
     """
     call_count = 0
@@ -187,10 +187,11 @@ def test_get_city_sunset_invalid_timezone(normal_city):
     Проверяем, что функция корректно обрабатывает несуществующую временную зону.
     """
     # Меняем timezone в normal_city на невалидную
-    normal_city.timezone = "Invalid/Timezone"
+    invalid_timezone_city = normal_city
+    invalid_timezone_city.timezone = "Invalid/Timezone"
 
     with pytest.raises(ZoneInfoNotFoundError):
-        get_city_sunset(normal_city, 2024, 0, 1)
+        get_city_sunset(invalid_timezone_city, 2024, 0, 1)
 
 
 @pytest.mark.parametrize("invalid_year", [0, 99999, 10000, -100, -3483])
