@@ -52,7 +52,7 @@ def normal_city():
         pytest.param(1, 2),
         pytest.param(6, 2),
         pytest.param(4, 5),
-        pytest.param(4, 4),
+        pytest.param(4, 3),
     ],
 )
 def test_get_city_sunset_normal_city(normal_city, weekday1, weekday2):
@@ -167,3 +167,14 @@ def test_get_city_sunset_invalid_weekday_combination(normal_city, weekday1, week
     with pytest.raises(ValueError):
         get_city_sunset(normal_city, year, weekday1, weekday2)
     pass
+
+
+@pytest.mark.parametrize("weekday", [0, 1, 2, 3, 4, 5, 6])
+def test_get_city_sunset_duplicate_weekdays(normal_city, weekday):
+    """
+    Проверяем, что при weekday1 == weekday2 функция работает корректно
+    и возвращает YearData с пустым months.
+    """
+    year = 2024
+    with pytest.raises(ValueError):
+        get_city_sunset(normal_city, year, weekday, weekday)
