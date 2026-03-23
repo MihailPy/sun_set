@@ -114,6 +114,7 @@ def test_get_city_sunset_polar_day(polar_city, monkeypatch):
     # Проверяем структуру
     assert isinstance(result, YearData), "Result should be YearData"
     assert result.months is not None, "Months should not be None"
+    assert result.source is Source.ERROR_POLAR
 
     # Проверяем, что июнь присутствует и все его дни имеют статус ошибки
     june_data = None

@@ -26,6 +26,7 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
         raise ValueError("Присутствуют недопустимые числа в weekday1 или  weekday2")
 
     sunset_city_year = []
+    is_polar_day = False
 
     for month in range(1, 13):
         sunset_city_month = []
@@ -45,10 +46,16 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
                     res_day = SunsetEntry(
                         day, current_date.weekday(), "00:00", Source.ERROR_POLAR
                     )
+                    is_polar_day = True
 
                 sunset_city_month.append(res_day)
 
         if sunset_city_month:
             sunset_city_year.append(MonthData(month, sunset_city_month))
 
-    return YearData(year, Source.CALCULATED, city.get_stable_hash(), sunset_city_year)
+    return YearData(
+        year,
+        Source.CALCULATED if not is_polar_day else Source.ERROR_POLAR,
+        city.get_stable_hash(),
+        sunset_city_year,
+    )
