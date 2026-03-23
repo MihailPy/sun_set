@@ -10,8 +10,26 @@ from sun_set.models.sunset import MonthData, Source, SunsetEntry, YearData
 
 
 def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> YearData:
+    """
+    Args:
+            city: data City
+            year: year for sunset data collection
+            weekday1: What day of the wee should i collection sunset data on?
+            weekday2: What day of the wee should i collection sunset data on?
+
+    Returns:
+            YearData: Sunset data for the year.
+
+    Raises:
+            ValueError('ValueError: year 10000 is out of range'): If the year parameter is not correct.
+            ZoneInfoNotFoundError: If the timezone parameter is not correct.
+            ValueError("Выбранные дни недели одинаковые"): If the selected days of the week are the same.
+            ValueError("Присутствуют недопустимые числа в weekday1 или  weekday2"): If there are invalid numbers in weekday1 or weekday2.
+    """
+    # Проверка year что не будет ошибки
+    datetime.date(year, 1, 1)
+
     obs = Observer(city.lat, city.lon, city.elevation)
-    # ModuleNotFoundError: No module named 'tzdata'
     city_tz = ZoneInfo(city.timezone)
 
     weekdays_to_check = {weekday1, weekday2}

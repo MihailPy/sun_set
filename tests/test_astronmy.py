@@ -175,7 +175,7 @@ def test_get_city_sunset_invalid_weekday_combination(normal_city, weekday1, week
 def test_get_city_sunset_duplicate_weekdays(normal_city, weekday):
     """
     Проверяем, что при weekday1 == weekday2 функция работает корректно
-    и возвращает YearData с пустым months.
+    и выбрасывает ошибку ValueError.
     """
     year = 2024
     with pytest.raises(ValueError):
@@ -191,3 +191,12 @@ def test_get_city_sunset_invalid_timezone(normal_city):
 
     with pytest.raises(ZoneInfoNotFoundError):
         get_city_sunset(normal_city, 2024, 0, 1)
+
+
+@pytest.mark.parametrize("invalid_year", [0, 99999, 10000, -100, -3483])
+def test_get_city_sunset_invalid_year(normal_city, invalid_year):
+    """
+    Проверяем, что функция выбрасывает ValueError если данные года некорректны.
+    """
+    with pytest.raises(ValueError):
+        get_city_sunset(normal_city, invalid_year, 0, 1)
