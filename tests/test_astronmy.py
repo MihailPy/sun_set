@@ -3,7 +3,7 @@ import datetime
 
 import pytest
 
-from sun_set.core.astronmy import get_city_sunset
+from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 
@@ -106,7 +106,7 @@ def test_get_city_sunset_polar_day(polar_city, monkeypatch):
         return datetime.time(18, 0)
 
     # 2.2 Подменяем настоящую функцию sunset на нашу заглушку
-    monkeypatch.setattr("sun_set.core.astronmy.sunset", mock_sunset)
+    monkeypatch.setattr("sun_set.core.astronomy.sunset", mock_sunset)
 
     # 2.3 Вызываем тестируемую функцию с данными для июня (например, year=2024, weekday1=0, weekday2=1)
     result = get_city_sunset(polar_city, year, weekday1, weekday2)
@@ -138,3 +138,32 @@ def test_get_city_sunset_polar_day(polar_city, monkeypatch):
     assert call_count == expected_calls, (
         f"Expected {expected_calls} sunset calls, got {call_count}"
     )
+
+
+@pytest.mark.parametrize("invalid_weekday", [-1, 7, 42, -100])
+def test_get_city_sunset_invalid_weekday_range(normal_city, invalid_weekday):
+    """
+    Проверяем, что функция выбрасывает ValueError при передаче дня недели вне диапазона 0-6.
+    """
+    year = 2024
+    with pytest.raises(ValueError):
+        get_city_sunset(normal_city, year, invalid_weekday, invalid_weekday)
+
+
+@pytest.mark.parametrize(
+    "weekday1,weekday2",
+    [
+        (0, -1),
+        (7, 1),
+        (42, 42),
+        (0, 7),
+    ],
+)
+def test_get_city_sunset_invalid_weekday_combination(normal_city, weekday1, weekday2):
+    """
+    Проверяем, что функция падает, если хотя бы один из дней недели невалиден.
+    """
+    year = 2024
+    with pytest.raises(ValueError):
+        get_city_sunset(normal_city, year, weekday1, weekday2)
+    pass

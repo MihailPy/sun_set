@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QStyleOptionButton,
 )
 
-from sun_set.core.astronmy import get_city_sunset
+from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source
 

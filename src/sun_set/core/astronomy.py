@@ -14,6 +14,10 @@ def get_city_sunset(city: City, year: int, weekday1: int, weekday2: int) -> Year
     # ModuleNotFoundError: No module named 'tzdata'
     city_tz = ZoneInfo(city.timezone)
     weekdays_to_check = {weekday1, weekday2}
+    allowed_weekdays = {0, 1, 2, 3, 4, 5, 6}
+    has_invalid_weekdays = not weekdays_to_check <= allowed_weekdays
+    if has_invalid_weekdays:
+        raise ValueError("Присутствуют недопустимые числа в weekday1 или  weekday2")
 
     sunset_city_year = []
 
