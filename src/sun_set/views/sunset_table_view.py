@@ -28,8 +28,6 @@ class YearEditorWindow(QWidget):
         self.resize(600, 500)
 
         layout = QVBoxLayout()
-        # TODO: Писать какой год использовался для сбора данных захода солнца
-        # Создаем вкладки для месяцев
         self.tabs = QTabWidget()
 
         if self.city.sunset_data.months:
