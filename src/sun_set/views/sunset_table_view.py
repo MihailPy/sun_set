@@ -18,6 +18,10 @@ class YearEditorWindow(QWidget):
     def __init__(self, city: City):
         super().__init__()
         self.city = city
+        if not self.city.sunset_data.months:
+            raise ValueError("Нет данных о закатах для отображения")
+        if len(self.city.sunset_data.months) < 12:
+            raise ValueError("В months, элементов меньше 12")
         self.init_ui()
 
     def init_ui(self):
