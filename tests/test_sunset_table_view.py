@@ -2,6 +2,7 @@ import copy
 
 import pytest
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor
 from PyQt6.QtTest import QTest
 from PyQt6.QtWidgets import QApplication, QLineEdit, QTableWidget
 
@@ -214,6 +215,52 @@ def test_year_editor_window_forbidden_fields_remain_unchanged(
     assert city_with_data.sunset_data.source is Source.CALCULATED
 
     window.close()
+
+
+def test_year_editor_window_cell_color_changes_after_editing(qapp, city_with_data):
+    """
+    Проверяем что цвет ячейки изменяется после редактирования, и если она была изменена.
+    """
+    city_with_data.sunset_data.months[1].days[0].source = Source.EDITED
+    city_with_data.sunset_data.source = Source.EDITED
+
+    window = YearEditorWindow(city_with_data)
+    color_after_change = QColor(255, 255, 200)
+
+    # Получаем таблицу первой вкладки (январь)
+    tab_widget_jan = window.tabs.widget(0)
+    if tab_widget_jan is None:
+        raise RuntimeError("Первая вкладка не найдена")
+    table_jan = tab_widget_jan.findChild(QTableWidget)
+
+    # Эмулируем редактирование, чтобы проверить изменение цвета ячейки
+    item_jan = table_jan.item(0, 2)
+    assert item_jan is not None
+    # Проверяем, что цвет НЕ "измененный"
+    assert item_jan.background().color() != color_after_change
+    table_jan.editItem(item_jan)
+
+    editor = table_jan.findChild(QLineEdit)
+    assert editor is not None, "Редактор не найден"
+    editor.clear()
+    # Печатаем текст прямо в QLineEdit
+    QTest.keyClicks(editor, "17:20")  # type: ignore
+    # Подтверждаем ввод нажатием Enter
+    QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
+
+    # Проверяем, что после изменения цвет изменился.
+    assert item_jan.background().color() == color_after_change
+
+    # Получаем таблицу второй вкладки (февраль)
+    tab_widget_feb = window.tabs.widget(1)
+    if tab_widget_feb is None:
+        raise RuntimeError("Вторя вкладка не найдена")
+    table_feb = tab_widget_feb.findChild(QTableWidget)
+
+    # Проверяем что ячейка измененная до открытия окна, также с измененным цветом.
+    item_feb = table_feb.item(0, 2)
+    assert item_feb is not None
+    assert item_feb.background().color() == color_after_change
 
 
 # @pytest.mark.parametrize("tab_index", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
