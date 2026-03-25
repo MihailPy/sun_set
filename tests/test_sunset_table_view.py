@@ -1,7 +1,9 @@
 import copy
 
 import pytest
-from PyQt6.QtWidgets import QApplication, QTableWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtTest import QTest
+from PyQt6.QtWidgets import QApplication, QLineEdit, QTableWidget
 
 from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
@@ -118,7 +120,8 @@ def test_year_editor_window_table_rows(qapp, city_with_data):
     for tab_index in range(window.tabs.count()):
         # Получаем виджет вкладки
         tab_widget = window.tabs.widget(tab_index)
-
+        if tab_widget is None:
+            raise RuntimeError("Вкладка не найдена")
         # Находим QTableWidget внутри вкладки
         table = tab_widget.findChild(QTableWidget)  # noqa: F821
         assert table is not None, f"Table not found in tab {tab_index}"
@@ -130,5 +133,52 @@ def test_year_editor_window_table_rows(qapp, city_with_data):
         assert table.rowCount() == len(month_data.days), (
             f"Month {month_data.month}: expected {len(month_data.days)} rows, got {table.rowCount()}"
         )
+
+    window.close()
+
+
+def test_year_editor_window_edit_time(qapp, city_with_data):
+    """Проверяет, что редактирование времени обновляет данные и сигналы."""
+    window = YearEditorWindow(city_with_data)
+
+    # Подключаемся к сигналу для проверки
+    signal_received = []
+    window.dataChanged.connect(lambda: signal_received.append(True))
+
+    # Получаем таблицу первой вкладки (январь)
+    tab_widget = window.tabs.widget(0)
+    if tab_widget is None:
+        raise RuntimeError("Первая вкладка не найдена")
+    table = tab_widget.findChild(QTableWidget)
+
+    # Сохраняем исходные данные
+    original_time = city_with_data.sunset_data.months[0].days[0].time
+    original_source = city_with_data.sunset_data.months[0].days[0].source
+
+    # Эмулируем редактирование
+    item = table.item(0, 2)
+    if item:
+        table.editItem(item)
+
+        editor = table.findChild(QLineEdit)
+
+        if editor:
+            editor.clear()
+            # Печатаем текст прямо в QLineEdit
+            QTest.keyClicks(editor, "17:20")  # type: ignore
+            # Подтверждаем ввод нажатием Enter
+            QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
+
+        else:
+            raise RuntimeError("Редактор не найден")
+
+    # Проверяем результат
+    new_time = city_with_data.sunset_data.months[0].days[0].time
+    new_source = city_with_data.sunset_data.months[0].days[0].source
+
+    assert len(signal_received) > 0, "Сигнал не был получен"
+    assert original_time != new_time
+    assert original_source is not new_source
+    assert city_with_data.sunset_data.source is Source.EDITED
 
     window.close()
