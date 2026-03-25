@@ -158,20 +158,20 @@ def test_year_editor_window_edit_time(qapp, city_with_data):
 
     # Эмулируем редактирование
     item = table.item(0, 2)
-    if item:
-        table.editItem(item)
+    assert item is not None
+    table.editItem(item)
 
-        editor = table.findChild(QLineEdit)
+    editor = table.findChild(QLineEdit)
 
-        if editor:
-            editor.clear()
-            # Печатаем текст прямо в QLineEdit
-            QTest.keyClicks(editor, "17:20")  # type: ignore
-            # Подтверждаем ввод нажатием Enter
-            QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
+    if editor:
+        editor.clear()
+        # Печатаем текст прямо в QLineEdit
+        QTest.keyClicks(editor, "17:20")  # type: ignore
+        # Подтверждаем ввод нажатием Enter
+        QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
 
-        else:
-            raise RuntimeError("Редактор не найден")
+    else:
+        raise RuntimeError("Редактор не найден")
 
     # Проверяем результат
     new_time = city_with_data.sunset_data.months[0].days[0].time
@@ -204,10 +204,10 @@ def test_year_editor_window_forbidden_fields_remain_unchanged(
 
     # Эмулируем редактирование
     item = table.item(0, column)
-    if item:
-        table.editItem(item)
+    assert item is not None
+    table.editItem(item)
 
-        editor = table.findChild(QLineEdit)
+    editor = table.findChild(QLineEdit)
 
     # Проверяем результат
     assert editor is None
