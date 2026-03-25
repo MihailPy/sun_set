@@ -182,3 +182,38 @@ def test_year_editor_window_edit_time(qapp, city_with_data):
     assert city_with_data.sunset_data.source is Source.EDITED
 
     window.close()
+
+
+@pytest.mark.parametrize("column", [0, 1])
+def test_year_editor_window_forbidden_fields_remain_unchanged(
+    qapp, city_with_data, column
+):
+    """Проверяет, что редактирование остальных ячеек, кроме времени, невозможно."""
+    window = YearEditorWindow(city_with_data)
+
+    # Подключаемся к сигналу для проверки
+    signal_received = []
+    window.dataChanged.connect(lambda: signal_received.append(True))
+
+    # Получаем таблицу первой вкладки (январь)
+    tab_widget = window.tabs.widget(0)
+    if tab_widget is None:
+        raise RuntimeError("Первая вкладка не найдена")
+    table = tab_widget.findChild(QTableWidget)
+
+    # Эмулируем редактирование
+    item = table.item(0, column)
+    if item:
+        table.editItem(item)
+
+        editor = table.findChild(QLineEdit)
+
+    # Проверяем результат
+    assert editor is None
+    assert len(signal_received) == 0, "Сигнал был получен"
+    assert city_with_data.sunset_data.source is Source.CALCULATED
+
+    window.close()
+
+
+# @pytest.mark.parametrize("tab_index", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
