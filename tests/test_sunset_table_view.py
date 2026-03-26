@@ -138,6 +138,17 @@ def test_year_editor_window_table_rows(qapp, city_with_data):
     window.close()
 
 
+def test_year_editor_window_tabs_count(qapp, city_with_data):
+    """
+    Проверяет, что количество вкладок 12.
+    """
+    window = YearEditorWindow(city_with_data)
+
+    tabs_count = window.tabs.count()
+
+    assert tabs_count == 12
+
+
 def test_year_editor_window_edit_time(qapp, city_with_data):
     """Проверяет, что редактирование времени обновляет данные и сигналы."""
     window = YearEditorWindow(city_with_data)
@@ -306,6 +317,3 @@ def test_year_editor_window_edit_time_invalid_format(
     assert original_source is new_source
 
     window.close()
-
-
-# @pytest.mark.parametrize("tab_index", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
