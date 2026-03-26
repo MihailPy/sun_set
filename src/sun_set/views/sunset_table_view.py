@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -97,17 +95,7 @@ class YearEditorWindow(QWidget):
         if item.column() == 2:
             row = item.row()
             new_time = item.text()
-            table = item.tableWidget()
 
-            try:
-                datetime.strptime(new_time, "%H:%M")
-            except ValueError:
-                # raise ValueError("Введенное время некорректно")
-                table.blockSignals(True)
-                item.setText(month_data.days[row].time)
-                table.blockSignals(False)
-                print("Введенное время некорректно")
-                return
             if new_time != month_data.days[row].time:
                 # Обновляем объект данных напрямую
                 month_data.days[row].time = new_time
