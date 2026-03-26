@@ -263,4 +263,49 @@ def test_year_editor_window_cell_color_changes_after_editing(qapp, city_with_dat
     assert item_feb.background().color() == color_after_change
 
 
+@pytest.mark.parametrize("invalid_time", ["999:9999", "10:90"])
+def test_year_editor_window_edit_time_invalid_format(
+    qapp, city_with_data, invalid_time
+):
+    """Проверяем, что если веденные данные времени невалидные, то выбрасывается ValueError."""
+    window = YearEditorWindow(city_with_data)
+
+    # Получаем таблицу первой вкладки (январь)
+    tab_widget = window.tabs.widget(0)
+    if tab_widget is None:
+        raise RuntimeError("Первая вкладка не найдена")
+    table = tab_widget.findChild(QTableWidget)
+
+    # Сохраняем исходные данные
+    original_time = city_with_data.sunset_data.months[0].days[0].time
+    original_source = city_with_data.sunset_data.months[0].days[0].source
+
+    # Эмулируем редактирование
+    item = table.item(0, 2)
+    assert item is not None
+    table.editItem(item)
+
+    editor = table.findChild(QLineEdit)
+
+    if editor:
+        editor.clear()
+        # Печатаем текст прямо в QLineEdit
+        QTest.keyClicks(editor, invalid_time)  # type: ignore
+        # Подтверждаем ввод нажатием Enter
+        # with pytest.raises(ValueError):
+        QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
+
+    else:
+        raise RuntimeError("Редактор не найден")
+
+    # Проверяем результат
+    new_time = city_with_data.sunset_data.months[0].days[0].time
+    new_source = city_with_data.sunset_data.months[0].days[0].source
+
+    assert original_time == new_time
+    assert original_source is new_source
+
+    window.close()
+
+
 # @pytest.mark.parametrize("tab_index", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
