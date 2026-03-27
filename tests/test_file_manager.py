@@ -1,23 +1,48 @@
+import json
+
 from sun_set.api.file_manager import load_from_json
+from sun_set.models.city import City
 
 
-def test_load_from_json_successful_loading():
+def test_load_from_json_successful_loading(tmp_path):
     """
     Проверка, что функция возвращает ожидаемую структуру данных
     """
-    # Проверить, что функция возвращает ожидаемую структуру данных
-    # Проверить типы данных (dict, list и т.д.)
-    # Проверить, что данные соответствуют ожидаемым значениям
-    pass
+    file = tmp_path / "cities.json"
+    data = [
+        {
+            "name": "Moscow",
+            "region": "Moscow",
+            "lat": 55.7558,
+            "lon": 37.6173,
+            "timezone": "Europe/Moscow",
+            "elevation": 170,
+            "sunset_data": {
+                "year": 2033,
+                "source": 1,
+                "hash_before_edit": None,
+                "months": None,
+            },
+        }
+    ]
+    file.write_text(json.dumps(data))
+
+    cities, error = load_from_json(str(file))
+
+    assert error is None
+    assert isinstance(cities, list)
+    assert len(cities) == 1
+    assert type(cities[0]) is City
+    assert cities[0].name == "Moscow"
 
 
 def test_load_from_json_file_not_found():
     """
     Проверка, как реагирует функция если файла не существует
     """
-    res, err = load_from_json("nonexistent.txt")
-    assert res is None
-    assert err == "Ошибка: Файл не найден. Проверьте путь к файлу."
+    cities, error = load_from_json("nonexistent.txt")
+    assert cities is None
+    assert error == "Ошибка: Файл не найден. Проверьте путь к файлу."
 
 
 def test_load_from_json_permission_defied():
