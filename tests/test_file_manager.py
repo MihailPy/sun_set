@@ -1,3 +1,6 @@
+from sun_set.api.file_manager import load_from_json
+
+
 def test_load_from_json_successful_loading():
     """
     Проверка, что функция возвращает ожидаемую структуру данных
@@ -12,8 +15,9 @@ def test_load_from_json_file_not_found():
     """
     Проверка, как реагирует функция если файла не существует
     """
-    # Проверить обработку FileNotFoundError
-    pass
+    res, err = load_from_json("nonexistent.txt")
+    assert res is None
+    assert err == "Ошибка: Файл не найден. Проверьте путь к файлу."
 
 
 def test_load_from_json_permission_defied():
