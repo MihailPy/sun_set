@@ -33,7 +33,13 @@ def test_load_from_json_successful_loading(tmp_path):
     assert isinstance(cities, list)
     assert len(cities) == 1
     assert type(cities[0]) is City
+
     assert cities[0].name == "Moscow"
+    assert cities[0].lat == 55.7558
+    assert cities[0].elevation == 170
+
+    assert cities[0].sunset_data.year == 2033
+    assert cities[0].sunset_data.hash_before_edit is None
 
 
 def test_load_from_json_file_not_found():
