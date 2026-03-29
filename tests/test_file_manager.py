@@ -51,12 +51,25 @@ def test_load_from_json_file_not_found():
     assert error == "Ошибка: Файл не найден. Проверьте путь к файлу."
 
 
-def test_load_from_json_permission_defied():
+def test_load_from_json_permission_defied(tmp_path):
     """
     Проверка, как реагирует функция если нет прав на чтения файла
     """
-    # Проверить обработку PermissionError
-    pass
+    file = tmp_path / "restricted.txt"
+    file.write_text("top secret")
+
+    # Лишаем прав на чтение (0o000)
+    file.chmod(0o000)
+
+    try:
+        cities, error = load_from_json(str(file))
+
+        assert cities is None
+        assert error == "Ошибка: Нет прав доступа для чтения этого файла."
+
+    finally:
+        # Возвращаем права (0o666), чтобы файл смог быть удален
+        file.chmod(0o666)
 
 
 def test_load_from_json_empty_file():
