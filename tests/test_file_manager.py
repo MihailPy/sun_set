@@ -85,12 +85,17 @@ def test_load_from_json_empty_file(tmp_path):
     assert error == "Ошибка: Файл пустой, поврежден или имеет неверный формат JSON."
 
 
-def test_load_from_directory_instead_of_file():
+def test_load_from_directory_instead_of_file(tmp_path):
     """
     Проверка, поведения функции, если вместо пути к файлу, путь к папке
     """
-    # Проверить обработку IsADirectoryError
-    pass
+    dir_path = tmp_path / "sub_directory"
+    dir_path.mkdir()
+
+    cities, error = load_from_json(dir_path)
+
+    assert cities is None
+    assert error == "Ошибка: Не удалось открыть файл, путь является папкой."
 
 
 def test_load_from_json_invalid_json():
