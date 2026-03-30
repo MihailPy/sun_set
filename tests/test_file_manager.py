@@ -72,12 +72,17 @@ def test_load_from_json_permission_defied(tmp_path):
         file.chmod(0o666)
 
 
-def test_load_from_json_empty_file():
+def test_load_from_json_empty_file(tmp_path):
     """
     Проверка, поведения функции, если файл пустой
     """
-    # Проверить обработку JSONDecodeError
-    pass
+    empty_file = tmp_path / "empty.json"
+    empty_file.write_text("")
+
+    cities, error = load_from_json(str(empty_file))
+
+    assert cities is None
+    assert error == "Ошибка: Файл пустой, поврежден или имеет неверный формат JSON."
 
 
 def test_load_from_directory_instead_of_file():

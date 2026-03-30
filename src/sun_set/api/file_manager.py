@@ -42,7 +42,7 @@ def load_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
 
     except json.JSONDecodeError:
-        return None, "Ошибка: Файл поврежден или имеет неверный формат JSON."
+        return None, "Ошибка: Файл пустой, поврежден или имеет неверный формат JSON."
 
     except PermissionError:
         return None, "Ошибка: Нет прав доступа для чтения этого файла."
