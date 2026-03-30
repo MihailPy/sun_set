@@ -1,17 +1,16 @@
 import json
 
+import pytest
+
 from sun_set.api.file_manager import load_from_json
 from sun_set.models.city import City
 
 
-def test_load_from_json_successful_loading(tmp_path):
-    """
-    Проверка, что функция возвращает ожидаемую структуру данных
-    """
-    file = tmp_path / "cities.json"
+@pytest.fixture
+def data_file():
     data = [
         {
-            "name": "Moscow",
+            "name": "Москва",
             "region": "Moscow",
             "lat": 55.7558,
             "lon": 37.6173,
@@ -25,7 +24,15 @@ def test_load_from_json_successful_loading(tmp_path):
             },
         }
     ]
-    file.write_text(json.dumps(data))
+    return data
+
+
+def test_load_from_json_successful_loading(tmp_path, data_file):
+    """
+    Проверка, что функция возвращает ожидаемую структуру данных
+    """
+    file = tmp_path / "cities.json"
+    file.write_text(json.dumps(data_file))
 
     cities, error = load_from_json(str(file))
 
@@ -34,7 +41,7 @@ def test_load_from_json_successful_loading(tmp_path):
     assert len(cities) == 1
     assert type(cities[0]) is City
 
-    assert cities[0].name == "Moscow"
+    assert cities[0].name == "Москва"
     assert cities[0].lat == 55.7558
     assert cities[0].elevation == 170
 
@@ -107,12 +114,19 @@ def test_load_from_json_invalid_json():
     pass
 
 
-def test_load_from_json_invalid_encoding():
+def test_load_from_json_invalid_encoding(tmp_path, data_file):
     """
     Проверка, некорректной кодировки файла
     """
-    # Проверить обработку UnicodeDecodeError
-    pass
+    file_path = tmp_path / "wrong_encoding.json"
+
+    with open(file_path, "w", encoding="utf-16") as f:
+        f.write(json.dumps(data_file))
+
+    cities, error = load_from_json(str(file_path))
+
+    assert cities is None
+    assert error == "Ошибка: декодирования Unicode."
 
 
 def test_load_from_json_special_characters():

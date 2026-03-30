@@ -50,5 +50,8 @@ def load_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
     except IsADirectoryError:
         return None, "Ошибка: Не удалось открыть файл, путь является папкой."
 
+    except UnicodeDecodeError:
+        return None, "Ошибка: декодирования Unicode."
+
     except TypeError as e:
         return None, f"Ошибка в структуре данных файла: {e}"
