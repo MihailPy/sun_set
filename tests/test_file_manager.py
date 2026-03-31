@@ -89,7 +89,7 @@ def test_load_from_json_empty_file(tmp_path):
     cities, error = load_from_json(str(empty_file))
 
     assert cities is None
-    assert error == "Ошибка: Файл пустой, поврежден или имеет неверный формат JSON."
+    assert error == "Ошибка: Не удалось разобрать JSON."
 
 
 def test_load_from_directory_instead_of_file(tmp_path):
@@ -105,13 +105,28 @@ def test_load_from_directory_instead_of_file(tmp_path):
     assert error == "Ошибка: Не удалось открыть файл, путь является папкой."
 
 
-def test_load_from_json_invalid_json():
+def test_load_from_json_invalid_json(tmp_path):
     """
     Проверка, некорректного json синтаксиса
     """
-    # Проверить обработку JSONDecodeError
-    # Пример: {"key": "value",} - лишняя запятая
-    pass
+    bad_data = """
+    [
+        {
+            "name": "Москва",
+            "sunset_data": {
+                "hash_before_edit": None,  # ОШИБКА: в JSON должно быть null
+                "months": None,           # ОШИБКА: лишняя запятая и None
+            }
+        }
+    ]
+    """
+    file = tmp_path / "bad_data.json"
+    file.write_text(bad_data, encoding="utf-8")
+
+    cities, error = load_from_json(str(file))
+
+    assert cities is None
+    assert error == "Ошибка: Не удалось разобрать JSON."
 
 
 def test_load_from_json_invalid_encoding(tmp_path, data_file):
