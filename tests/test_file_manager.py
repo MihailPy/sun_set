@@ -144,11 +144,34 @@ def test_load_from_json_invalid_encoding(tmp_path, data_file):
     assert error == "Ошибка: декодирования Unicode."
 
 
-def test_load_from_json_special_characters():
+@pytest.mark.parametrize(
+    "special_name",
+    [
+        "Москва\nСити",  # Перенос строки
+        "Berlin\tDistrict",  # Табуляция
+        'Quotes "quoted"',  # Двойные кавычки
+        "Slash \\ backslash",  # Обратный слэш
+        "Emoji 🌍🔥",  # Юникод и эмодзи
+        "Symbols !@#$%^&*()",  # Спецсимволы
+        "   Space test   ",  # Пробелы по краям
+    ],
+)
+def test_load_from_json_special_characters(tmp_path, special_name, data_file):
     """
     Специальные символы в строках
     """
-    # Юникод, эмодзи, управляющие последовательности
+    data_file[0]["name"] = special_name
+
+    file = tmp_path / "test_data.json"
+
+    file.write_text(json.dumps(data_file))
+
+    cities, error = load_from_json(str(file))
+
+    assert cities is not None
+    assert cities[0].name == special_name
+    assert cities[0].sunset_data.hash_before_edit is None
+    assert error is None
 
 
 def test_load_from_json_deep_nesting():
