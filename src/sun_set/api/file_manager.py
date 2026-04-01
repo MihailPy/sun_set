@@ -25,7 +25,7 @@ def save_to_json(cities: list[City], filename: str):  # noqa: F821
 def load_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
     """ """
     try:
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             data_list = json.load(f)
             config = Config(cast=[Enum])
             cities = [

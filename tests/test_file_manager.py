@@ -1,4 +1,5 @@
 import json
+from unittest.mock import mock_open, patch
 
 import pytest
 
@@ -371,8 +372,20 @@ def test_load_from_json_deep_nesting(tmp_path, data_file, months_data):
     assert cities[0].sunset_data.months[0].days[0].time == "16:10"
 
 
-def test_file_not_left_open():
+def test_file_not_left_open(data_file):
     """
     Проверка, что функция корректно закрывает файл
     """
-    # Использовать mock или проверить, что файловый дескриптор не остался открытым
+    json_input = json.dumps(data_file)
+
+    m = mock_open(read_data=json_input)
+
+    with patch("builtins.open", m):
+        cities, error = load_from_json("fake_path.json")
+
+    assert cities is not None and error is None
+
+    m.assert_called_once_with("fake_path.json", encoding="utf-8")
+
+    handle = m()
+    handle.close.assert_called()
