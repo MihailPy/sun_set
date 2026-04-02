@@ -389,3 +389,22 @@ def test_file_not_left_open(data_file):
 
     handle = m()
     handle.close.assert_called()
+
+
+def test_load_from_json_type_error(tmp_path, data_file):
+    """
+    Проверка обработки TypeError при несовместимых типах данных
+    """
+    bad_data = data_file
+    bad_data[0]["lat"] = "not_a_number"
+
+    file = tmp_path / "type_error.json"
+    file.write_text(json.dumps(bad_data))
+
+    cities, error = load_from_json(str(file))
+
+    print(f"{error=}")
+    assert cities is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
+    assert "float" in error.lower() or "lat" in error.lower()

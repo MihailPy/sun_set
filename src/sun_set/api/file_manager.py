@@ -2,7 +2,7 @@ import json
 from dataclasses import asdict
 from enum import Enum
 
-from dacite import Config, from_dict
+from dacite import Config, DaciteError, from_dict
 
 from sun_set.models.city import City
 
@@ -49,5 +49,5 @@ def load_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
     except UnicodeDecodeError:
         return None, "Ошибка: декодирования Unicode."
 
-    except TypeError as e:
+    except (TypeError, DaciteError) as e:
         return None, f"Ошибка в структуре данных файла: {e}"
