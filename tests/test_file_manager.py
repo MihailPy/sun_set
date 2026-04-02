@@ -212,7 +212,7 @@ def test_load_from_json_successful_loading(tmp_path, data_file):
     assert error is None
     assert isinstance(cities, list)
     assert len(cities) == 1
-    assert type(cities[0]) is City
+    assert isinstance(cities[0], City)
 
     assert cities[0].name == "Москва"
     assert cities[0].lat == 55.7558
@@ -231,7 +231,7 @@ def test_load_from_json_file_not_found():
     assert error == "Ошибка: Файл не найден. Проверьте путь к файлу."
 
 
-def test_load_from_json_permission_defied(tmp_path):
+def test_load_from_json_permission_denied(tmp_path):
     """
     Проверка, как реагирует функция если нет прав на чтения файла
     """
