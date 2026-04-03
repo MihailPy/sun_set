@@ -403,8 +403,27 @@ def test_load_from_json_type_error(tmp_path, data_file):
 
     cities, error = load_from_json(str(file))
 
-    print(f"{error=}")
     assert cities is None
     assert error is not None
     assert "Ошибка в структуре данных файла" in error
     assert "float" in error.lower() or "lat" in error.lower()
+
+
+def test_load_from_json_ignores_non_dict_items(tmp_path, data_file):
+    """
+    Проверка, что не-dict элементы игнорируются
+    """
+    data_file.append("not a dict")
+    data_file.append(121)
+    data_file.append(None)
+    data_file.append(["another", "list"])
+
+    file = tmp_path / "mixed.json"
+    file.write_text(json.dumps(data_file))
+
+    cities, error = load_from_json(str(file))
+
+    assert error is None
+    assert cities is not None
+    assert len(cities) == 1
+    assert cities[0].name == "Москва"
