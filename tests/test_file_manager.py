@@ -445,3 +445,16 @@ def test_load_from_json_missing_required_fields(tmp_path, data_file, key_to_remo
     assert cities is None
     assert error is not None
     assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_from_json_empty_list(tmp_path):
+    """
+    Проверка обработки пустого списка в JSON
+    """
+    file = tmp_path / "empty_file.json"
+    file.write_text("[]")
+
+    cities, error = load_from_json(str(file))
+
+    assert error is None
+    assert cities == []
