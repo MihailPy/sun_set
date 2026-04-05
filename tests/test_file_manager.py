@@ -427,3 +427,21 @@ def test_load_from_json_ignores_non_dict_items(tmp_path, data_file):
     assert cities is not None
     assert len(cities) == 1
     assert cities[0].name == "Москва"
+
+
+@pytest.mark.parametrize("key_to_remove", ["region", "timezone"])
+def test_load_from_json_missing_required_fields(tmp_path, data_file, key_to_remove):
+    """
+    Проверка реакции на пропущенные обязательные поля
+    """
+    bad_data = data_file
+    del bad_data[0][key_to_remove]
+
+    file = tmp_path / "missing_fields.json"
+    file.write_text(json.dumps(bad_data))
+
+    cities, error = load_from_json(str(file))
+
+    assert cities is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
