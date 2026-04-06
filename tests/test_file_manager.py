@@ -3,7 +3,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from sun_set.api.file_manager import load_from_json
+from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 
@@ -496,11 +496,20 @@ def sample_cities():
     return cities
 
 
-def test_save_to_json_basic(tmp_path):
+def test_save_to_json_basic(tmp_path, sample_cities):
     """
     Проверка базового сохранения
     """
-    pass
+    file_path = tmp_path / "test.json"
+
+    save_to_json(sample_cities, str(file_path))
+
+    assert file_path.exists()
+    with open(file_path) as f:
+        data = json.load(f)
+    assert len(data) == 2
+    assert data[0]["name"] == "Москва"
+    assert data[0]["sunset_data"]["source"] == 1
 
 
 def test_save_to_json_empty_list(tmp_path):
