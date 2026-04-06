@@ -5,6 +5,7 @@ import pytest
 
 from sun_set.api.file_manager import load_from_json
 from sun_set.models.city import City
+from sun_set.models.sunset import Source, YearData
 
 
 @pytest.fixture
@@ -458,3 +459,116 @@ def test_load_from_json_empty_list(tmp_path):
 
     assert error is None
     assert cities == []
+
+
+@pytest.fixture
+def sample_cities():
+    cities = [
+        City(
+            name="Москва",
+            region="Moscow",
+            lat=55.7558,
+            lon=37.6173,
+            timezone="Europe/Moscow",
+            elevation=170,
+            sunset_data=YearData(
+                year=2033,
+                source=Source.CALCULATED,
+                hash_before_edit=None,
+                months=None,
+            ),
+        ),
+        City(
+            name="Тула",
+            region="Moscow",
+            lat=55.7558,
+            lon=37.6173,
+            timezone="Europe/Moscow",
+            elevation=170,
+            sunset_data=YearData(
+                year=2033,
+                source=Source.CALCULATED,
+                hash_before_edit=None,
+                months=None,
+            ),
+        ),
+    ]
+    return cities
+
+
+def test_save_to_json_basic(tmp_path):
+    """
+    Проверка базового сохранения
+    """
+    pass
+
+
+def test_save_to_json_empty_list(tmp_path):
+    """
+    Сохранение пустого списка
+    """
+    pass
+
+
+def test_save_to_json_unicode(tmp_path):
+    """
+    Проверка сохранения Unicode символов
+    """
+    pass
+
+
+# Этот тест под вопросом
+def test_save_to_json_formatting(tmp_path):
+    """
+    Проверка отступов в JSON
+    """
+    pass
+
+
+def test_save_to_json_nested_objects(tmp_path):
+    """
+    Проверка вложенных объектов
+    """
+    pass
+
+
+def test_save_to_json_overwrite(tmp_path):
+    """
+    Проверка перезаписи существующего файла
+    """
+    pass
+
+
+def test_save_to_json_invalid_filename(tmp_path):
+    """
+    Проверка обработки некорректного имени файла
+    """
+    pass
+
+
+def test_save_to_json_non_serializable_object(tmp_path):
+    """
+    Проверка обработки ненереализуемых объектов
+    """
+    pass
+
+
+def test_save_to_json_enum_conversion(tmp_path):
+    """
+    Проверка что Enum преобразуются в их значения
+    """
+    pass
+
+
+def test_save_to_json_enum_types(tmp_path):
+    """
+    Проверка работы с разными типами Enum
+    """
+    pass
+
+
+def test_save_to_json_data_integrity(tmp_path):
+    """
+    Проверка что все поля сохраняются корректно
+    """
+    pass
