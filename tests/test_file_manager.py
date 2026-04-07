@@ -516,7 +516,13 @@ def test_save_to_json_empty_list(tmp_path):
     """
     Сохранение пустого списка
     """
-    pass
+    file_path = tmp_path / "empty.json"
+
+    save_to_json([], str(file_path))
+
+    with open(file_path) as f:
+        data = json.load(f)
+    assert data == []
 
 
 def test_save_to_json_unicode(tmp_path):
