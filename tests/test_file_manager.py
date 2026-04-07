@@ -525,11 +525,19 @@ def test_save_to_json_empty_list(tmp_path):
     assert data == []
 
 
-def test_save_to_json_unicode(tmp_path):
+def test_save_to_json_unicode(tmp_path, sample_cities):
     """
     Проверка сохранения Unicode символов
     """
-    pass
+    file_path = tmp_path / "unicode.json"
+
+    save_to_json(sample_cities, str(file_path))
+
+    with open(file_path, encoding="utf-8") as f:
+        content = f.read()
+
+    assert "Москва" in content
+    assert "\\u041c" not in content
 
 
 # Этот тест под вопросом
