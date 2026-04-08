@@ -548,11 +548,17 @@ def test_save_to_json_formatting(tmp_path):
     pass
 
 
-def test_save_to_json_nested_objects(tmp_path):
+def test_save_to_json_nested_objects(tmp_path, sample_cities):
     """
     Проверка вложенных объектов
     """
-    pass
+    file_path = tmp_path / "nested.json"
+
+    save_to_json(sample_cities, str(file_path))
+
+    with open(file_path) as f:
+        data = json.load(f)
+    assert data[0]["sunset_data"]["year"] == 2033
 
 
 def test_save_to_json_overwrite(tmp_path):
