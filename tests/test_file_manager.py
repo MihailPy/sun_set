@@ -561,11 +561,24 @@ def test_save_to_json_nested_objects(tmp_path, sample_cities):
     assert data[0]["sunset_data"]["year"] == 2033
 
 
-def test_save_to_json_overwrite(tmp_path):
+def test_save_to_json_overwrite(tmp_path, sample_cities):
     """
     Проверка перезаписи существующего файла
     """
-    pass
+    file_path = tmp_path / "overwrite.json"
+    initial_data = [{"test": "old"}]
+
+    with open(file_path, "w") as f:
+        json.dump(initial_data, f)
+
+    cities = [sample_cities[0]]
+
+    save_to_json(cities, str(file_path))
+
+    with open(file_path) as f:
+        data = json.load(f)
+    assert data[0]["name"] == "Москва"
+
 
 
 def test_save_to_json_invalid_filename(tmp_path):
