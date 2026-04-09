@@ -16,7 +16,7 @@ def custom_asdict_factory(data):
     return {k: convert_value(v) for k, v in data}
 
 
-def save_to_json(cities: list[City], filename: str):  # noqa: F821
+def save_to_json(cities: list[City], filename: str):
     with open(filename, "w") as f:
         data_to_save = [asdict(c, dict_factory=custom_asdict_factory) for c in cities]
         json.dump(data_to_save, f, ensure_ascii=False, indent=4)

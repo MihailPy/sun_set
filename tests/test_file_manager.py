@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -593,7 +594,20 @@ def test_save_to_json_non_serializable_object(tmp_path):
     """
     Проверка обработки несериализуемых объектов
     """
-    pass
+
+    class Unserializable:
+        def __init__(self) -> None:
+            self.func = lambda x: x
+
+    class BadCity:
+        def __init__(self) -> None:
+            self.bad = Unserializable()
+
+    city: Any = BadCity()
+    file_path = tmp_path / "bad.json"
+
+    with pytest.raises(TypeError):
+        save_to_json([city], str(file_path))
 
 
 def test_save_to_json_enum_conversion(tmp_path):
