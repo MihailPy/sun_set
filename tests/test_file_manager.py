@@ -580,17 +580,18 @@ def test_save_to_json_overwrite(tmp_path, sample_cities):
     assert data[0]["name"] == "Москва"
 
 
-
-def test_save_to_json_invalid_filename(tmp_path):
+def test_save_to_json_invalid_filename():
     """
     Проверка обработки некорректного имени файла
     """
-    pass
+    data = []
+    with pytest.raises(OSError):
+        save_to_json(data, "invalid/path/test.json")
 
 
 def test_save_to_json_non_serializable_object(tmp_path):
     """
-    Проверка обработки ненереализуемых объектов
+    Проверка обработки несериализуемых объектов
     """
     pass
 
