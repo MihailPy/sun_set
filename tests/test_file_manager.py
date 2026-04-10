@@ -541,14 +541,6 @@ def test_save_to_json_unicode(tmp_path, sample_cities):
     assert "\\u041c" not in content
 
 
-# Этот тест под вопросом
-def test_save_to_json_formatting(tmp_path):
-    """
-    Проверка отступов в JSON
-    """
-    pass
-
-
 def test_save_to_json_nested_objects(tmp_path, sample_cities):
     """
     Проверка вложенных объектов
@@ -610,22 +602,17 @@ def test_save_to_json_non_serializable_object(tmp_path):
         save_to_json([city], str(file_path))
 
 
-def test_save_to_json_enum_conversion(tmp_path):
+def test_save_to_json_enum_serialization_custom(tmp_path, sample_cities):
     """
-    Проверка что Enum преобразуются в их значения
+    Проверка, что Enum превращается в int из-за custom_asdict_factory.
     """
-    pass
+    file_path = tmp_path / "enum_check.json"
+    save_to_json(sample_cities, str(file_path))
+    with open(file_path) as f:
+        raw_content = f.read()
+        data = json.loads(raw_content)
 
+    assert "CALCULATED" not in raw_content
+    assert "SOURCE" not in raw_content
 
-def test_save_to_json_enum_types(tmp_path):
-    """
-    Проверка работы с разными типами Enum
-    """
-    pass
-
-
-def test_save_to_json_data_integrity(tmp_path):
-    """
-    Проверка что все поля сохраняются корректно
-    """
-    pass
+    assert data[0]["sunset_data"]["source"] == 1
