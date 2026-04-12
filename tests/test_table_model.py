@@ -71,3 +71,13 @@ def checkbox_header(qapp):
     header = CheckBoxHeader(Qt.Orientation.Horizontal)
     header.setModel(CityTableModel([]))
     return header
+
+
+class TestCityTableModel:
+    def test_row_count(self, table_model, sample_cities):
+        """Тест количества строк"""
+        assert table_model.rowCount() == len(sample_cities)
+
+    def test_column_count(self, table_model):
+        """Тест количества колонок"""
+        assert table_model.columnCount() == 8
