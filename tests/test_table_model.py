@@ -81,3 +81,20 @@ class TestCityTableModel:
     def test_column_count(self, table_model):
         """Тест количества колонок"""
         assert table_model.columnCount() == 8
+
+    def test_flags(self, table_model):
+        """Тест флагов для разных колонок"""
+        # Колонка с чекбоксом
+        index = table_model.index(0, 0)
+        flags = table_model.flags(index)
+        assert flags & Qt.ItemFlag.ItemIsUserCheckable
+
+        # Колонка с кнопками
+        index = table_model.index(0, 7)
+        flags = table_model.flags(index)
+        assert flags & Qt.ItemFlag.ItemIsEnabled
+
+        # Обычная колонка
+        index = table_model.index(0, 1)
+        flags = table_model.flags(index)
+        assert flags & Qt.ItemFlag.ItemIsEditable
