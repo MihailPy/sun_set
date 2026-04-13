@@ -23,7 +23,7 @@ def qapp():
 @pytest.fixture
 def sample_city():
     """Создает City с тестовыми данными, фикстура"""
-    city = City(
+    return City(
         name="Москва",
         region="Московская область",
         lat=55.7558,
@@ -34,7 +34,6 @@ def sample_city():
             year=2033, source=Source.CALCULATED, hash_before_edit=None, months=None
         ),
     )
-    return city
 
 
 @pytest.fixture
@@ -98,3 +97,18 @@ class TestCityTableModel:
         index = table_model.index(0, 1)
         flags = table_model.flags(index)
         assert flags & Qt.ItemFlag.ItemIsEditable
+
+    def test_data_display_role(self, table_model, sample_city):
+        """Тест получения данных для отображения"""
+        index = table_model.index(0, 1)
+        assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == sample_city.name
+
+        index = table_model.index(0, 2)
+        assert (
+            table_model.data(index, Qt.ItemDataRole.DisplayRole) == sample_city.region
+        )
+
+        index = table_model.index(0, 3)
+        assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == str(
+            sample_city.lat
+        )
