@@ -112,3 +112,14 @@ class TestCityTableModel:
         assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == str(
             sample_city.lat
         )
+
+    def test_data_check_state_role(self, table_model):
+        """Тест состояния чекбокса"""
+        index = table_model.index(0, 0)
+
+        state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
+        assert state == Qt.CheckState.Unchecked
+
+        table_model.checked_states[0] = True
+        state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
+        assert state == Qt.CheckState.Checked
