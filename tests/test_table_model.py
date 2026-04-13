@@ -135,3 +135,15 @@ class TestCityTableModel:
         sample_city.sunset_data.source = Source.CALCULATED
         status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
         assert status == "✅ Загружено"
+
+    def test_data_view_enabled_role(self, table_model, sample_city):
+        """Тест роли включения кнопки просмотра"""
+        index = table_model.index(0, 7)
+
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
+        assert enabled is True
+
+        sample_city.sunset_data.hash_before_edit = None
+        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
+        assert enabled is False
