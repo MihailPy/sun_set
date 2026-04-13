@@ -123,3 +123,15 @@ class TestCityTableModel:
         table_model.checked_states[0] = True
         state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
         assert state == Qt.CheckState.Checked
+
+    def test_data_status_column(self, table_model, sample_city):
+        """Тест данных в колонке статуса"""
+        index = table_model.index(0, 7)
+
+        status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
+        assert status == "❗️ Неактуальные данные"
+
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.CALCULATED
+        status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
+        assert status == "✅ Загружено"
