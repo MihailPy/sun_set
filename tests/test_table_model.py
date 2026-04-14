@@ -169,3 +169,14 @@ class TestCityTableModel:
         """Тест получения данных для невалидного индекса"""
         invalid_index = QModelIndex()
         assert table_model.data(invalid_index) is None
+
+    def test_set_data_check_state(self, table_model):
+        """Тест установки состояния чекбокса"""
+        index = table_model.index(0, 0)
+
+        result = table_model.setData(
+            index, Qt.CheckState.Checked.value, Qt.ItemDataRole.CheckStateRole
+        )
+
+        assert result is True
+        assert table_model.checked_states[0] is True
