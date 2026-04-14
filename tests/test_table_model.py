@@ -1,5 +1,5 @@
 import pytest
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QModelIndex, Qt
 from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
@@ -164,3 +164,8 @@ class TestCityTableModel:
         sample_city.sunset_data.hash_before_edit = None
         enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
         assert enabled is False
+
+    def test_data_invalid_index(self, table_model):
+        """Тест получения данных для невалидного индекса"""
+        invalid_index = QModelIndex()
+        assert table_model.data(invalid_index) is None
