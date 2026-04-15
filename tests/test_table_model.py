@@ -180,3 +180,13 @@ class TestCityTableModel:
 
         assert result is True
         assert table_model.checked_states[0] is True
+
+    def test_set_data_edit_role(self, table_model):
+        """Тест редактирования данных"""
+        index = table_model.index(0, 1)
+
+        new_name = "Новое название"
+        result = table_model.setData(index, new_name, Qt.ItemDataRole.EditRole)
+
+        assert result is True
+        assert table_model.cities[0].name == new_name
