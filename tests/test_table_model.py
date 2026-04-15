@@ -190,3 +190,17 @@ class TestCityTableModel:
 
         assert result is True
         assert table_model.cities[0].name == new_name
+
+    def test_set_data_edit_role_float(self, table_model):
+        """Тест редактирования float значений"""
+        index = table_model.index(0, 3)
+
+        result = table_model.setData(index, "70.5", Qt.ItemDataRole.EditRole)
+
+        assert result is True
+        assert table_model.cities[0].lat == 70.5
+
+        result = table_model.setData(index, "70,5", Qt.ItemDataRole.EditRole)
+
+        assert result is True
+        assert table_model.cities[0].lat == 70.5
