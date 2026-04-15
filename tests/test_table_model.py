@@ -204,3 +204,11 @@ class TestCityTableModel:
 
         assert result is True
         assert table_model.cities[0].lat == 70.5
+
+    def test_set_data_invalid_value(self, table_model):
+        """Тест установки невалидного значения"""
+        index = table_model.index(0, 3)
+
+        result = table_model.setData(index, "invalid", Qt.ItemDataRole.EditRole)
+
+        assert result is False
