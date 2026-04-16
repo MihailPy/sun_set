@@ -148,22 +148,23 @@ class TestCityTableModel:
         enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
         assert enabled is False
 
-    def test_data_update_enabled_role(self, table_model, sample_city):
-        """Тест роли включения кнопки обновления"""
+    def test_data_update_enabled_when_source_calculated(self, table_model, sample_city):
+        """Тест роли включения кнопки обновления, когда данные собранны данные и не изменены."""
         index = table_model.index(0, 7)
 
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.CALCULATED
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert enabled is True
-
-        sample_city.sunset_data.source = Source.EDITED
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert enabled is True
-
-        sample_city.sunset_data.hash_before_edit = None
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
+        enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
         assert enabled is False
+
+    def test_data_update_enabled_when_source_edited(self, table_model, sample_city):
+        """Тест роли включения кнопки обновления, когда данные были изменены."""
+        index = table_model.index(0, 7)
+
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.EDITED
+        enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
+        assert enabled is True
 
     def test_data_invalid_index(self, table_model):
         """Тест получения данных для невалидного индекса"""
