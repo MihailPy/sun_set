@@ -72,15 +72,19 @@ def city_without_data():
     return city
 
 
-def test_year_editor_window_initialization(qapp, city_with_data):
+@pytest.fixture
+def window(qapp, city_with_data):
+    window = YearEditorWindow(city_with_data)
+    yield window
+    window.close()
+
+
+def test_year_editor_window_initialization(qapp, window, city_with_data):
     """
     Тест проверяет, что окно создается корректно:
     - Заголовок содержит название города и год.
     - Количество вкладок соответствует количеству месяцев.
     """
-    from sun_set.views.sunset_table_view import YearEditorWindow
-
-    window = YearEditorWindow(city_with_data)
 
     # Проверка заголовка
     expected_title = (
@@ -90,9 +94,7 @@ def test_year_editor_window_initialization(qapp, city_with_data):
 
     # Проверка количества вкладок
     assert window.tabs.count() == len(city_with_data.sunset_data.months)
-
-    # Очистка после теста
-    window.close()
+    assert window.tabs.count() == 12
 
 
 def test_year_editor_window_no_data(qapp, city_without_data):
@@ -111,12 +113,10 @@ def test_year_editor_window_not_enough_data(qapp, city_not_enough_data):
         YearEditorWindow(city_not_enough_data)
 
 
-def test_year_editor_window_table_rows(qapp, city_with_data):
+def test_year_editor_window_table_rows(qapp, window, city_with_data):
     """
     Проверяет, что для каждого месяца создается таблица с правильным количеством строк.
     """
-    window = YearEditorWindow(city_with_data)
-
     # Проверяем каждую вкладку
     for tab_index in range(window.tabs.count()):
         # Получаем виджет вкладки
@@ -138,21 +138,8 @@ def test_year_editor_window_table_rows(qapp, city_with_data):
     window.close()
 
 
-def test_year_editor_window_tabs_count(qapp, city_with_data):
-    """
-    Проверяет, что количество вкладок 12.
-    """
-    window = YearEditorWindow(city_with_data)
-
-    tabs_count = window.tabs.count()
-
-    assert tabs_count == 12
-
-
-def test_year_editor_window_edit_time(qapp, city_with_data):
+def test_year_editor_window_edit_time(qapp, window, city_with_data):
     """Проверяет, что редактирование времени обновляет данные и сигналы."""
-    window = YearEditorWindow(city_with_data)
-
     # Подключаемся к сигналу для проверки
     signal_received = []
     window.dataChanged.connect(lambda: signal_received.append(True))
@@ -190,7 +177,7 @@ def test_year_editor_window_edit_time(qapp, city_with_data):
 
     assert len(signal_received) > 0, "Сигнал не был получен"
     assert original_time != new_time
-    assert original_source is not new_source
+    assert original_source != new_source
     assert city_with_data.sunset_data.source is Source.EDITED
 
     window.close()
@@ -198,11 +185,9 @@ def test_year_editor_window_edit_time(qapp, city_with_data):
 
 @pytest.mark.parametrize("column", [0, 1])
 def test_year_editor_window_forbidden_fields_remain_unchanged(
-    qapp, city_with_data, column
+    qapp, window, city_with_data, column
 ):
     """Проверяет, что редактирование остальных ячеек, кроме времени, невозможно."""
-    window = YearEditorWindow(city_with_data)
-
     # Подключаемся к сигналу для проверки
     signal_received = []
     window.dataChanged.connect(lambda: signal_received.append(True))
@@ -228,14 +213,15 @@ def test_year_editor_window_forbidden_fields_remain_unchanged(
     window.close()
 
 
-def test_year_editor_window_cell_color_changes_after_editing(qapp, city_with_data):
+def test_year_editor_window_edited_cell_gets_yellow_background(
+    qapp, window, city_with_data
+):
     """
-    Проверяем что цвет ячейки изменяется после редактирования, и если она была изменена.
+    Проверяем что цвет ячейки изменяется после редактирования.
     """
     city_with_data.sunset_data.months[1].days[0].source = Source.EDITED
     city_with_data.sunset_data.source = Source.EDITED
 
-    window = YearEditorWindow(city_with_data)
     color_after_change = QColor(255, 255, 200)
 
     # Получаем таблицу первой вкладки (январь)
@@ -260,27 +246,41 @@ def test_year_editor_window_cell_color_changes_after_editing(qapp, city_with_dat
     QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
 
     # Проверяем, что после изменения цвет изменился.
-    assert item_jan.background().color() == color_after_change
+    assert item_jan.background().color().name() == color_after_change.name()
 
-    # Получаем таблицу второй вкладки (февраль)
-    tab_widget_feb = window.tabs.widget(1)
-    if tab_widget_feb is None:
-        raise RuntimeError("Вторя вкладка не найдена")
-    table_feb = tab_widget_feb.findChild(QTableWidget)
 
-    # Проверяем что ячейка измененная до открытия окна, также с измененным цветом.
-    item_feb = table_feb.item(0, 2)
-    assert item_feb is not None
-    assert item_feb.background().color() == color_after_change
+def test_year_editor_window_pre_edited_cell_yellow_background_on_load(
+    qapp, city_with_data
+):
+    """
+    Проверяем что цвет ячейки желтый, уже измененной ячейки.
+    """
+    city_with_data.sunset_data.months[1].days[0].source = Source.EDITED
+    city_with_data.sunset_data.source = Source.EDITED
+    try:
+        window = YearEditorWindow(city_with_data)
+
+        color_after_change = QColor(255, 255, 200)
+
+        # Получаем таблицу второй вкладки (февраль)
+        tab_widget_feb = window.tabs.widget(1)
+        if tab_widget_feb is None:
+            raise RuntimeError("Вторя вкладка не найдена")
+        table_feb = tab_widget_feb.findChild(QTableWidget)
+
+        # Проверяем что ячейка измененная до открытия окна, также с измененным цветом.
+        item_feb = table_feb.item(0, 2)
+        assert item_feb is not None
+        assert item_feb.background().color().name() == color_after_change.name()
+    finally:
+        window.close()
 
 
 @pytest.mark.parametrize("invalid_time", ["999:9999", "10:90"])
 def test_year_editor_window_edit_time_invalid_format(
-    qapp, city_with_data, invalid_time
+    qapp, window, city_with_data, invalid_time
 ):
     """Проверяем, что если веденные данные времени невалидные, то выбрасывается ValueError."""
-    window = YearEditorWindow(city_with_data)
-
     # Получаем таблицу первой вкладки (январь)
     tab_widget = window.tabs.widget(0)
     if tab_widget is None:
@@ -303,7 +303,6 @@ def test_year_editor_window_edit_time_invalid_format(
         # Печатаем текст прямо в QLineEdit
         QTest.keyClicks(editor, invalid_time)  # type: ignore
         # Подтверждаем ввод нажатием Enter
-        # with pytest.raises(ValueError):
         QTest.keyClick(editor, Qt.Key.Key_Tab)  # type: ignore
 
     else:
