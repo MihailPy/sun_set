@@ -222,3 +222,14 @@ class TestCityTableModel:
 
         assert result is True
         assert table_model.status_overrides[0] == "Тестовый статус"
+
+    def test_header_data(self, table_model):
+        """Тест данных заголовка"""
+        data = table_model.headerData(0, Qt.Orientation.Horizontal)
+        assert data == ""
+
+        data = table_model.headerData(1, Qt.Orientation.Horizontal)
+        assert data == "Город"
+
+        data = table_model.headerData(7, Qt.Orientation.Horizontal)
+        assert data == "Данные заката"
