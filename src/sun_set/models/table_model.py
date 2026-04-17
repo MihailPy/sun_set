@@ -227,7 +227,7 @@ class CityTableModel(QAbstractTableModel):
             "Город",
             "Регион",
             "Широта",
-            "Долгота",  # Исправлено с "Высота" на "Долгота" для колонки 4
+            "Долгота",
             "Timezone",
             "Высота ASL",
             "Данные заката",
@@ -253,6 +253,8 @@ class CityTableModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return None
+
+        # TODO: вынести эту строку из условий city = self.cities[index.row()]
 
         # Роли для делегата StatusActionDelegate
         if role == StatusActionDelegate.ViewEnabledRole:
