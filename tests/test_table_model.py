@@ -253,3 +253,12 @@ class TestCityTableModel:
         assert table_model.cities[-1] == new_city
         assert len(table_model.checked_states) == initial_count + 1
         assert table_model.checked_states[-1] is False
+
+    def test_select_all(self, table_model):
+        """Тест выбора всех элементов"""
+        table_model.selectAll(True)
+
+        assert all(table_model.checked_states)
+
+        table_model.selectAll(False)
+        assert not any(table_model.checked_states)
