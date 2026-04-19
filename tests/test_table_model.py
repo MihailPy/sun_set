@@ -233,3 +233,23 @@ class TestCityTableModel:
 
         data = table_model.headerData(7, Qt.Orientation.Horizontal)
         assert data == "Данные заката"
+
+    def test_add_city(self, table_model):
+        """Тест добавления города"""
+        initial_count = table_model.rowCount()
+        new_city = City(
+            name="Казань",
+            region="Татарстан",
+            lat=55.7887,
+            lon=49.1221,
+            timezone="Europe/Moscow",
+            elevation=116,
+            sunset_data=YearData(2033, Source.CALCULATED, None, None),
+        )
+
+        table_model.addCity(new_city)
+
+        assert table_model.rowCount() == initial_count + 1
+        assert table_model.cities[-1] == new_city
+        assert len(table_model.checked_states) == initial_count + 1
+        assert table_model.checked_states[-1] is False
