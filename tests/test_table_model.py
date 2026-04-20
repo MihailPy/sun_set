@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 import pytest
 from PyQt6.QtCore import QModelIndex, Qt
 from PyQt6.QtWidgets import QApplication
@@ -274,3 +276,18 @@ class TestCityTableModel:
         assert table_model.rowCount() == initial_count - 1
         assert len(table_model.cities) == initial_count - 1
         assert len(table_model.checked_states) == initial_count - 1
+
+    @patch("sun_set.models.table_model.get_city_sunset")
+    def test_update_checked_cities(self, mock_get_sunset, table_model, sample_city):
+        """Тест обновления отмеченных городов"""
+        mock_sunset_data = Mock(spec=YearData)
+        mock_get_sunset.return_value = mock_sunset_data
+
+        # Отмечаем первый город
+        table_model.checked_states[0] = True
+
+        updated_indices = table_model.updateCheckedCities(2024, 1, 2)
+
+        assert updated_indices == [0]
+        mock_get_sunset.assert_called_once_with(sample_city, 2024, 1, 2)
+        assert table_model.cities[0].sunset_data == mock_sunset_data
