@@ -313,3 +313,18 @@ class TestCityTableModel:
 
         captured = capsys.readouterr()
         assert "Просмотр города: Москва" in captured.out
+
+    def test_data_changed_signal(self, table_model):
+        """Тест сигнала об изменении данных"""
+        signal_received = False
+
+        def on_data_changed(*args):
+            nonlocal signal_received
+            signal_received = True
+
+        table_model.dataChanged.connect(on_data_changed)
+
+        index = table_model.index(0, 1)
+        table_model.setData(index, "Новое имя", Qt.ItemDataRole.EditRole)
+
+        assert signal_received is True
