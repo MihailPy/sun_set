@@ -2,6 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from PyQt6.QtCore import QModelIndex, QRect, Qt
+from PyQt6.QtGui import QPainter, QPixmap
 from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
@@ -84,6 +85,21 @@ class TestCheckBoxHeader:
         rect = QRect(0, 0, 100, 30)
 
         checkbox_header.paintSection(None, rect, 0)
+
+    def test_paint_section_checkbox(self, checkbox_header, qapp, mocker):
+        """Тест отрисовки чекбокса"""
+        pixmap = QPixmap(100, 30)
+        painter = QPainter(pixmap)
+        save_spy = mocker.spy(painter, "save")
+        restore_spy = mocker.spy(painter, "restore")
+
+        rect = QRect(0, 0, 100, 30)
+
+        checkbox_header.paintSection(painter, rect, 0)
+        painter.end()
+
+        assert save_spy.called
+        assert restore_spy.called
 
 
 class TestCityTableModel:
