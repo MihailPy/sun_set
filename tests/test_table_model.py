@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QModelIndex, Qt
+from PyQt6.QtCore import QModelIndex, QRect, Qt
 from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
@@ -78,6 +78,12 @@ class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):
         """Тест начального состояния"""
         assert checkbox_header.is_checked is False
+
+    def test_paint_section_with_null_painter(self, checkbox_header):
+        """Тест отрисовки с None painter"""
+        rect = QRect(0, 0, 100, 30)
+
+        checkbox_header.paintSection(None, rect, 0)
 
 
 class TestCityTableModel:
