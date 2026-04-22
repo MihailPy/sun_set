@@ -130,6 +130,10 @@ class TestCheckBoxHeader:
 
             assert checkbox_header.is_checked == initial_state
 
+    def test_mouse_press_event_null(self, checkbox_header):
+        """Тест с None событием"""
+        checkbox_header.mousePressEvent(None)
+
 
 class TestCityTableModel:
     def test_row_count(self, table_model, sample_cities):

@@ -204,7 +204,6 @@ class CheckBoxHeader(QHeaderView):
 
     def mousePressEvent(self, e: QtGui.QMouseEvent | None) -> None:
         if e is None:
-            super().mousePressEvent(e)
             return
 
         if self.logicalIndexAt(e.pos()) == 0:
