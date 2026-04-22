@@ -1,8 +1,8 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QModelIndex, QRect, Qt
-from PyQt6.QtGui import QPainter, QPixmap
+from PyQt6.QtCore import QModelIndex, QPoint, QRect, Qt
+from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
 from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
@@ -100,6 +100,19 @@ class TestCheckBoxHeader:
 
         assert save_spy.called
         assert restore_spy.called
+
+    def test_mouse_press_event_on_checkbox(self, checkbox_header, table_model):
+        """Тест клика по чекбоксу в заголовке"""
+        checkbox_header.setModel(table_model)
+
+        event = Mock(spec=QMouseEvent)
+        event.pos.return_value = QPoint(10, 10)
+
+        with patch.object(CheckBoxHeader, "logicalIndexAt", return_value=0):
+            initial_state = checkbox_header.is_checked
+            checkbox_header.mousePressEvent(event)
+
+            assert checkbox_header.is_checked != initial_state
 
 
 class TestCityTableModel:
