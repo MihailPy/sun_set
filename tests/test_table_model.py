@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QModelIndex, QPoint, QRect, Qt
+from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
 from PyQt6.QtWidgets import QApplication
 
@@ -113,6 +113,22 @@ class TestCheckBoxHeader:
             checkbox_header.mousePressEvent(event)
 
             assert checkbox_header.is_checked != initial_state
+
+    def test_mouse_press_event_other_column(self, checkbox_header):
+        """Тест клика по другой колонке"""
+        event = QMouseEvent(
+            QMouseEvent.Type.MouseButtonPress,
+            QPointF(200, 10),
+            Qt.MouseButton.LeftButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+
+        with patch.object(CheckBoxHeader, "logicalIndexAt", return_value=1):
+            initial_state = checkbox_header.is_checked
+            checkbox_header.mousePressEvent(event)
+
+            assert checkbox_header.is_checked == initial_state
 
 
 class TestCityTableModel:
