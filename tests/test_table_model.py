@@ -74,6 +74,12 @@ def checkbox_header(qapp):
     return header
 
 
+class TestCheckBoxHeader:
+    def test_initial_state(self, checkbox_header):
+        """Тест начального состояния"""
+        assert checkbox_header.is_checked is False
+
+
 class TestCityTableModel:
     def test_row_count(self, table_model, sample_cities):
         """Тест количества строк"""
