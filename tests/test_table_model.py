@@ -111,7 +111,7 @@ class TestStatusActionDelegate:
 
         painter.end()
 
-    def test_editor_event_view_button(self, status_delegate, table_model, mocker):
+    def test_editor_event_view_button(self, status_delegate, table_model):
         """Тест клика по кнопке просмотра"""
         index = table_model.index(0, 7)
 
@@ -131,6 +131,27 @@ class TestStatusActionDelegate:
 
             assert result is True
             status_delegate.buttonClicked.emit.assert_called_once_with(0, "view")
+
+    def test_editor_event_update_button(self, status_delegate, table_model):
+        """Тест клика по кнопке обновления"""
+        index = table_model.index(0, 7)
+
+        option = QStyleOptionViewItem()
+        option.rect = QRect(0, 0, 200, 40)
+
+        status_delegate.buttonClicked = Mock()
+
+        event = Mock(spec=QMouseEvent)
+        event.type.return_value = QEvent.Type.MouseButtonRelease
+        event.position.return_value.toPoint.return_value = QPoint(160, 20)
+
+        with patch.object(CityTableModel, "data") as mock_data:
+            mock_data.return_value = True
+
+            result = status_delegate.editorEvent(event, table_model, option, index)
+
+            assert result is True
+            status_delegate.buttonClicked.emit.assert_called_once_with(0, "update")
 
 
 class TestCheckBoxHeader:
