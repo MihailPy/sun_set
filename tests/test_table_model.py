@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QStyleOptionViewItem
 
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
@@ -95,6 +95,21 @@ class TestStatusActionDelegate:
 
         status_delegate.paint(None, option, index)
 
+    def test_paint_buttons(self, status_delegate, table_model, qapp, mocker):
+        """Тест отрисовки кнопок"""
+        index = table_model.index(0, 7)
+
+        option = QStyleOptionViewItem()
+        option.rect = QRect(0, 0, 200, 40)
+
+        pixmap = QPixmap(200, 40)
+        painter = QPainter(pixmap)
+
+        mocked_draw = mocker.patch.object(painter, "drawText")
+        status_delegate.paint(painter, option, index)
+        assert mocked_draw.called
+
+        painter.end()
 
 class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):
