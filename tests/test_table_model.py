@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, Qt
+from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
 from PyQt6.QtWidgets import QApplication
 
@@ -73,6 +73,20 @@ def checkbox_header(qapp):
     header = CheckBoxHeader(Qt.Orientation.Horizontal)
     header.setModel(CityTableModel([]))
     return header
+
+
+class TestStatusActionDelegate:
+    def test_size_hint(self, status_delegate, table_model):
+        """Тест расчета размера ячейки"""
+        index = table_model.index(0, 7)
+        option = Mock()
+        option.fontMetrics.horizontalAdvance.return_value = 100
+
+        size = status_delegate.sizeHint(option, index)
+
+        assert isinstance(size, QSize)
+        assert size.width() > 0
+        assert size.height() == 40
 
 
 class TestCheckBoxHeader:
