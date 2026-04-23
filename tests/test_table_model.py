@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, QSize, Qt
+from PyQt6.QtCore import QEvent, QModelIndex, QPoint, QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
 from PyQt6.QtWidgets import QApplication, QStyleOptionViewItem
 
@@ -110,6 +110,28 @@ class TestStatusActionDelegate:
         assert mocked_draw.called
 
         painter.end()
+
+    def test_editor_event_view_button(self, status_delegate, table_model, mocker):
+        """Тест клика по кнопке просмотра"""
+        index = table_model.index(0, 7)
+
+        option = QStyleOptionViewItem()
+        option.rect = QRect(0, 0, 200, 40)
+
+        status_delegate.buttonClicked = Mock()
+
+        event = Mock(spec=QMouseEvent)
+        event.type.return_value = QEvent.Type.MouseButtonRelease
+        event.position.return_value.toPoint.return_value = QPoint(120, 20)
+
+        with patch.object(CityTableModel, "data") as mock_data:
+            mock_data.return_value = True
+
+            result = status_delegate.editorEvent(event, table_model, option, index)
+
+            assert result is True
+            status_delegate.buttonClicked.emit.assert_called_once_with(0, "view")
+
 
 class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):
