@@ -174,6 +174,15 @@ class TestStatusActionDelegate:
             assert result is True
             status_delegate.buttonClicked.emit.assert_not_called()
 
+    def test_editor_event_null_event(self, status_delegate):
+        """Тест с None событием"""
+        index = Mock()
+        option = Mock()
+        model = Mock()
+
+        result = status_delegate.editorEvent(None, model, option, index)
+        assert result is False
+
 
 class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):
