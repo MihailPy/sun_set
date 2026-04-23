@@ -153,6 +153,27 @@ class TestStatusActionDelegate:
             assert result is True
             status_delegate.buttonClicked.emit.assert_called_once_with(0, "update")
 
+    def test_editor_event_disabled_button(self, status_delegate, table_model):
+        """Тест клика по отключенной кнопке"""
+        index = table_model.index(0, 7)
+
+        option = QStyleOptionViewItem()
+        option.rect = QRect(0, 0, 200, 40)
+
+        status_delegate.buttonClicked = Mock()
+
+        event = Mock(spec=QMouseEvent)
+        event.type.return_value = QEvent.Type.MouseButtonRelease
+        event.position.return_value.toPoint.return_value = QPoint(160, 20)
+
+        with patch.object(CityTableModel, "data") as mock_data:
+            mock_data.return_value = False
+
+            result = status_delegate.editorEvent(event, table_model, option, index)
+
+            assert result is True
+            status_delegate.buttonClicked.emit.assert_not_called()
+
 
 class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):

@@ -158,12 +158,12 @@ class StatusActionDelegate(QStyledItemDelegate):
                 if view_btn_rect.contains(pos):
                     if view_enabled is not False:  # Если кнопка включена
                         self.buttonClicked.emit(index.row(), "view")
-                        return True
+                    return True
 
                 if update_btn_rect.contains(pos):
                     if update_enabled is not False:  # Если кнопка включена
                         self.buttonClicked.emit(index.row(), "update")
-                        return True
+                    return True
 
         return super().editorEvent(event, model, option, index)
 
