@@ -88,6 +88,13 @@ class TestStatusActionDelegate:
         assert size.width() > 0
         assert size.height() == 40
 
+    def test_paint_with_null_painter(self, status_delegate, table_model):
+        """Тест отрисовки с None painter"""
+        index = table_model.index(0, 7)
+        option = Mock()
+
+        status_delegate.paint(None, option, index)
+
 
 class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):
