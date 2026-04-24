@@ -501,7 +501,7 @@ class TestCityTableModel:
 
 
 class TestIntegration:
-    def test_model_delegate_interaction(self, table_model, status_delegate):
+    def test_model_delegate_interaction(self, table_model):
         """Тест взаимодействия модели и делегата"""
         index = table_model.index(0, 7)
 
@@ -510,3 +510,14 @@ class TestIntegration:
 
         update_enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
         assert update_enabled in (True, False)
+
+    def test_header_model_interaction(self, checkbox_header, table_model):
+        """Тест взаимодействия заголовке и модели"""
+        checkbox_header.setModel(table_model)
+
+        assert not any(table_model.checked_states)
+
+        checkbox_header.is_checked = True
+        table_model.selectAll(True)
+
+        assert all(table_model.checked_states)
