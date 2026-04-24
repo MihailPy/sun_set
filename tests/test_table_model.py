@@ -498,3 +498,15 @@ class TestCityTableModel:
         table_model.setData(index, "Новое имя", Qt.ItemDataRole.EditRole)
 
         assert signal_received is True
+
+
+class TestIntegration:
+    def test_model_delegate_interaction(self, table_model, status_delegate):
+        """Тест взаимодействия модели и делегата"""
+        index = table_model.index(0, 7)
+
+        view_enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
+        assert view_enabled in (True, False)
+
+        update_enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
+        assert update_enabled in (True, False)
