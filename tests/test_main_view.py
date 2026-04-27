@@ -21,7 +21,7 @@ def main_window(qtbot):
     """Базовая фикстура для MainWindow"""
     window = MainWindow()
     qtbot.addWidget(window)
-    window.show()
+    # window.show()
     qtbot.waitExposed(window)
     yield window
     window.close()
@@ -55,3 +55,18 @@ class TestMainWindow:
     def test_main_window_title(self, main_window):
         """Тест заголовка окна"""
         assert main_window.windowTitle() == "Sun set"
+
+    @pytest.mark.parametrize(
+        "btn_name",
+        [
+            "btn_choose_file",
+            "btn_save_file",
+            "btn_save_file_as",
+            "btn_add_city",
+            "btn_del_city",
+            "btn_get_sunset_info",
+        ],
+    )
+    def test_buttons_exist(self, main_window, btn_name):
+        """Проверка существования кнопок"""
+        assert getattr(main_window, btn_name) is not None
