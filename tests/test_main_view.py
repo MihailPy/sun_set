@@ -21,7 +21,7 @@ def main_window(qtbot):
     """Базовая фикстура для MainWindow"""
     window = MainWindow()
     qtbot.addWidget(window)
-    # window.show()
+    window.show()
     qtbot.waitExposed(window)
     yield window
     window.close()
@@ -70,3 +70,7 @@ class TestMainWindow:
     def test_buttons_exist(self, main_window, btn_name):
         """Проверка существования кнопок"""
         assert getattr(main_window, btn_name) is not None
+
+    def test_initial_prompt_visible(self, main_window):
+        """Тест видимости начального приглашения"""
+        assert main_window.initial_prompt_text.isVisible() is True
