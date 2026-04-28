@@ -1,8 +1,9 @@
-import json
+from unittest.mock import mock_open, patch
 
 import pytest
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
+from sun_set.api.file_manager import save_to_json
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.views.main_view import MainWindow
@@ -46,8 +47,7 @@ def sample_city():
 @pytest.fixture
 def temp_json_file(tmp_path, sample_city):
     file_path = tmp_path / "test_cities.json"
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump([sample_city], f)
+    save_to_json([sample_city], str(file_path))
     return str(file_path)
 
 
@@ -74,3 +74,41 @@ class TestMainWindow:
     def test_initial_prompt_visible(self, main_window):
         """Тест видимости начального приглашения"""
         assert main_window.initial_prompt_text.isVisible() is True
+
+    def test_open_file_dialog_called(self, main_window, qtbot, temp_json_file):
+        """Тест открытия файла через диалог"""
+        with patch.object(
+            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
+        ):
+            main_window.open_file_dialog()
+            assert main_window.file_path == temp_json_file
+
+    def test_open_file_updates_ui(self, main_window, qtbot, temp_json_file):
+        """Тест обновления UI после открытия файла"""
+        with patch.object(
+            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
+        ):
+            main_window.open_file_dialog()
+
+            # Таблица должна стать видимой
+            assert main_window.table_view.isHidden() is False
+            # Приглашение должно скрыться
+            assert main_window.initial_prompt_text.isHidden() is True
+
+    def test_save_file_with_valid_path(self, main_window, qtbot, temp_json_file):
+        """Тест сохранения файла с существующим путем"""
+        main_window.file_path = temp_json_file
+
+        with patch("builtins.open", mock_open()):
+            with patch("json.dump") as mock_dump:
+                main_window.save_file()
+                mock_dump.assert_called_once()
+
+    def test_save_file_as_dialog(self, main_window, qtbot):
+        """Тест диалога 'Сохранить как'"""
+        with patch.object(
+            QFileDialog, "getSaveFileName", return_value=("new_file.json", "")
+        ):
+            with patch("builtins.open", mock_open()):
+                main_window.save_file_as()
+                assert main_window.file_path == "new_file.json"
