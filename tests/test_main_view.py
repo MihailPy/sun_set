@@ -1,6 +1,7 @@
 from unittest.mock import mock_open, patch
 
 import pytest
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
 from sun_set.api.file_manager import save_to_json
@@ -135,3 +136,18 @@ class TestMainWindow:
             with patch("builtins.open", mock_open()):
                 main_window.save_file_as()
                 assert main_window.file_path == "new_file.json"
+
+    def test_add_city(self, main_window, qtbot):
+        """Тест добавления городов"""
+        assert main_window.table_view.isHidden()
+        assert main_window.initial_prompt_text.isVisible()
+
+        qtbot.mouseClick(main_window.btn_add_city, Qt.MouseButton.LeftButton)
+
+        assert main_window.model is not None
+        assert main_window.model.rowCount() == 1
+        assert main_window.table_view.isVisible()
+        assert main_window.initial_prompt_text.isHidden()
+
+        qtbot.mouseClick(main_window.btn_add_city, Qt.MouseButton.LeftButton)
+        assert main_window.model.rowCount() == 2
