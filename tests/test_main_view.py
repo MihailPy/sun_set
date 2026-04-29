@@ -151,3 +151,21 @@ class TestMainWindow:
 
         qtbot.mouseClick(main_window.btn_add_city, Qt.MouseButton.LeftButton)
         assert main_window.model.rowCount() == 2
+
+    def test_delete_selected_cities(self, main_window, qtbot, temp_json_file):
+        """Тест удаления выбранных городов через чекбокс"""
+        with patch.object(
+            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
+        ):
+            main_window.open_file_dialog()
+
+        model = main_window.table_view.model()
+        initial_count = model.rowCount()
+
+        index = model.index(0, 0)
+        model.setData(index, Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
+
+        qtbot.mouseClick(main_window.btn_del_city, Qt.MouseButton.LeftButton)
+        # main_window.delete_selected_cities()
+
+        assert model.rowCount() == initial_count - 1
