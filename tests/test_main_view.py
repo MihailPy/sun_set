@@ -83,6 +83,29 @@ class TestMainWindow:
             main_window.open_file_dialog()
             assert main_window.file_path == temp_json_file
 
+    def test_open_file_error(self, main_window, qtbot, temp_json_file, sample_city):
+        """Тест вывода окна с ошибкой, если при открытии файла произошла ошибка"""
+        with patch("PyQt6.QtWidgets.QFileDialog.getOpenFileName") as mock_file:
+            mock_file.side_effect = [("invalid_name.json", ""), (temp_json_file, "")]
+
+            with patch(
+                "sun_set.views.main_view.load_from_json",
+            ) as mock_load:
+                mock_load.side_effect = [
+                    (None, "Ошибка: Файл не найден. Проверьте путь к файлу."),
+                    ([sample_city], None),
+                ]
+                with patch("sun_set.views.main_view.CustomDialog") as MockDlg:
+                    MockDlg.return_value.exec.return_value = True
+
+                    main_window.open_file_dialog()
+
+                    MockDlg.assert_called_once_with(
+                        "Ошибка: Файл не найден. Проверьте путь к файлу."
+                    )
+
+                    assert mock_load.call_count == 2
+
     def test_open_file_updates_ui(self, main_window, qtbot, temp_json_file):
         """Тест обновления UI после открытия файла"""
         with patch.object(
