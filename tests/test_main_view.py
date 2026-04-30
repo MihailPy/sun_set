@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -169,3 +170,23 @@ class TestMainWindow:
         # main_window.delete_selected_cities()
 
         assert model.rowCount() == initial_count - 1
+
+    def test_year_spinbox_range(self, main_window):
+        """Тест диапазона спинбокса года"""
+        current_year = datetime.now().year
+        assert main_window.year_spinbox.minimum() == current_year - 50
+        assert main_window.year_spinbox.maximum() == current_year + 50
+        assert main_window.year_spinbox.value() == current_year + 1
+
+    def test_weekday_combos_initial_state(self, main_window):
+        """Тест начального состояния комбобоксов дней недели"""
+        assert main_window.combo_weekday1.currentData() == 4  # Пятница
+        assert main_window.combo_weekday2.currentData() == 5  # Суббота
+
+    def test_weekday_combos_items(self, main_window):
+        """Тест содержимого комбобоксов дней недели"""
+        expected_days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+
+        for i, expected_day in enumerate(expected_days):
+            assert main_window.combo_weekday1.itemText(i) == expected_day
+            assert main_window.combo_weekday2.itemText(i) == expected_day
