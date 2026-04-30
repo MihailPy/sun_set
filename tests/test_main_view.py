@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import mock_open, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from PyQt6.QtCore import Qt
@@ -190,3 +190,32 @@ class TestMainWindow:
         for i, expected_day in enumerate(expected_days):
             assert main_window.combo_weekday1.itemText(i) == expected_day
             assert main_window.combo_weekday2.itemText(i) == expected_day
+
+    def test_initiate_sunset_fetch_success(self, main_window):
+        """Тест успешного обновления данных и ресайза колонок"""
+        main_window.year_spinbox.setValue(2025)
+        main_window.combo_weekday1.setCurrentIndex(0)
+        main_window.combo_weekday2.setCurrentIndex(6)
+
+        mock_model = MagicMock()
+        main_window.model = mock_model
+
+        mock_model.updateCheckedCities.return_value = 5
+
+        main_window.table_view.resizeColumnToContents = MagicMock()
+
+        main_window.initiate_sunset_fetch()
+
+        mock_model.updateCheckedCities.assert_called_once_with(2025, 0, 6)
+
+        main_window.table_view.resizeColumnToContents.assert_called_once_with(7)
+
+    def test_initiate_sunset_fetch_no_updates(self, main_window):
+        """Тест отсутствия ресайза при пустом обновлении"""
+        main_window.model = MagicMock()
+        main_window.model.updateCheckedCities.return_value = 0
+        main_window.table_view.resizeColumnToContents = MagicMock()
+
+        main_window.initiate_sunset_fetch()
+
+        main_window.table_view.resizeColumnToContents.assert_not_called()
