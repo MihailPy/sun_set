@@ -263,3 +263,24 @@ class TestMainWindow:
             main_window.extra_window.dataChanged.emit()
             mock_on_changed.assert_called_once_with(0)
 
+    def test_on_city_data_changed_updates_hash_and_ui(
+        self, qtbot, main_window, temp_json_file
+    ):
+        with patch(
+            "PyQt6.QtWidgets.QFileDialog.getOpenFileName",
+            return_value=(temp_json_file, ""),
+        ):
+            main_window.open_file_dialog()
+
+        city = main_window.model.cities[0]
+        city.get_stable_hash = MagicMock(return_value="updated_hash_456")
+
+        with qtbot.waitSignal(main_window.model.dataChanged) as blocker:
+            main_window.on_city_data_changed(0)
+
+        assert city.sunset_data.hash_before_edit == "updated_hash_456"
+
+        index_from, _, roles = blocker.args
+        assert index_from.row() == 0
+        assert index_from.column() == 7
+        assert Qt.ItemDataRole.DisplayRole in roles
