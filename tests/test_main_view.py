@@ -240,3 +240,26 @@ class TestMainWindow:
         mock_get.assert_called_once()
         assert city.sunset_data == mock_sunset_data
         assert city.sunset_data.hash_before_edit == city.get_stable_hash()
+
+    def test_handle_city_update_view(self, qtbot, main_window, temp_json_file):
+        with patch(
+            "PyQt6.QtWidgets.QFileDialog.getOpenFileName",
+            return_value=(temp_json_file, ""),
+        ):
+            main_window.open_file_dialog()
+
+        city = main_window.model.cities[0]
+
+        mock_sunset_data = MagicMock()
+        mock_sunset_data.months = [MagicMock() for _ in range(12)]
+        city.sunset_data = mock_sunset_data
+
+        main_window.handle_city_update(0, "view")
+
+        assert main_window.extra_window is not None
+        assert main_window.extra_window.isVisible()
+
+        with patch.object(main_window, "on_city_data_changed") as mock_on_changed:
+            main_window.extra_window.dataChanged.emit()
+            mock_on_changed.assert_called_once_with(0)
+
