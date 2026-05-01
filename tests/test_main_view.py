@@ -284,3 +284,23 @@ class TestMainWindow:
         assert index_from.row() == 0
         assert index_from.column() == 7
         assert Qt.ItemDataRole.DisplayRole in roles
+
+    def test_full_workflow(self, main_window, qtbot, temp_json_file):
+        """Интеграционный тест полного рабочего процесса"""
+        # 1. Открываем файл
+        with patch.object(
+            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
+        ):
+            main_window.open_file_dialog()
+
+        # 2. Проверяем что данные загрузились
+        assert main_window.table_view.model().rowCount() > 0
+        assert not main_window.table_view.isHidden()
+
+        # 3. Настраиваем даты
+        main_window.year_spinbox.setValue(2025)
+        main_window.combo_weekday1.setCurrentIndex(5)
+
+        # 4. Проверяем сохранение
+        with patch("builtins.open", mock_open()):
+            main_window.save_file()
