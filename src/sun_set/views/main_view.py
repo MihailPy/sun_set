@@ -49,6 +49,8 @@ class MainWindow(QMainWindow):
         # Переменная путь к json файлу
         self.file_path = None
 
+        self.cities = []
+
         # Создание кнопок для меню бар "Файл"
         self.btn_choose_file = QAction("Открыть файл", self)
         self.btn_choose_file.setToolTip("Открыть файл с городами")

@@ -325,7 +325,12 @@ class CityTableModel(QAbstractTableModel):
             return False
 
         if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
-            self.checked_states[index.row()] = value == Qt.CheckState.Checked.value
+            if isinstance(value, Qt.CheckState):
+                is_checked = value == Qt.CheckState.Checked
+            else:
+                is_checked = value == Qt.CheckState.Checked.value
+
+            self.checked_states[index.row()] = is_checked
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])
             return True
 
