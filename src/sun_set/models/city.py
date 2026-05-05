@@ -14,9 +14,6 @@ class City:
     elevation: int
     sunset_data: YearData
 
-    def __hash__(self) -> int:
-        return hash((self.lat, self.lon, self.timezone, self.elevation))
-
     def get_stable_hash(self) -> str:
         """Детерминированный хеш для сохранения между запусками"""
         params = f"{self.lat}_{self.lon}_{self.timezone}_{self.elevation}"
