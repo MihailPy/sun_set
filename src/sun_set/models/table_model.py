@@ -253,20 +253,20 @@ class CityTableModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        # TODO: вынести эту строку из условий city = self.cities[index.row()]
+        row = index.row()
+        col = index.column()
+        city = self.cities[row]
 
         # Роли для делегата StatusActionDelegate
         if role == StatusActionDelegate.ViewEnabledRole:
-            city = self.cities[index.row()]
             if (
-                self.cities[index.row()].sunset_data.hash_before_edit
+                city.sunset_data.hash_before_edit
                 and city.get_stable_hash() == city.sunset_data.hash_before_edit
             ):
                 return True
             return False
 
         if role == StatusActionDelegate.UpdateEnabledRole:
-            city = self.cities[index.row()]
             if (
                 city.get_stable_hash() != city.sunset_data.hash_before_edit
                 or city.sunset_data.source == Source.EDITED
@@ -274,19 +274,17 @@ class CityTableModel(QAbstractTableModel):
                 return True
             return False
 
-        if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
+        if role == Qt.ItemDataRole.CheckStateRole and col == 0:
             return (
                 Qt.CheckState.Checked
-                if self.checked_states[index.row()]
+                if self.checked_states[row]
                 else Qt.CheckState.Unchecked
             )
 
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            if index.column() == 0:
+            if col == 0:
                 return None
 
-            city = self.cities[index.row()]
-            col = index.column()
             if col == 1:
                 return city.name
             if col == 2:
@@ -300,11 +298,9 @@ class CityTableModel(QAbstractTableModel):
             if col == 6:
                 return str(city.elevation)
             if col == 7:
-                row = index.row()
                 if row in self.status_overrides:
                     return self.status_overrides[row]
 
-                city = self.cities[row]
                 if city.get_stable_hash() != city.sunset_data.hash_before_edit:
                     return "❗️ Неактуальные данные"
                 else:
@@ -436,12 +432,7 @@ class CityTableModel(QAbstractTableModel):
         """Обработчик кликов от делегата"""
         if action == "view":
             # Логика просмотра
-            city = self.cities[row]
-            print(f"Просмотр города: {city.name}")
-            # Здесь можно открыть диалог просмотра
-
-            # Какого черта здесь ничего не делающий код, надо разобраться.
-            # Или добавить суда нужный код, или удалить к чертовой матери.
+            pass
 
         elif action == "update":
             # Логика обновления

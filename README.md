@@ -1,94 +1,124 @@
-# 🌅 Sun Set Calculator / Расчёт закатов
+# Sun Set
 
-<div align="center">
-  <img src="https://img.shields.io/badge/Python-3.8+-blue?logo=python" alt="Python">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
-</div>
+Desktop-приложение на `PyQt6` для работы с данными заката по городам:
 
-## 🇬🇧 English Version
+- загрузка/сохранение списка городов из JSON;
+- расчёт времени заката на выбранный год и два дня недели;
+- редактирование рассчитанных данных по месяцам и дням;
+- отображение статуса актуальности данных в таблице.
 
-### 📌 Features
+## Стек
 
-- Calculate sunset times for custom cities
-- Generate text reports (`output.txt`)
-- Create visual charts (PNG format)
-- Adjustable weekday selection
-- Time correction (hour offsets)
+- Python `3.13+`
+- `PyQt6`
+- `astral`
+- `dacite`
+- `pytest` + `pytest-qt`
+- `uv` (рекомендуемый менеджер окружения и запуска)
 
-### 🛠 Tech Stack
+## Быстрый старт
 
-```plaintext
-astral 6.2.1      # Astronomical calculations
-Pillow 1.10.1    # Image generation
-datetime       # Built-in date handling
-```
-
-### ⚙️ Installation
+### 1) Установка зависимостей
 
 ```bash
-git clone https://github.com/MihailPy/sun_set.git
-cd sun_set
-pip install -r requirements.txt
+uv sync
 ```
 
-### 🚀 Usage
-
-```python
-# Configure in sun_set.py:
-year = 2024     # Analysis year
-day1 = 1        # Monday (1-7)
-day2 = 5        # Friday
-```
-
----
-
-## 🇷🇺 Русская версия
-
-### 📌 Возможности
-
-- Расчёт времени заката для городов
-- Генерация текстовых отчётов (`output.txt`)
-- Создание визуальных графиков (PNG)
-- Настройка дней недели для анализа
-- Коррекция времени (смещение часов)
-
-### 🛠 Технологии
-
-```plaintext
-astral 6.2.1      # Астрономические расчёты
-Pillow 1.10.1    # Генерация изображений
-datetime       # Стандартная работа с датами
-```
-
-### ⚙️ Установка
+### 2) Запуск приложения
 
 ```bash
-git clone https://github.com/MihailPy/sun_set.git
-cd sun_set
-pip install -r requirements.txt
+uv run start-app
 ```
 
-### 🚀 Использование
+или через `Makefile`:
 
-```python
-# Настройки в sun_set.py:
-year = 2024     # Год анализа
-day1 = 1        # Понедельник (1-7)
-day2 = 5        # Пятница
+```bash
+make run
 ```
 
----
+## Тесты и качество
 
-## 📸 Пример вывода / Sample Output
+```bash
+# Все тесты
+uv run pytest
 
-**Текст:**
+# Подробный вывод
+uv run pytest -v
 
-```plaintext
-Город: Voronezh
-Январь:
-01  16:25   05  16:30...
+# Покрытие
+uv run pytest --cov=src --cov-report=term-missing
+
+# Линт/хуки pre-commit
+uv run pre-commit run --all
 ```
 
-## 📜 License / Лицензия
+Короткие команды через `Makefile`:
 
-MIT © [MihailPy](https://github.com/MihailPy)
+```bash
+make pyt      # pytest
+make pytv     # pytest -v
+make cov      # coverage (term)
+make lint     # pre-commit
+```
+
+## Как пользоваться приложением
+
+1. Откройте JSON-файл с городами: `Файл -> Открыть файл`.
+2. При необходимости добавьте/удалите города в таблице.
+3. Выберите год и 2 дня недели в блоке настроек.
+4. Нажмите `Обновить` для расчёта закатов:
+   - массово для выбранных строк;
+   - или по одной строке через кнопку действия в колонке `Данные заката`.
+5. Откройте детальный просмотр (иконка глаза) и при необходимости отредактируйте время.
+6. Сохраните результат: `Файл -> Сохранить файл` или `Сохранить файл как...`.
+
+## Формат данных
+
+Проект работает со списком объектов `City` в JSON.
+
+Минимальный пример:
+
+```json
+[
+  {
+    "name": "Moscow",
+    "region": "RU-MOW",
+    "lat": 55.7558,
+    "lon": 37.6176,
+    "timezone": "Europe/Moscow",
+    "elevation": 156,
+    "sunset_data": {
+      "year": 2026,
+      "source": 1,
+      "hash_before_edit": null,
+      "months": []
+    }
+  }
+]
+```
+
+Примечания:
+
+- `source` хранится как числовое значение enum (`CALCULATED`, `EDITED`, `ERROR_POLAR`).
+- При редактировании времени заката источник для записи помечается как изменённый.
+
+## Структура проекта
+
+```text
+src/sun_set/
+  api/        # загрузка/сохранение JSON
+  core/       # астрономические расчёты
+  models/     # dataclass-модели и table model
+  views/      # основное окно и окно редактирования
+  main.py     # точка входа GUI
+tests/        # unit и UI-тесты
+```
+
+## Точка входа
+
+CLI-скрипт зарегистрирован в `pyproject.toml`:
+
+```toml
+[project.scripts]
+start-app = "sun_set.main:main"
+```
