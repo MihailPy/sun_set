@@ -1,7 +1,10 @@
 # dataclass-модели настроек
 
-
+import json
 from dataclasses import dataclass
+from pathlib import Path
+
+from dacite import Config, from_dict
 
 
 @dataclass
@@ -38,3 +41,21 @@ class ExportImageSettings:
     image: ImageSettings
     text: TextSettings
     layout: LayoutSettings
+
+
+def load_export_settings(path: Path) -> ExportImageSettings:
+    with path.open("r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    return from_dict(
+        data_class=ExportImageSettings,
+        data=data,
+        config=Config(
+            cast=[int],
+            type_hooks={
+                dict[int, MonthBlockSettings]: lambda d: {
+                    int(k): from_dict(MonthBlockSettings, v) for k, v in d.items()
+                }
+            },
+        ),
+    )
