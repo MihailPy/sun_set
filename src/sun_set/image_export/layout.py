@@ -41,14 +41,16 @@ def build_export_data_from_city(city: City) -> SunsetExportData:
             city_name=city.name, year=city.sunset_data.year, months=[]
         )
 
-    first_wd = min(all_weekdays)
+    min_wd = min(all_weekdays)
 
     for month in city.sunset_data.months or []:
         rows_data = []
-        days_iter = iter(month.days)
+        index = 0
 
-        for day in days_iter:
-            next_day = next(days_iter, None)
+        while index < len(month.days):
+            day = month.days[index]
+
+            next_day = month.days[index + 1] if index + 1 < len(month.days) else None
 
             if next_day and next_day.day == day.day + 1:
                 rows_data.append(
@@ -61,8 +63,9 @@ def build_export_data_from_city(city: City) -> SunsetExportData:
                         ),
                     )
                 )
+                index += 2
             else:
-                is_first_col = day.weekday == first_wd
+                is_first_col = day.weekday == min_wd
 
                 rows_data.append(
                     SunsetExportRow(
@@ -78,6 +81,7 @@ def build_export_data_from_city(city: City) -> SunsetExportData:
                         else None,
                     )
                 )
+                index += 1
 
         data_months.append(SunsetExportMonth(month=month.month, rows=rows_data))
 
@@ -94,28 +98,32 @@ class TextBlock:
 
 
 def build_text_blocks_for_month(
-    month: int,
-    rows: list[tuple[str, str]],
+    month: SunsetExportMonth,
     layout: LayoutSettings,
 ) -> list[TextBlock]:
-    month_blocks = layout.month_blocks[month]
+    month_block = layout.month_blocks[month.month]
 
     text_blocks: list[TextBlock] = []
 
-    for index, (meeting_text, sunset_text) in enumerate(rows):
-        y = month_blocks.y + index * layout.row_height
+    for index, row in enumerate(month.rows):
+        y = month_block.y + index * layout.row_height
 
-        text_blocks.append(
-            TextBlock(
-                text=meeting_text, x=month_blocks.x + layout.meeting_offset_x, y=y
+        if row.first_day_sunset is not None:
+            text_blocks.append(
+                TextBlock(
+                    text=f"{row.first_day_sunset.day} — {row.first_day_sunset.time}",
+                    x=month_block.x + layout.meeting_offset_x,
+                    y=y,
+                )
             )
-        )
-        text_blocks.append(
-            TextBlock(
-                text=sunset_text,
-                x=month_blocks.x + layout.sunset_offset_x,
-                y=y,
+
+        if row.second_day_sunset is not None:
+            text_blocks.append(
+                TextBlock(
+                    text=f"{row.second_day_sunset.day} — {row.second_day_sunset.time}",
+                    x=month_block.x + layout.sunset_offset_x,
+                    y=y,
+                )
             )
-        )
 
     return text_blocks

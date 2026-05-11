@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
 from sun_set.image_export.layout import (
+    SunsetExportDay,
+    SunsetExportMonth,
+    SunsetExportRow,
     build_export_data_from_city,
     build_text_blocks_for_month,
 )
@@ -17,30 +20,40 @@ def test_build_text_blocks_for_month():
         },
     )
 
-    blocks = build_text_blocks_for_month(
+    # Wrap data into the expected object structure
+    month_data = SunsetExportMonth(
         month=1,
         rows=[
-            ("17:10", "17:45"),
-            ("17:20", "17:55"),
+            SunsetExportRow(
+                first_day_sunset=SunsetExportDay(day=str(1), time="17:10"),
+                second_day_sunset=SunsetExportDay(day=str(5), time="17:45"),
+            ),
+            SunsetExportRow(
+                first_day_sunset=SunsetExportDay(day=str(8), time="17:20"),
+                second_day_sunset=SunsetExportDay(day=str(12), time="17:55"),
+            ),
         ],
-        layout=layout,
     )
+
+    blocks = build_text_blocks_for_month(month=month_data, layout=layout)
 
     assert len(blocks) == 4
 
-    assert blocks[0].text == "17:10"
-    assert blocks[0].x == 50
+    # Row 1
+    assert blocks[0].text == "1 — 17:10"
+    assert blocks[0].x == 50  # 40 + 10
     assert blocks[0].y == 200
 
-    assert blocks[1].text == "17:45"
-    assert blocks[1].x == 140
+    assert blocks[1].text == "5 — 17:45"
+    assert blocks[1].x == 140  # 40 + 100
     assert blocks[1].y == 200
 
-    assert blocks[2].text == "17:20"
+    # Row 2
+    assert blocks[2].text == "8 — 17:20"
     assert blocks[2].x == 50
-    assert blocks[2].y == 230
+    assert blocks[2].y == 230  # 200 + 30
 
-    assert blocks[3].text == "17:55"
+    assert blocks[3].text == "12 — 17:55"
     assert blocks[3].x == 140
     assert blocks[3].y == 230
 
@@ -105,7 +118,7 @@ def test_single_day_distribution():
     result = build_export_data_from_city(city)  # type: ignore[reportArgumentType]
     rows = result.months[0].rows
 
-    assert len(rows) in [1, 2]
+    assert len(rows) == 2
 
     assert rows[0].first_day_sunset is not None
     assert rows[0].second_day_sunset is None
