@@ -12,11 +12,15 @@ def render_image(
     text_blocks: list[TextBlock],
     output_path: Path,
 ) -> None:
-    image = Image.new(
-        "RGB",
-        (settings.image.width, settings.image.height),
-        settings.image.background_color,
-    )
+    if settings.image.template_path is None:
+        image = Image.new(
+            "RGB",
+            (settings.image.width, settings.image.height),
+            settings.image.background_color,
+        )
+    else:
+        with Image.open(settings.image.template_path) as template:
+            image = template.convert("RGB")
 
     if settings.text.font_path is not None:
         font = ImageFont.truetype(
@@ -38,3 +42,4 @@ def render_image(
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image.save(output_path)
+    image.show()

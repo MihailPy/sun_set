@@ -111,7 +111,7 @@ def build_text_blocks_for_month(
         if row.first_day_sunset is not None:
             text_blocks.append(
                 TextBlock(
-                    text=f"{row.first_day_sunset.day} — {row.first_day_sunset.time}",
+                    text=f"{row.first_day_sunset.day}   {row.first_day_sunset.time}",
                     x=month_block.x + layout.meeting_offset_x,
                     y=y,
                 )
@@ -120,7 +120,7 @@ def build_text_blocks_for_month(
         if row.second_day_sunset is not None:
             text_blocks.append(
                 TextBlock(
-                    text=f"{row.second_day_sunset.day} — {row.second_day_sunset.time}",
+                    text=f"{row.second_day_sunset.day}   {row.second_day_sunset.time}",
                     x=month_block.x + layout.sunset_offset_x,
                     y=y,
                 )

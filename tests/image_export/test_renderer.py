@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from PIL import Image
 from pytest import fixture
 
@@ -52,3 +53,73 @@ def test_render_image_creates_file(settings_image, tmp_path: Path):
 
     image = Image.open(output_path)
     assert image.size == (400, 300)
+
+
+def test_render_image_no_template(settings_image, tmp_path: Path):
+    """Тест создания изображения с нуля (без шаблона)."""
+    output_path = tmp_path / "new_canvas.png"
+
+    # Убеждаемся, что шаблона нет
+    settings_image.image.template_path = None
+    settings_image.image.width = 200
+    settings_image.image.height = 100
+    settings_image.image.background_color = "#FF0000"  # Красный
+
+    render_image(
+        settings=settings_image,
+        text_blocks=[TextBlock(text="Hi", x=10, y=10)],
+        output_path=output_path,
+    )
+
+    assert output_path.exists()
+    with Image.open(output_path) as img:
+        assert img.size == (200, 100)
+        # Проверяем цвет фона (первый пиксель)
+        assert img.getpixel((0, 0)) == (255, 0, 0)
+
+
+def test_render_image_with_template(settings_image, tmp_path: Path):
+    """Тест создания изображения на основе существующего шаблона."""
+    # 1. Создаем файл-шаблон (синий квадрат 50x50)
+    template_path = tmp_path / "template.png"
+    template_img = Image.new("RGB", (50, 50), "#0000FF")
+    template_img.save(template_path)
+
+    # 2. Настраиваем settings на этот шаблон
+    settings_image.image.template_path = template_path
+    output_path = tmp_path / "from_template.png"
+
+    render_image(
+        settings=settings_image,
+        text_blocks=[TextBlock(text="On Template", x=5, y=5)],
+        output_path=output_path,
+    )
+
+    assert output_path.exists()
+    with Image.open(output_path) as img:
+        # Размер должен взяться из шаблона (50x50), а не из настроек width/height
+        assert img.size == (50, 50)
+        # Проверяем, что фон остался синим
+        assert img.getpixel((0, 0)) == (0, 0, 255)
+
+
+def test_render_image_creates_nested_directories(settings_image, tmp_path: Path):
+    """Проверка, что функция сама создает папки, если их нет."""
+    output_path = tmp_path / "deep" / "nested" / "folder" / "result.png"
+
+    render_image(settings_image, [], output_path)
+
+    assert output_path.exists()
+
+
+def test_render_image_with_missing_template_raises_error(
+    settings_image, tmp_path: Path
+):
+    settings_image.image.template_path = tmp_path / "missing.png"
+
+    with pytest.raises(FileNotFoundError):
+        render_image(
+            settings=settings_image,
+            text_blocks=[],
+            output_path=tmp_path / "out.png",
+        )

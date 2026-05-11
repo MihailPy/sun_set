@@ -37,3 +37,6 @@ output.txt
 
 htmlcov
 .coverage
+/settings.json
+/graf.jpg
+/image_output.png
