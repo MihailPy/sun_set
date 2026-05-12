@@ -13,8 +13,8 @@ from sun_set.image_export.settings import LayoutSettings, MonthBlockSettings
 def test_build_text_blocks_for_month():
     layout = LayoutSettings(
         row_height=30,
-        meeting_offset_x=10,
-        sunset_offset_x=100,
+        first_column_offset_x=10,
+        second_column_offset_x=100,
         month_blocks={
             1: MonthBlockSettings(x=40, y=200),
         },

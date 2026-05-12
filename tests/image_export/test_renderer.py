@@ -30,8 +30,8 @@ def settings_image():
         ),
         layout=LayoutSettings(
             row_height=30,
-            meeting_offset_x=10,
-            sunset_offset_x=100,
+            first_column_offset_x=10,
+            second_column_offset_x=100,
             month_blocks={},
         ),
     )

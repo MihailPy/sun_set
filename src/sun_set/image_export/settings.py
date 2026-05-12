@@ -31,8 +31,8 @@ class MonthBlockSettings:
 @dataclass
 class LayoutSettings:
     row_height: int
-    meeting_offset_x: int
-    sunset_offset_x: int
+    first_column_offset_x: int
+    second_column_offset_x: int
     month_blocks: dict[int, MonthBlockSettings]
 
 

@@ -56,10 +56,10 @@ def build_export_data_from_city(city: City) -> SunsetExportData:
                 rows_data.append(
                     SunsetExportRow(
                         first_day_sunset=SunsetExportDay(
-                            day=str(day.day), time=day.time
+                            day=str(day.day).zfill(2), time=day.time
                         ),
                         second_day_sunset=SunsetExportDay(
-                            day=str(next_day.day), time=next_day.time
+                            day=str(next_day.day).zfill(2), time=next_day.time
                         ),
                     )
                 )
@@ -70,12 +70,12 @@ def build_export_data_from_city(city: City) -> SunsetExportData:
                 rows_data.append(
                     SunsetExportRow(
                         first_day_sunset=SunsetExportDay(
-                            day=str(day.day), time=day.time
+                            day=str(day.day).zfill(2), time=day.time
                         )
                         if is_first_col
                         else None,
                         second_day_sunset=SunsetExportDay(
-                            day=str(day.day), time=day.time
+                            day=str(day.day).zfill(2), time=day.time
                         )
                         if not is_first_col
                         else None,
@@ -112,7 +112,7 @@ def build_text_blocks_for_month(
             text_blocks.append(
                 TextBlock(
                     text=f"{row.first_day_sunset.day}   {row.first_day_sunset.time}",
-                    x=month_block.x + layout.meeting_offset_x,
+                    x=month_block.x + layout.first_column_offset_x,
                     y=y,
                 )
             )
@@ -121,7 +121,7 @@ def build_text_blocks_for_month(
             text_blocks.append(
                 TextBlock(
                     text=f"{row.second_day_sunset.day}   {row.second_day_sunset.time}",
-                    x=month_block.x + layout.sunset_offset_x,
+                    x=month_block.x + layout.second_column_offset_x,
                     y=y,
                 )
             )

@@ -23,8 +23,8 @@ def valid_settings_dict():
         "text": {"font_path": None, "font_size": 24, "color": "#000000"},
         "layout": {
             "row_height": 50,
-            "meeting_offset_x": 10,
-            "sunset_offset_x": 20,
+            "first_column_offset_x": 10,
+            "second_column_offset_x": 20,
             "month_blocks": {"1": {"x": 100, "y": 200}, "2": {"x": 150, "y": 250}},
         },
     }
