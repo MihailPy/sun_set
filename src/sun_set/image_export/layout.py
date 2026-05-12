@@ -101,7 +101,10 @@ def build_text_blocks_for_month(
     month: SunsetExportMonth,
     layout: LayoutSettings,
 ) -> list[TextBlock]:
-    month_block = layout.month_blocks[month.month]
+    month_block = layout.month_blocks.get(month.month)
+
+    if month_block is None:
+        raise ValueError(f"Missing layout settings for month {month.month}")
 
     text_blocks: list[TextBlock] = []
 
@@ -125,5 +128,17 @@ def build_text_blocks_for_month(
                     y=y,
                 )
             )
+
+    return text_blocks
+
+
+def build_text_blocks(
+    export_data: SunsetExportData,
+    layout: LayoutSettings,
+) -> list[TextBlock]:
+    text_blocks: list[TextBlock] = []
+
+    for month in export_data.months:
+        text_blocks.extend(build_text_blocks_for_month(month=month, layout=layout))
 
     return text_blocks
