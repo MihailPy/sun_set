@@ -5,7 +5,7 @@ from PIL import Image
 from pytest import fixture
 
 from sun_set.image_export.layout import TextBlock
-from sun_set.image_export.renderer import render_image
+from sun_set.image_export.renderer import load_font, render_image
 from sun_set.image_export.settings import (
     ExportImageSettings,
     ImageSettings,
@@ -123,3 +123,22 @@ def test_render_image_with_missing_template_raises_error(
             text_blocks=[],
             output_path=tmp_path / "out.png",
         )
+
+
+def test_render_image_with_missing_font_raises_error(settings_image, tmp_path: Path):
+    settings_image.text.font_path = str(tmp_path / "missing.ttf")
+
+    with pytest.raises(FileNotFoundError):
+        render_image(
+            settings=settings_image,
+            text_blocks=[],
+            output_path=tmp_path / "out.png",
+        )
+
+
+def test_load_default_font(settings_image):
+    settings_image.text.font_path = None
+
+    font = load_font(settings_image.text)
+
+    assert font is not None
