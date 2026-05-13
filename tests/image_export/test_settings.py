@@ -77,3 +77,13 @@ def test_load_export_settings_missing_keys(tmp_path):
     # dacite выбросит ошибку, если не найдет нужных ключей для датакласса
     with pytest.raises(Exception):
         load_export_settings(config_file)
+
+
+def test_load_example_default_white_settings():
+    settings_path = Path("examples/image_export/default_white.json")
+
+    settings = load_export_settings(settings_path)
+
+    assert settings.image.width == 1000
+    assert settings.image.height == 1400
+    assert settings.layout.month_blocks[1].x == 40

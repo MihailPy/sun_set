@@ -40,7 +40,6 @@ def render_image(
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image.save(output_path)
-    image.show()
 
 
 def load_font(

@@ -1,3 +1,5 @@
+# from pathlib import Path
+
 from sun_set.core.astronomy import get_city_sunset
 from sun_set.image_export.service import export_city_image
 from sun_set.models.city import City
@@ -24,6 +26,7 @@ def test_export_city_image_creates_file(tmp_path):
         city.sunset_data.months = city.sunset_data.months[:3]
 
     settings_path = tmp_path / "settings.json"
+    # settings_path = Path("tests/image_export/test_settings.py")
     output_path = tmp_path / "out.png"
 
     settings_path.write_text(
