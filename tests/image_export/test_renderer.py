@@ -4,6 +4,7 @@ import pytest
 from PIL import Image
 from pytest import fixture
 
+from sun_set.image_export.errors import FontNotFoundError, TemplateNotFoundError
 from sun_set.image_export.layout import TextBlock
 from sun_set.image_export.renderer import load_font, render_image
 from sun_set.image_export.settings import (
@@ -117,7 +118,7 @@ def test_render_image_with_missing_template_raises_error(
 ):
     settings_image.image.template_path = tmp_path / "missing.png"
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(TemplateNotFoundError):
         render_image(
             settings=settings_image,
             text_blocks=[],
@@ -128,7 +129,7 @@ def test_render_image_with_missing_template_raises_error(
 def test_render_image_with_missing_font_raises_error(settings_image, tmp_path: Path):
     settings_image.text.font_path = str(tmp_path / "missing.ttf")
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FontNotFoundError):
         render_image(
             settings=settings_image,
             text_blocks=[],

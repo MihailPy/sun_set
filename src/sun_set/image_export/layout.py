@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 
+from sun_set.image_export.errors import MissingMonthLayoutError
 from sun_set.image_export.settings import LayoutSettings
 from sun_set.models.city import City
 
@@ -104,7 +105,9 @@ def build_text_blocks_for_month(
     month_block = layout.month_blocks.get(month.month)
 
     if month_block is None:
-        raise ValueError(f"Missing layout settings for month {month.month}")
+        raise MissingMonthLayoutError(
+            f"Missing layout settings for month {month.month}"
+        )
 
     text_blocks: list[TextBlock] = []
 

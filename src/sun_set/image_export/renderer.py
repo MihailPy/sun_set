@@ -3,6 +3,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
+from sun_set.image_export.errors import FontNotFoundError, TemplateNotFoundError
 from sun_set.image_export.layout import TextBlock
 from sun_set.image_export.settings import ExportImageSettings, TextSettings
 
@@ -19,7 +20,10 @@ def render_image(
             settings.image.background_color,
         )
     else:
-        with Image.open(settings.image.template_path) as template:
+        template_path = Path(settings.image.template_path)
+        if not template_path.exists():
+            raise TemplateNotFoundError(f"Template file not found: {template_path}")
+        with Image.open(template_path) as template:
             image = template.convert("RGB")
 
     font = load_font(settings.text)
@@ -48,6 +52,6 @@ def load_font(
     font_path = Path(text_settings.font_path)
 
     if not font_path.exists():
-        raise FileNotFoundError(f"Font file not found: {font_path}")
+        raise FontNotFoundError(f"Font file not found: {font_path}")
 
     return ImageFont.truetype(str(font_path), text_settings.font_size)

@@ -40,20 +40,20 @@ def test_build_text_blocks_for_month():
     assert len(blocks) == 4
 
     # Row 1
-    assert blocks[0].text == "1 — 17:10"
+    assert blocks[0].text == "1   17:10"
     assert blocks[0].x == 50  # 40 + 10
     assert blocks[0].y == 200
 
-    assert blocks[1].text == "5 — 17:45"
+    assert blocks[1].text == "5   17:45"
     assert blocks[1].x == 140  # 40 + 100
     assert blocks[1].y == 200
 
     # Row 2
-    assert blocks[2].text == "8 — 17:20"
+    assert blocks[2].text == "8   17:20"
     assert blocks[2].x == 50
     assert blocks[2].y == 230  # 200 + 30
 
-    assert blocks[3].text == "12 — 17:55"
+    assert blocks[3].text == "12   17:55"
     assert blocks[3].x == 140
     assert blocks[3].y == 230
 
@@ -102,9 +102,9 @@ def test_paired_days_logic():
     rows = result.months[0].rows
     assert len(rows) == 1
     assert rows[0].first_day_sunset is not None
-    assert rows[0].first_day_sunset.day == "1"
+    assert rows[0].first_day_sunset.day == "01"
     assert rows[0].second_day_sunset is not None
-    assert rows[0].second_day_sunset.day == "2"
+    assert rows[0].second_day_sunset.day == "02"
 
 
 def test_single_day_distribution():
