@@ -3,7 +3,7 @@
     "width": 1000,
     "height": 1400,
     "background_color": "#ffffff",
-    "template_path": null
+    "template_path": "examples/image_export/graf.jpg"
   },
   "text": {
     "font_path": null,
