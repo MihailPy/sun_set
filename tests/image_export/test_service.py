@@ -140,3 +140,78 @@ def test_export_cities_images_creates_files(tmp_path):
 
 def test_build_output_filename():
     assert build_output_filename("New York", 2026) == "2026_New_York.png"
+
+
+def test_export_cities_images_continues_after_city_error(tmp_path):
+    sunset_data = YearData(
+        year=2024, source=Source.CALCULATED, hash_before_edit=None, months=None
+    )
+    good_city = City(
+        name="Test City One",
+        region="Test Region",
+        lat=55.7558,
+        lon=37.6173,
+        timezone="Europe/Moscow",
+        elevation=170,
+        sunset_data=sunset_data,
+    )
+
+    sunset_data = get_city_sunset(good_city, 2024, 0, 1)
+    good_city.sunset_data = sunset_data
+
+    bad_city = copy.deepcopy(good_city)
+    bad_city.name = "Test City Two"
+    bad_city.sunset_data.months = sunset_data.months
+
+    if good_city.sunset_data.months is not None:
+        good_city.sunset_data.months = good_city.sunset_data.months[:3]
+
+    cities = [good_city, bad_city]
+
+    settings_path = tmp_path / "settings.json"
+    output_dir = tmp_path / "out"
+
+    settings_path.write_text(
+        """
+        {
+          "image": {
+            "width": 400,
+            "height": 300,
+            "background_color": "#ffffff",
+            "template_path": null
+          },
+          "text": {
+            "font_path": null,
+            "font_size": 20,
+            "color": "#000000"
+          },
+          "layout": {
+            "row_height": 30,
+            "first_column_offset_x": 10,
+            "second_column_offset_x": 120,
+            "month_blocks": {
+              "1": {"x": 40, "y": 50},
+              "2": {"x": 80, "y": 50},
+              "3": {"x": 40, "y": 100}
+            }
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+    results = export_cities_images(
+        cities=cities,
+        settings_path=settings_path,
+        output_dir=output_dir,
+    )
+
+    assert len(results) == 2
+
+    assert results[0].success is True
+    assert results[0].output_path is not None
+
+    assert results[1].success is False
+    assert results[1].output_path is None
+    assert results[1].error is not None
+
+    assert len(list(output_dir.glob("*.png"))) == 1

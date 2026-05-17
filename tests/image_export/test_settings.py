@@ -84,6 +84,6 @@ def test_load_example_default_white_settings():
 
     settings = load_export_settings(settings_path)
 
-    assert settings.image.width == 1000
-    assert settings.image.height == 1400
-    assert settings.layout.month_blocks[1].x == 40
+    assert settings.image.width == 2384
+    assert settings.image.height == 3508
+    assert settings.layout.month_blocks[1].x == 100
