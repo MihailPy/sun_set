@@ -26,8 +26,7 @@ from PyQt6.QtWidgets import (
 
 from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronomy import get_city_sunset
-from sun_set.image_export.errors import ImageExportError
-from sun_set.image_export.service import export_city_image
+from sun_set.image_export.service import export_cities_images
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
@@ -108,8 +107,8 @@ class MainWindow(QMainWindow):
         city_btn_group_layout.addWidget(self.btn_get_sunset_info)
 
         self.btn_export_image = QPushButton("Экспорт изображения", self)
-        self.btn_export_image.setToolTip("Экспорт выбранного города в изображение")
-        self.btn_export_image.clicked.connect(self.export_selected_city_image)
+        self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
+        self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
         city_btn_group_layout.addWidget(self.btn_export_image)
         city_btn_group_layout.addStretch()
 
@@ -272,11 +271,13 @@ class MainWindow(QMainWindow):
             if updated_rows:
                 self.table_view.resizeColumnToContents(7)
 
-    def export_selected_city_image(self):
-        city = self.model.get_selected_city()
+    def export_all_selected_city_image(self):
+        cities = self.model.get_selected_city()
 
-        if city is None:
-            QMessageBox.warning(self, "Экспорт изображения", "Выберите город.")
+        if cities is None:
+            QMessageBox.warning(
+                self, "Экспорт изображения", "Нет городов для экспорта."
+            )
             return
 
         settings_file, _ = QFileDialog.getOpenFileName(
@@ -286,29 +287,25 @@ class MainWindow(QMainWindow):
         if not settings_file:
             return
 
-        output_file, _ = QFileDialog.getSaveFileName(
-            self, "Сохранить изображение", f"{city.name}.png", "PNG files (*.png)"
+        output_dir = QFileDialog.getExistingDirectory(
+            self,
+            "Выберите папку для сохранения изображений",
         )
 
-        if not output_file:
+        if not output_dir:
             return
+        results = export_cities_images(
+            cities=cities,
+            settings_path=Path(settings_file),
+            output_dir=Path(output_dir),
+        )
+        success_count = sum(result.success for result in results)
+        error_count = len(results) - success_count
 
-        try:
-            export_city_image(
-                city=city,
-                settings_path=Path(settings_file),
-                output_path=Path(output_file),
-            )
-        except ImageExportError as error:
-            QMessageBox.critical(self, "Ошибка экспорта", str(error))
-            return
-        except Exception as error:
-            QMessageBox.critical(self, "Ошибка экспорта", str(error))
-            return
         QMessageBox.information(
             self,
-            "Экспорт изображения",
-            "Изображение успешно сохранено.",
+            "Экспорт изображений",
+            f"Готово: {success_count}\nОшибки: {error_count}",
         )
 
     def open_file_dialog(self):

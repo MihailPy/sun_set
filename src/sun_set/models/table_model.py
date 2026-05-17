@@ -393,10 +393,10 @@ class CityTableModel(QAbstractTableModel):
             [Qt.ItemDataRole.CheckStateRole],
         )
 
-    def get_selected_city(self) -> City | None:
+    def get_selected_city(self) -> list[City] | None:
         selected_state_indices = [i for i, val in enumerate(self.checked_states) if val]
-        if len(selected_state_indices) > 0 and len(selected_state_indices) < 2:
-            return self.cities[selected_state_indices[0]]
+        if len(selected_state_indices) > 0:
+            return [self.cities[i] for i in selected_state_indices]
         return None
 
     def removeCheckedCities(self):
