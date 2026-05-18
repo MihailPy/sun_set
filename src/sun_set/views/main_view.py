@@ -299,14 +299,44 @@ class MainWindow(QMainWindow):
             settings_path=Path(settings_file),
             output_dir=Path(output_dir),
         )
+
+        failed_results = [result for result in results if not result.success]
         success_count = sum(result.success for result in results)
         error_count = len(results) - success_count
+
+        message = f"Готово: {success_count}\nОшибки: {error_count}"
+
+        if failed_results:
+            errors_text = "\n".join(
+                f"- {result.city_name}: {result.error}"
+                for result in failed_results[:10]
+            )
+
+            message += f"\n\nОшибки:\n{errors_text}"
+
+            if len(failed_results) > 10:
+                message += f"\n...и ещё {len(failed_results) - 10}"
 
         QMessageBox.information(
             self,
             "Экспорт изображений",
-            f"Готово: {success_count}\nОшибки: {error_count}",
+            message,
         )
+
+        report_path = Path(output_dir) / "image_export_report.txt"
+        report_lines = [
+            f"Готово: {success_count}",
+            f"Ошибки: {error_count}",
+            "",
+        ]
+
+        for result in results:
+            if result.success:
+                report_lines.append(f"OK: {result.city_name} -> {result.output_path}")
+            else:
+                report_lines.append(f"ERROR: {result.city_name} -> {result.error}")
+
+        report_path.write_text("\n".join(report_lines), encoding="utf-8")
 
     def open_file_dialog(self):
         # Вызываем окно выбора файла
