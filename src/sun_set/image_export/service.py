@@ -3,11 +3,13 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from PIL import Image
+
 from sun_set.image_export.layout import (
     build_export_data_from_city,
     build_text_blocks,
 )
-from sun_set.image_export.renderer import render_image
+from sun_set.image_export.renderer import render_image, render_image_to_pil
 from sun_set.image_export.settings import load_export_settings
 from sun_set.models.city import City
 
@@ -76,3 +78,14 @@ def export_cities_images(
             )
 
     return results
+
+
+def build_city_image_preview(city, settings_path: Path) -> Image.Image:
+    settings = load_export_settings(settings_path)
+    export_data = build_export_data_from_city(city)
+    text_blocks = build_text_blocks(export_data, settings.layout)
+
+    return render_image_to_pil(
+        settings=settings,
+        text_blocks=text_blocks,
+    )
