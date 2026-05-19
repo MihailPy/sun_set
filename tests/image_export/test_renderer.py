@@ -6,7 +6,7 @@ from pytest import fixture
 
 from sun_set.image_export.errors import FontNotFoundError, TemplateNotFoundError
 from sun_set.image_export.layout import TextBlock
-from sun_set.image_export.renderer import load_font, render_image
+from sun_set.image_export.renderer import load_font, render_image, render_image_to_pil
 from sun_set.image_export.settings import (
     ExportImageSettings,
     ImageSettings,
@@ -143,3 +143,17 @@ def test_load_default_font(settings_image):
     font = load_font(settings_image.text)
 
     assert font is not None
+
+
+def test_render_image_to_pil_returns_image(settings_image):
+    image = render_image_to_pil(
+        settings=settings_image,
+        text_blocks=[
+            TextBlock(text="17:10", x=50, y=50),
+        ],
+    )
+
+    assert image.size == (
+        settings_image.image.width,
+        settings_image.image.height,
+    )
