@@ -53,6 +53,9 @@ class MainWindow(QMainWindow):
 
         # Переменная путь к json файлу
         self.file_path = None
+        # Переменные путь к JSON настройки экспорта и путь к папке экспорта
+        self.last_image_export_settings_path: str = ""
+        self.last_image_export_output_dir: str = ""
 
         self.cities = []
 
@@ -290,19 +293,29 @@ class MainWindow(QMainWindow):
             return
 
         settings_file, _ = QFileDialog.getOpenFileName(
-            self, "Выберите настройки экспорта", "", "JSON files (*.json)"
+            self,
+            "Выберите настройки экспорта",
+            self.last_image_export_settings_path,
+            "JSON files (*.json)",
         )
+
+        if settings_file:
+            self.last_image_export_settings_path = settings_file
 
         if not settings_file:
             return
-
         output_dir = QFileDialog.getExistingDirectory(
             self,
             "Выберите папку для сохранения изображений",
+            self.last_image_export_output_dir,
         )
+
+        if output_dir:
+            self.last_image_export_output_dir = output_dir
 
         if not output_dir:
             return
+
         results = export_cities_images(
             cities=cities,
             settings_path=Path(settings_file),
@@ -364,10 +377,13 @@ class MainWindow(QMainWindow):
         settings_file, _ = QFileDialog.getOpenFileName(
             self,
             "Выберите настройки экспорта",
-            "",
+            self.last_image_export_settings_path,
             "JSON files (*.json)",
         )
 
+        if settings_file:
+            self.last_image_export_settings_path = settings_file
+        print(f"{settings_file=} {self.last_image_export_settings_path=}")
         if not settings_file:
             return
 
