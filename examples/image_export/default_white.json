@@ -6,8 +6,8 @@
     "template_path": "examples/image_export/graf.jpg"
   },
   "text": {
-    "font_path": null,
-    "font_size": 65,
+    "font_path": "examples/image_export/Arial Black.ttf",
+    "font_size": 55,
     "color": "#000000"
   },
   "layout": {
