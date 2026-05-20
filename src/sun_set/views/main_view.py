@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
 
 from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronomy import get_city_sunset
-from sun_set.image_export.errors import ImageExportError
+from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview, export_cities_images
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
@@ -442,14 +442,14 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(
                 self,
                 "Ошибка предпросмотра",
-                str(error),
+                get_user_friendly_error(error),
             )
             return
         except Exception as error:
             QMessageBox.critical(
                 self,
                 "Ошибка предпросмотра",
-                str(error),
+                get_user_friendly_error(error),
             )
             return
 

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from PIL import Image
 
+from sun_set.image_export.errors import get_user_friendly_error
 from sun_set.image_export.layout import (
     build_export_data_from_city,
     build_text_blocks,
@@ -73,7 +74,7 @@ def export_cities_images(
                     city_name=city.name,
                     output_path=None,
                     success=False,
-                    error=str(error),
+                    error=get_user_friendly_error(error),
                 )
             )
 
