@@ -1,8 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -378,12 +378,6 @@ class MainWindow(QMainWindow):
             if len(failed_results) > 10:
                 message += f"\n...и ещё {len(failed_results) - 10}"
 
-        QMessageBox.information(
-            self,
-            "Экспорт изображений",
-            message,
-        )
-
         report_path = Path(output_dir) / "image_export_report.txt"
         report_lines = [
             f"Готово: {success_count}",
@@ -398,6 +392,22 @@ class MainWindow(QMainWindow):
                 report_lines.append(f"ERROR: {result.city_name} -> {result.error}")
 
         report_path.write_text("\n".join(report_lines), encoding="utf-8")
+
+        message_box = QMessageBox(self)
+        message_box.setWindowTitle("Экспорт изображений")
+        message_box.setText(message)
+        message_box.setIcon(QMessageBox.Icon.Information)
+
+        open_folder_button = message_box.addButton(
+            "Открыть папку",
+            QMessageBox.ButtonRole.ActionRole,
+        )
+        message_box.addButton(QMessageBox.StandardButton.Ok)
+
+        message_box.exec()
+
+        if message_box.clickedButton() == open_folder_button:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
 
     def preview_selected_city_image(self) -> None:
         if self.model is None:
