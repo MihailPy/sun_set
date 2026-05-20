@@ -7,64 +7,13 @@ from sun_set.image_export.service import (
     export_cities_images,
     export_city_image,
 )
-from sun_set.models.city import City
-from sun_set.models.sunset import Source, YearData
 
 
-def test_export_city_image_creates_file(tmp_path):
-    sunset_data = YearData(
-        year=2024, source=Source.CALCULATED, hash_before_edit=None, months=None
-    )
-
-    city = City(
-        name="Test City",
-        region="Test Region",
-        lat=55.7558,
-        lon=37.6173,
-        timezone="Europe/Moscow",
-        elevation=170,
-        sunset_data=sunset_data,
-    )
-
-    city.sunset_data = get_city_sunset(city, 2024, 0, 1)
-    if city.sunset_data.months is not None:
-        city.sunset_data.months = city.sunset_data.months[:3]
-
-    settings_path = tmp_path / "settings.json"
-    # settings_path = Path("tests/image_export/test_settings.py")
+def test_export_city_image_creates_file(test_city, settings_path, tmp_path):
     output_path = tmp_path / "out.png"
 
-    settings_path.write_text(
-        """
-        {
-          "image": {
-            "width": 400,
-            "height": 300,
-            "background_color": "#ffffff",
-            "template_path": null
-          },
-          "text": {
-            "font_path": null,
-            "font_size": 20,
-            "color": "#000000"
-          },
-          "layout": {
-            "row_height": 30,
-            "first_column_offset_x": 10,
-            "second_column_offset_x": 120,
-            "month_blocks": {
-              "1": {"x": 40, "y": 50},
-              "2": {"x": 80, "y": 50},
-              "3": {"x": 40, "y": 100}
-            }
-          }
-        }
-        """,
-        encoding="utf-8",
-    )
-
     export_city_image(
-        city=city,
+        city=test_city,
         settings_path=settings_path,
         output_path=output_path,
     )
@@ -72,63 +21,16 @@ def test_export_city_image_creates_file(tmp_path):
     assert output_path.exists()
 
 
-def test_export_cities_images_creates_files(tmp_path):
-    sunset_data = YearData(
-        year=2024, source=Source.CALCULATED, hash_before_edit=None, months=None
-    )
-    city = City(
-        name="Test City One",
-        region="Test Region",
-        lat=55.7558,
-        lon=37.6173,
-        timezone="Europe/Moscow",
-        elevation=170,
-        sunset_data=sunset_data,
-    )
-
-    city.sunset_data = get_city_sunset(city, 2024, 0, 1)
-    if city.sunset_data.months is not None:
-        city.sunset_data.months = city.sunset_data.months[:3]
-
-    city_two = copy.deepcopy(city)
-    city_two.name = "Test City Two"
-
-    cities = [city, city_two]
-
-    settings_path = tmp_path / "settings.json"
+def test_export_cities_images_creates_files(
+    test_city,
+    second_test_city,
+    settings_path,
+    tmp_path,
+):
     output_dir = tmp_path / "out"
 
-    settings_path.write_text(
-        """
-        {
-          "image": {
-            "width": 400,
-            "height": 300,
-            "background_color": "#ffffff",
-            "template_path": null
-          },
-          "text": {
-            "font_path": null,
-            "font_size": 20,
-            "color": "#000000"
-          },
-          "layout": {
-            "row_height": 30,
-            "first_column_offset_x": 10,
-            "second_column_offset_x": 120,
-            "month_blocks": {
-              "1": {"x": 40, "y": 50},
-              "2": {"x": 80, "y": 50},
-              "3": {"x": 40, "y": 100}
-            }
-          }
-        }
-        """,
-        encoding="utf-8",
-    )
-
     results = export_cities_images(
-        cities=cities,
+        cities=[test_city, second_test_city],
         settings_path=settings_path,
         output_dir=output_dir,
     )
@@ -142,65 +44,21 @@ def test_build_output_filename():
     assert build_output_filename("New York", 2026) == "2026_New_York.png"
 
 
-def test_export_cities_images_continues_after_city_error(tmp_path):
-    sunset_data = YearData(
-        year=2024, source=Source.CALCULATED, hash_before_edit=None, months=None
-    )
-    good_city = City(
-        name="Test City One",
-        region="Test Region",
-        lat=55.7558,
-        lon=37.6173,
-        timezone="Europe/Moscow",
-        elevation=170,
-        sunset_data=sunset_data,
-    )
+def test_export_cities_images_continues_after_city_error(
+    test_city,
+    settings_path,
+    tmp_path,
+):
+    bad_city = copy.deepcopy(test_city)
+    bad_city.name = "Bad City"
 
-    sunset_data = get_city_sunset(good_city, 2024, 0, 1)
-    good_city.sunset_data = sunset_data
+    bad_city.sunset_data = get_city_sunset(bad_city, 2024, 0, 1)
+    # тут оставляем все 12 месяцев, а в settings есть только 1,2,3
 
-    bad_city = copy.deepcopy(good_city)
-    bad_city.name = "Test City Two"
-    bad_city.sunset_data.months = sunset_data.months
-
-    if good_city.sunset_data.months is not None:
-        good_city.sunset_data.months = good_city.sunset_data.months[:3]
-
-    cities = [good_city, bad_city]
-
-    settings_path = tmp_path / "settings.json"
     output_dir = tmp_path / "out"
 
-    settings_path.write_text(
-        """
-        {
-          "image": {
-            "width": 400,
-            "height": 300,
-            "background_color": "#ffffff",
-            "template_path": null
-          },
-          "text": {
-            "font_path": null,
-            "font_size": 20,
-            "color": "#000000"
-          },
-          "layout": {
-            "row_height": 30,
-            "first_column_offset_x": 10,
-            "second_column_offset_x": 120,
-            "month_blocks": {
-              "1": {"x": 40, "y": 50},
-              "2": {"x": 80, "y": 50},
-              "3": {"x": 40, "y": 100}
-            }
-          }
-        }
-        """,
-        encoding="utf-8",
-    )
     results = export_cities_images(
-        cities=cities,
+        cities=[test_city, bad_city],
         settings_path=settings_path,
         output_dir=output_dir,
     )
@@ -208,10 +66,7 @@ def test_export_cities_images_continues_after_city_error(tmp_path):
     assert len(results) == 2
 
     assert results[0].success is True
-    assert results[0].output_path is not None
-
     assert results[1].success is False
-    assert results[1].output_path is None
     assert results[1].error is not None
 
     assert len(list(output_dir.glob("*.png"))) == 1

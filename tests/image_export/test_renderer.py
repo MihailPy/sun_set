@@ -2,51 +2,18 @@ from pathlib import Path
 
 import pytest
 from PIL import Image
-from pytest import fixture
 
 from sun_set.image_export.errors import FontNotFoundError, TemplateNotFoundError
 from sun_set.image_export.layout import TextBlock
 from sun_set.image_export.renderer import load_font, render_image, render_image_to_pil
-from sun_set.image_export.settings import (
-    ExportImageSettings,
-    ImageSettings,
-    LayoutSettings,
-    TextSettings,
-)
 
 
-@fixture
-def settings_image():
-    return ExportImageSettings(
-        image=ImageSettings(
-            width=400,
-            height=300,
-            background_color="#ffffff",
-            template_path=None,
-        ),
-        text=TextSettings(
-            font_path=None,
-            font_size=20,
-            color="#000000",
-        ),
-        layout=LayoutSettings(
-            row_height=30,
-            first_column_offset_x=10,
-            second_column_offset_x=100,
-            month_blocks={},
-        ),
-    )
-
-
-def test_render_image_creates_file(settings_image, tmp_path: Path):
+def test_render_image_creates_file(export_settings, text_blocks, tmp_path: Path):
     output_path = tmp_path / "test.png"
 
     render_image(
-        settings=settings_image,
-        text_blocks=[
-            TextBlock(text="17:10", x=50, y=50),
-            TextBlock(text="17:45", x=150, y=50),
-        ],
+        settings=export_settings,
+        text_blocks=text_blocks,
         output_path=output_path,
     )
 
@@ -56,19 +23,19 @@ def test_render_image_creates_file(settings_image, tmp_path: Path):
     assert image.size == (400, 300)
 
 
-def test_render_image_no_template(settings_image, tmp_path: Path):
+def test_render_image_no_template(export_settings, text_blocks, tmp_path: Path):
     """Тест создания изображения с нуля (без шаблона)."""
     output_path = tmp_path / "new_canvas.png"
 
     # Убеждаемся, что шаблона нет
-    settings_image.image.template_path = None
-    settings_image.image.width = 200
-    settings_image.image.height = 100
-    settings_image.image.background_color = "#FF0000"  # Красный
+    export_settings.image.template_path = None
+    export_settings.image.width = 200
+    export_settings.image.height = 100
+    export_settings.image.background_color = "#FF0000"  # Красный
 
     render_image(
-        settings=settings_image,
-        text_blocks=[TextBlock(text="Hi", x=10, y=10)],
+        settings=export_settings,
+        text_blocks=text_blocks,
         output_path=output_path,
     )
 
@@ -79,7 +46,7 @@ def test_render_image_no_template(settings_image, tmp_path: Path):
         assert img.getpixel((0, 0)) == (255, 0, 0)
 
 
-def test_render_image_with_template(settings_image, tmp_path: Path):
+def test_render_image_with_template(export_settings, text_blocks, tmp_path: Path):
     """Тест создания изображения на основе существующего шаблона."""
     # 1. Создаем файл-шаблон (синий квадрат 50x50)
     template_path = tmp_path / "template.png"
@@ -87,12 +54,12 @@ def test_render_image_with_template(settings_image, tmp_path: Path):
     template_img.save(template_path)
 
     # 2. Настраиваем settings на этот шаблон
-    settings_image.image.template_path = template_path
+    export_settings.image.template_path = template_path
     output_path = tmp_path / "from_template.png"
 
     render_image(
-        settings=settings_image,
-        text_blocks=[TextBlock(text="On Template", x=5, y=5)],
+        settings=export_settings,
+        text_blocks=text_blocks,
         output_path=output_path,
     )
 
@@ -104,56 +71,56 @@ def test_render_image_with_template(settings_image, tmp_path: Path):
         assert img.getpixel((0, 0)) == (0, 0, 255)
 
 
-def test_render_image_creates_nested_directories(settings_image, tmp_path: Path):
+def test_render_image_creates_nested_directories(export_settings, tmp_path: Path):
     """Проверка, что функция сама создает папки, если их нет."""
     output_path = tmp_path / "deep" / "nested" / "folder" / "result.png"
 
-    render_image(settings_image, [], output_path)
+    render_image(export_settings, [], output_path)
 
     assert output_path.exists()
 
 
 def test_render_image_with_missing_template_raises_error(
-    settings_image, tmp_path: Path
+    export_settings, tmp_path: Path
 ):
-    settings_image.image.template_path = tmp_path / "missing.png"
+    export_settings.image.template_path = tmp_path / "missing.png"
 
     with pytest.raises(TemplateNotFoundError):
         render_image(
-            settings=settings_image,
+            settings=export_settings,
             text_blocks=[],
             output_path=tmp_path / "out.png",
         )
 
 
-def test_render_image_with_missing_font_raises_error(settings_image, tmp_path: Path):
-    settings_image.text.font_path = str(tmp_path / "missing.ttf")
+def test_render_image_with_missing_font_raises_error(export_settings, tmp_path: Path):
+    export_settings.text.font_path = str(tmp_path / "missing.ttf")
 
     with pytest.raises(FontNotFoundError):
         render_image(
-            settings=settings_image,
+            settings=export_settings,
             text_blocks=[],
             output_path=tmp_path / "out.png",
         )
 
 
-def test_load_default_font(settings_image):
-    settings_image.text.font_path = None
+def test_load_default_font(export_settings):
+    export_settings.text.font_path = None
 
-    font = load_font(settings_image.text)
+    font = load_font(export_settings.text)
 
     assert font is not None
 
 
-def test_render_image_to_pil_returns_image(settings_image):
+def test_render_image_to_pil_returns_image(export_settings):
     image = render_image_to_pil(
-        settings=settings_image,
+        settings=export_settings,
         text_blocks=[
             TextBlock(text="17:10", x=50, y=50),
         ],
     )
 
     assert image.size == (
-        settings_image.image.width,
-        settings_image.image.height,
+        export_settings.image.width,
+        export_settings.image.height,
     )
