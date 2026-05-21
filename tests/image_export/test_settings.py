@@ -3,11 +3,13 @@ from pathlib import Path
 
 import pytest
 
+from sun_set.image_export.errors import ExportSettingsError
 from sun_set.image_export.settings import (
     ExportImageSettings,
     ImageSettings,
     load_export_settings,
     save_export_settings,
+    validate_export_settings,
 )
 
 
@@ -94,3 +96,21 @@ def test_save_export_settings(
         loaded_settings.layout.month_blocks[1].y
         == export_settings.layout.month_blocks[1].y
     )
+
+
+def test_validate_export_settings_valid(export_settings):
+    validate_export_settings(export_settings)
+
+
+def test_validate_export_settings_invalid_width(export_settings):
+    export_settings.image.width = 0
+
+    with pytest.raises(ExportSettingsError):
+        validate_export_settings(export_settings)
+
+
+def test_validate_export_settings_missing_month(export_settings):
+    del export_settings.layout.month_blocks[12]
+
+    with pytest.raises(ExportSettingsError):
+        validate_export_settings(export_settings)
