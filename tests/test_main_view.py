@@ -67,6 +67,7 @@ class TestMainWindow:
             "btn_add_city",
             "btn_del_city",
             "btn_get_sunset_info",
+            "btn_export_image",
         ],
     )
     def test_buttons_exist(self, main_window, btn_name):

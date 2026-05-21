@@ -10,26 +10,6 @@ from sun_set.image_export.settings import (
 )
 
 
-@pytest.fixture
-def valid_settings_dict():
-    """Фикстура с корректными данными в формате словаря."""
-    return {
-        "image": {
-            "width": 1920,
-            "height": 1080,
-            "background_color": "#ffffff",
-            "template_path": None,
-        },
-        "text": {"font_path": None, "font_size": 24, "color": "#000000"},
-        "layout": {
-            "row_height": 50,
-            "first_column_offset_x": 10,
-            "second_column_offset_x": 20,
-            "month_blocks": {"1": {"x": 100, "y": 200}, "2": {"x": 150, "y": 250}},
-        },
-    }
-
-
 def test_load_export_settings_success(tmp_path: Path, valid_settings_dict):
     """Проверяем успешную загрузку и корректность типов."""
     # Создаем временный JSON файл
@@ -41,8 +21,8 @@ def test_load_export_settings_success(tmp_path: Path, valid_settings_dict):
     # Проверяем структуру
     assert isinstance(settings, ExportImageSettings)
     assert isinstance(settings.image, ImageSettings)
-    assert settings.image.width == 1920
-    assert settings.layout.month_blocks[1].x == 100
+    assert settings.image.width == 400
+    assert settings.layout.month_blocks[1].x == 40
     assert isinstance(settings.layout.row_height, int)
 
 
@@ -84,6 +64,6 @@ def test_load_example_default_white_settings():
 
     settings = load_export_settings(settings_path)
 
-    assert settings.image.width == 1000
-    assert settings.image.height == 1400
-    assert settings.layout.month_blocks[1].x == 40
+    assert settings.image.width == 2384
+    assert settings.image.height == 3508
+    assert settings.layout.month_blocks[1].x == 100

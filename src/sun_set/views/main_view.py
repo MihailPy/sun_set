@@ -1,7 +1,8 @@
 from datetime import datetime
+from pathlib import Path
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -13,6 +14,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMainWindow,
     QMenuBar,
+    QMessageBox,
     QPushButton,
     QSizePolicy,
     QSpinBox,
@@ -24,6 +26,8 @@ from PyQt6.QtWidgets import (
 
 from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronomy import get_city_sunset
+from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
+from sun_set.image_export.service import build_city_image_preview, export_cities_images
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
@@ -32,6 +36,7 @@ from sun_set.models.table_model import (
     StatusActionDelegate,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
+from sun_set.views.image_preview_dialog import ImagePreviewDialog
 from sun_set.views.sunset_table_view import YearEditorWindow
 
 
@@ -48,8 +53,12 @@ class MainWindow(QMainWindow):
 
         # Переменная путь к json файлу
         self.file_path = None
+        # Переменные путь к JSON настройки экспорта и путь к папке экспорта
+        self.last_image_export_settings_path: str = ""
+        self.last_image_export_output_dir: str = ""
 
         self.cities = []
+        self.model = None
 
         # Создание кнопок для меню бар "Файл"
         self.btn_choose_file = QAction("Открыть файл", self)
@@ -102,6 +111,18 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
         self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
         city_btn_group_layout.addWidget(self.btn_get_sunset_info)
+
+        self.btn_export_image = QPushButton("Экспорт изображения", self)
+        self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
+        self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
+        city_btn_group_layout.addWidget(self.btn_export_image)
+
+        self.preview_image_button = QPushButton("Предпросмотр изображения", self)
+        self.preview_image_button.setToolTip(
+            "Предпросмотр перед сохранением изображения"
+        )
+        self.preview_image_button.clicked.connect(self.preview_selected_city_image)
+        city_btn_group_layout.addWidget(self.preview_image_button)
         city_btn_group_layout.addStretch()
 
         city_main_layout.addLayout(city_btn_group_layout)
@@ -166,6 +187,14 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(date_group)
 
     def on_data_changed(self, top_left, bottom_right, roles):
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
+
         if hasattr(self, "_updating") and self._updating:
             return
 
@@ -193,6 +222,14 @@ class MainWindow(QMainWindow):
         self._updating = False
 
     def handle_city_update(self, row: int, action_type: str):
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
+
         city = self.model.cities[row]
         if action_type == "view":
             self.extra_window = YearEditorWindow(city)
@@ -230,7 +267,13 @@ class MainWindow(QMainWindow):
 
     def on_city_data_changed(self, row: int):
         """Обработчик изменения данных города через окно редактирования"""
-        print(f"Данные города {row} изменены в окне редактирования")
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
 
         # Обновляем hash после редактирования
         city = self.model.cities[row]
@@ -243,6 +286,14 @@ class MainWindow(QMainWindow):
 
     def update_city_row_display(self, row: int):
         """Вспомогательный метод для обновления отображения строки"""
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
+
         index = self.model.index(row, 7)
         self.model.dataChanged.emit(
             index,
@@ -262,6 +313,158 @@ class MainWindow(QMainWindow):
             updated_rows = self.model.updateCheckedCities(year, weekday1, weekday2)
             if updated_rows:
                 self.table_view.resizeColumnToContents(7)
+
+    def export_all_selected_city_image(self):
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
+
+        cities = self.model.get_selected_city()
+
+        if cities is None:
+            QMessageBox.warning(
+                self, "Экспорт изображения", "Нет городов для экспорта."
+            )
+            return
+
+        settings_file, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите настройки экспорта",
+            self.last_image_export_settings_path,
+            "JSON files (*.json)",
+        )
+
+        if settings_file:
+            self.last_image_export_settings_path = settings_file
+
+        if not settings_file:
+            return
+        output_dir = QFileDialog.getExistingDirectory(
+            self,
+            "Выберите папку для сохранения изображений",
+            self.last_image_export_output_dir,
+        )
+
+        if output_dir:
+            self.last_image_export_output_dir = output_dir
+
+        if not output_dir:
+            return
+
+        results = export_cities_images(
+            cities=cities,
+            settings_path=Path(settings_file),
+            output_dir=Path(output_dir),
+        )
+
+        failed_results = [result for result in results if not result.success]
+        success_count = sum(result.success for result in results)
+        error_count = len(results) - success_count
+
+        message = f"Готово: {success_count}\nОшибки: {error_count}"
+
+        if failed_results:
+            errors_text = "\n".join(
+                f"- {result.city_name}: {result.error}"
+                for result in failed_results[:10]
+            )
+
+            message += f"\n\nОшибки:\n{errors_text}"
+
+            if len(failed_results) > 10:
+                message += f"\n...и ещё {len(failed_results) - 10}"
+
+        report_path = Path(output_dir) / "image_export_report.txt"
+        report_lines = [
+            f"Готово: {success_count}",
+            f"Ошибки: {error_count}",
+            "",
+        ]
+
+        for result in results:
+            if result.success:
+                report_lines.append(f"OK: {result.city_name} -> {result.output_path}")
+            else:
+                report_lines.append(f"ERROR: {result.city_name} -> {result.error}")
+
+        report_path.write_text("\n".join(report_lines), encoding="utf-8")
+
+        message_box = QMessageBox(self)
+        message_box.setWindowTitle("Экспорт изображений")
+        message_box.setText(message)
+        message_box.setIcon(QMessageBox.Icon.Information)
+
+        open_folder_button = message_box.addButton(
+            "Открыть папку",
+            QMessageBox.ButtonRole.ActionRole,
+        )
+        message_box.addButton(QMessageBox.StandardButton.Ok)
+
+        message_box.exec()
+
+        if message_box.clickedButton() == open_folder_button:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
+
+    def preview_selected_city_image(self) -> None:
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
+
+        cities = self.model.get_selected_city()
+        city = None
+        if cities is not None:
+            city = cities[0]
+
+        if city is None:
+            QMessageBox.warning(
+                self,
+                "Предпросмотр изображения",
+                "Выберите город.",
+            )
+            return
+
+        settings_file, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите настройки экспорта",
+            self.last_image_export_settings_path,
+            "JSON files (*.json)",
+        )
+
+        if settings_file:
+            self.last_image_export_settings_path = settings_file
+        if not settings_file:
+            return
+
+        try:
+            image = build_city_image_preview(
+                city=city,
+                settings_path=Path(settings_file),
+            )
+        except ImageExportError as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка предпросмотра",
+                get_user_friendly_error(error),
+            )
+            return
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка предпросмотра",
+                get_user_friendly_error(error),
+            )
+            return
+
+        dialog = ImagePreviewDialog(image=image, parent=self)
+        dialog.exec()
 
     def open_file_dialog(self):
         # Вызываем окно выбора файла
