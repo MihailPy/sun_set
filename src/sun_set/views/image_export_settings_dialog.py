@@ -1,8 +1,11 @@
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
+    QFileDialog,
     QFormLayout,
+    QHBoxLayout,
     QLineEdit,
+    QPushButton,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -77,8 +80,22 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow("Ширина:", self.width_spin)
         form_layout.addRow("Высота:", self.height_spin)
         form_layout.addRow("Цвет фона:", self.background_color_edit)
-        form_layout.addRow("Шаблон:", self.template_path_edit)
-        form_layout.addRow("Шрифт:", self.font_path_edit)
+        self.template_path_button = QPushButton("Выбрать...")
+        self.template_path_button.clicked.connect(self.select_template_path)
+
+        template_path_layout = QHBoxLayout()
+        template_path_layout.addWidget(self.template_path_edit)
+        template_path_layout.addWidget(self.template_path_button)
+
+        self.font_path_button = QPushButton("Выбрать...")
+        self.font_path_button.clicked.connect(self.select_font_path)
+
+        font_path_layout = QHBoxLayout()
+        font_path_layout.addWidget(self.font_path_edit)
+        font_path_layout.addWidget(self.font_path_button)
+
+        form_layout.addRow("Шаблон:", template_path_layout)
+        form_layout.addRow("Шрифт:", font_path_layout)
         form_layout.addRow("Размер шрифта:", self.font_size_spin)
         form_layout.addRow("Цвет текста:", self.text_color_edit)
         form_layout.addRow("Высота строки:", self.row_height_spin)
@@ -117,3 +134,49 @@ class ImageExportSettingsDialog(QDialog):
 
         month_block.x = self.month_x_spin.value()
         month_block.y = self.month_y_spin.value()
+
+    def select_template_path(self) -> None:
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите шаблон изображения",
+            self.template_path_edit.text(),
+            "Images (*.png *.jpg *.jpeg)",
+        )
+
+        if not file_path:
+            return
+
+        self.template_path_edit.setText(file_path)
+        self.settings.image.template_path = file_path
+
+    def select_font_path(self) -> None:
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите шрифт",
+            self.font_path_edit.text(),
+            "Fonts (*.ttf *.otf)",
+        )
+
+        if not file_path:
+            return
+
+        self.font_path_edit.setText(file_path)
+        self.settings.text.font_path = file_path
+
+    def update_settings_from_fields(self) -> None:
+        self.settings.image.width = self.width_spin.value()
+        self.settings.image.height = self.height_spin.value()
+        self.settings.image.background_color = self.background_color_edit.text()
+        self.settings.image.template_path = self.template_path_edit.text() or None
+
+        self.settings.text.font_path = self.font_path_edit.text() or None
+        self.settings.text.font_size = self.font_size_spin.value()
+        self.settings.text.color = self.text_color_edit.text()
+
+        self.settings.layout.row_height = self.row_height_spin.value()
+        self.settings.layout.first_column_offset_x = (
+            self.first_column_offset_x_spin.value()
+        )
+        self.settings.layout.second_column_offset_x = (
+            self.second_column_offset_x_spin.value()
+        )
