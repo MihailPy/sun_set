@@ -1,7 +1,7 @@
 # dataclass-модели настроек
 
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from dacite import Config, from_dict
@@ -59,3 +59,15 @@ def load_export_settings(path: Path) -> ExportImageSettings:
             },
         ),
     )
+
+
+def save_export_settings(settings: ExportImageSettings, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w", encoding="utf-8") as file:
+        json.dump(
+            asdict(settings),
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
