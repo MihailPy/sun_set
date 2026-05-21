@@ -28,6 +28,7 @@ from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronomy import get_city_sunset
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview, export_cities_images
+from sun_set.image_export.settings import load_export_settings
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
@@ -36,6 +37,7 @@ from sun_set.models.table_model import (
     StatusActionDelegate,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
+from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
 from sun_set.views.sunset_table_view import YearEditorWindow
 
@@ -123,6 +125,14 @@ class MainWindow(QMainWindow):
         )
         self.preview_image_button.clicked.connect(self.preview_selected_city_image)
         city_btn_group_layout.addWidget(self.preview_image_button)
+
+        self.edit_image_export_settings_button = QPushButton(
+            "Редактировать настройки экспорта"
+        )
+        self.edit_image_export_settings_button.clicked.connect(
+            self.edit_image_export_settings
+        )
+        city_btn_group_layout.addWidget(self.edit_image_export_settings_button)
         city_btn_group_layout.addStretch()
 
         city_main_layout.addLayout(city_btn_group_layout)
@@ -464,6 +474,42 @@ class MainWindow(QMainWindow):
             return
 
         dialog = ImagePreviewDialog(image=image, parent=self)
+        dialog.exec()
+
+    def edit_image_export_settings(self) -> None:
+        settings_file, _ = QFileDialog.getOpenFileName(
+            self,
+            "Выберите настройки экспорта",
+            self.last_image_export_settings_path,
+            "JSON files (*.json)",
+        )
+
+        if not settings_file:
+            return
+
+        self.last_image_export_settings_path = settings_file
+
+        try:
+            settings = load_export_settings(Path(settings_file))
+        except ImageExportError as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка настроек экспорта",
+                get_user_friendly_error(error),
+            )
+            return
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка настроек экспорта",
+                str(error),
+            )
+            return
+
+        dialog = ImageExportSettingsDialog(
+            settings=settings,
+            parent=self,
+        )
         dialog.exec()
 
     def open_file_dialog(self):
