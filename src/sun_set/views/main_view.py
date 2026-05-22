@@ -508,6 +508,7 @@ class MainWindow(QMainWindow):
 
         dialog = ImageExportSettingsDialog(
             settings=settings,
+            settings_path=Path(settings_file),
             parent=self,
         )
         dialog.exec()

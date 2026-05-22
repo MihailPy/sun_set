@@ -1,28 +1,36 @@
+from pathlib import Path
+from typing import cast
+
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QSpinBox,
     QVBoxLayout,
     QWidget,
 )
 
-from sun_set.image_export.settings import ExportImageSettings
+from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
+from sun_set.image_export.settings import ExportImageSettings, save_export_settings
 
 
 class ImageExportSettingsDialog(QDialog):
     def __init__(
         self,
         settings: ExportImageSettings,
+        settings_path: Path | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 
         self.settings = settings
+        self.settings_path = settings_path
 
         self.setWindowTitle("Настройки экспорта изображения")
         self.resize(500, 400)
@@ -112,6 +120,25 @@ class ImageExportSettingsDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.addLayout(form_layout)
 
+        self.button_box = QDialogButtonBox()
+        self.save_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Сохранить", QDialogButtonBox.ButtonRole.AcceptRole
+            ),
+        )
+        self.close_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Закрыть", QDialogButtonBox.ButtonRole.RejectRole
+            ),
+        )
+
+        self.save_button.clicked.connect(self.save_settings)
+        self.close_button.clicked.connect(self.reject)
+
+        layout.addWidget(self.button_box)
+
     def get_selected_month(self) -> int:
         return int(self.month_combo.currentData())
 
@@ -179,4 +206,38 @@ class ImageExportSettingsDialog(QDialog):
         )
         self.settings.layout.second_column_offset_x = (
             self.second_column_offset_x_spin.value()
+        )
+
+    def save_settings(self) -> None:
+        if self.settings_path is None:
+            QMessageBox.warning(
+                self,
+                "Сохранение настроек",
+                "Путь к файлу настроек не выбран.",
+            )
+            return
+
+        self.update_settings_from_fields()
+
+        try:
+            save_export_settings(self.settings, self.settings_path)
+        except ExportSettingsError as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка сохранения настроек",
+                get_user_friendly_error(error),
+            )
+            return
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка сохранения настроек",
+                str(error),
+            )
+            return
+
+        QMessageBox.information(
+            self,
+            "Сохранение настроек",
+            "Настройки сохранены.",
         )
