@@ -127,6 +127,13 @@ class ImageExportSettingsDialog(QDialog):
                 "Сохранить", QDialogButtonBox.ButtonRole.AcceptRole
             ),
         )
+        self.save_as_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Сохранить как",
+                QDialogButtonBox.ButtonRole.ActionRole,
+            ),
+        )
         self.close_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -135,6 +142,7 @@ class ImageExportSettingsDialog(QDialog):
         )
 
         self.save_button.clicked.connect(self.save_settings)
+        self.save_as_button.clicked.connect(self.save_settings_as)
         self.close_button.clicked.connect(self.reject)
 
         layout.addWidget(self.button_box)
@@ -210,11 +218,7 @@ class ImageExportSettingsDialog(QDialog):
 
     def save_settings(self) -> None:
         if self.settings_path is None:
-            QMessageBox.warning(
-                self,
-                "Сохранение настроек",
-                "Путь к файлу настроек не выбран.",
-            )
+            self.save_settings_as()
             return
 
         self.update_settings_from_fields()
@@ -241,3 +245,27 @@ class ImageExportSettingsDialog(QDialog):
             "Сохранение настроек",
             "Настройки сохранены.",
         )
+
+    def save_settings_as(self) -> None:
+        start_path = ""
+
+        if self.settings_path is not None:
+            start_path = str(self.settings_path)
+
+        settings_file, _ = QFileDialog.getSaveFileName(
+            self,
+            "Сохранить настройки экспорта как",
+            start_path,
+            "JSON files (*.json)",
+        )
+
+        if not settings_file:
+            return
+
+        path = Path(settings_file)
+
+        if path.suffix.lower() != ".json":
+            path = path.with_suffix(".json")
+
+        self.settings_path = path
+        self.save_settings()
