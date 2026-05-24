@@ -87,6 +87,17 @@ class ImageExportSettingsDialog(QDialog):
         self.month_x_spin.valueChanged.connect(self.update_selected_month_position)
         self.month_y_spin.valueChanged.connect(self.update_selected_month_position)
 
+        self.shift_x_spin = QSpinBox()
+        self.shift_x_spin.setRange(-10000, 10000)
+        self.shift_x_spin.setValue(0)
+
+        self.shift_y_spin = QSpinBox()
+        self.shift_y_spin.setRange(-10000, 10000)
+        self.shift_y_spin.setValue(0)
+
+        self.shift_all_button = QPushButton("Сдвинуть все месяцы")
+        self.shift_all_button.clicked.connect(self.shift_all_months)
+
         self.load_selected_month_position()
 
         form_layout = QFormLayout()
@@ -118,6 +129,11 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow(
             "Смещение второй колонки X:", self.second_column_offset_x_spin
         )
+
+        form_layout.addRow("Сдвиг X:", self.shift_x_spin)
+        form_layout.addRow("Сдвиг Y:", self.shift_y_spin)
+        form_layout.addRow("", self.shift_all_button)
+
         form_layout.addRow("Месяц:", self.month_combo)
         form_layout.addRow("X месяца:", self.month_x_spin)
         form_layout.addRow("Y месяца:", self.month_y_spin)
@@ -309,3 +325,19 @@ class ImageExportSettingsDialog(QDialog):
 
         dialog = ImagePreviewDialog(image=image, parent=self)
         dialog.exec()
+
+    def shift_all_months(self) -> None:
+        dx = self.shift_x_spin.value()
+        dy = self.shift_y_spin.value()
+
+        if dx == 0 and dy == 0:
+            return
+
+        for month_block in self.settings.layout.month_blocks.values():
+            month_block.x += dx
+            month_block.y += dy
+
+        self.load_selected_month_position()
+
+        self.shift_x_spin.setValue(0)
+        self.shift_y_spin.setValue(0)
