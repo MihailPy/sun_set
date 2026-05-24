@@ -105,3 +105,31 @@ def validate_export_settings(settings: ExportImageSettings) -> None:
         missing_months_text = ", ".join(str(month) for month in missing_months)
 
         raise ExportSettingsError(f"Missing month blocks: {missing_months_text}")
+
+
+def create_default_export_settings() -> ExportImageSettings:
+    return ExportImageSettings(
+        image=ImageSettings(
+            width=1000,
+            height=1400,
+            background_color="#ffffff",
+            template_path=None,
+        ),
+        text=TextSettings(
+            font_path=None,
+            font_size=24,
+            color="#000000",
+        ),
+        layout=LayoutSettings(
+            row_height=32,
+            first_column_offset_x=10,
+            second_column_offset_x=130,
+            month_blocks={
+                month: MonthBlockSettings(
+                    x=40 + ((month - 1) % 3) * 320,
+                    y=60 + ((month - 1) // 3) * 320,
+                )
+                for month in range(1, 13)
+            },
+        ),
+    )

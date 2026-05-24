@@ -7,6 +7,7 @@ from sun_set.image_export.errors import ExportSettingsError
 from sun_set.image_export.settings import (
     ExportImageSettings,
     ImageSettings,
+    create_default_export_settings,
     load_export_settings,
     save_export_settings,
     validate_export_settings,
@@ -114,3 +115,13 @@ def test_validate_export_settings_missing_month(export_settings):
 
     with pytest.raises(ExportSettingsError):
         validate_export_settings(export_settings)
+
+
+def test_create_default_export_settings_is_valid():
+    settings = create_default_export_settings()
+
+    validate_export_settings(settings)
+
+    assert settings.image.width == 1000
+    assert settings.image.height == 1400
+    assert len(settings.layout.month_blocks) == 12

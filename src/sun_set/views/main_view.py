@@ -28,7 +28,10 @@ from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.core.astronomy import get_city_sunset
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview, export_cities_images
-from sun_set.image_export.settings import load_export_settings
+from sun_set.image_export.settings import (
+    create_default_export_settings,
+    load_export_settings,
+)
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
@@ -133,6 +136,14 @@ class MainWindow(QMainWindow):
             self.edit_image_export_settings
         )
         city_btn_group_layout.addWidget(self.edit_image_export_settings_button)
+
+        self.create_image_export_settings_button = QPushButton(
+            "Создать настройки экспорта"
+        )
+        self.create_image_export_settings_button.clicked.connect(
+            self.create_image_export_settings
+        )
+        city_btn_group_layout.addWidget(self.create_image_export_settings_button)
         city_btn_group_layout.addStretch()
 
         city_main_layout.addLayout(city_btn_group_layout)
@@ -506,18 +517,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
-            return
-
-        cities = self.model.get_selected_city()
-        city = None
-        if cities is not None:
-            city = cities[0]
+        city = self.get_current_city_or_none()
 
         dialog = ImageExportSettingsDialog(
             settings=settings,
@@ -615,6 +615,29 @@ class MainWindow(QMainWindow):
                 header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
                 self.table_view.setHorizontalHeader(header)
                 self.initial_prompt_text.show()
+
+    def create_image_export_settings(self) -> None:
+        settings = create_default_export_settings()
+        city = self.get_current_city_or_none()
+
+        dialog = ImageExportSettingsDialog(
+            settings=settings,
+            settings_path=None,
+            city=city,
+            parent=self,
+        )
+        dialog.exec()
+
+    def get_current_city_or_none(self):
+        if not hasattr(self, "model") or self.model is None:
+            return None
+
+        cities = self.model.get_selected_city()
+
+        if not cities:
+            return None
+
+        return cities[0]
 
 
 class CustomDialog(QDialog):
