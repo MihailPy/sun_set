@@ -506,9 +506,23 @@ class MainWindow(QMainWindow):
             )
             return
 
+        if self.model is None:
+            QMessageBox.warning(
+                self,
+                "Экспорт изображений",
+                "Сначала загрузите или создайте города.",
+            )
+            return
+
+        cities = self.model.get_selected_city()
+        city = None
+        if cities is not None:
+            city = cities[0]
+
         dialog = ImageExportSettingsDialog(
             settings=settings,
             settings_path=Path(settings_file),
+            city=city,
             parent=self,
         )
         dialog.exec()

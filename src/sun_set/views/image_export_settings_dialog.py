@@ -17,7 +17,10 @@ from PyQt6.QtWidgets import (
 )
 
 from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
+from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import ExportImageSettings, save_export_settings
+from sun_set.models.city import City
+from sun_set.views.image_preview_dialog import ImagePreviewDialog
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -25,12 +28,14 @@ class ImageExportSettingsDialog(QDialog):
         self,
         settings: ExportImageSettings,
         settings_path: Path | None = None,
+        city: City | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 
         self.settings = settings
         self.settings_path = settings_path
+        self.city = city
 
         self.setWindowTitle("Настройки экспорта изображения")
         self.resize(500, 400)
@@ -127,6 +132,14 @@ class ImageExportSettingsDialog(QDialog):
                 "Сохранить", QDialogButtonBox.ButtonRole.AcceptRole
             ),
         )
+        self.preview_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Предпросмотр",
+                QDialogButtonBox.ButtonRole.ActionRole,
+            ),
+        )
+        self.preview_button.clicked.connect(self.preview_image)
         self.save_as_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -269,3 +282,30 @@ class ImageExportSettingsDialog(QDialog):
 
         self.settings_path = path
         self.save_settings()
+
+    def preview_image(self) -> None:
+        if self.city is None:
+            QMessageBox.warning(
+                self,
+                "Предпросмотр",
+                "Выберите город перед открытием редактора настроек.",
+            )
+            return
+
+        self.update_settings_from_fields()
+
+        try:
+            image = build_city_image_preview_from_settings(
+                city=self.city,
+                settings=self.settings,
+            )
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Ошибка предпросмотра",
+                get_user_friendly_error(error),
+            )
+            return
+
+        dialog = ImagePreviewDialog(image=image, parent=self)
+        dialog.exec()
