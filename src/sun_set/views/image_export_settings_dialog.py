@@ -98,6 +98,16 @@ class ImageExportSettingsDialog(QDialog):
         self.shift_all_button = QPushButton("Сдвинуть все месяцы")
         self.shift_all_button.clicked.connect(self.shift_all_months)
 
+        self.copy_source_month_combo = QComboBox()
+        self.copy_target_month_combo = QComboBox()
+
+        for month in range(1, 13):
+            self.copy_source_month_combo.addItem(str(month), month)
+            self.copy_target_month_combo.addItem(str(month), month)
+
+        self.copy_month_position_button = QPushButton("Копировать координаты месяца")
+        self.copy_month_position_button.clicked.connect(self.copy_month_position)
+
         self.load_selected_month_position()
 
         form_layout = QFormLayout()
@@ -129,6 +139,10 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow(
             "Смещение второй колонки X:", self.second_column_offset_x_spin
         )
+
+        form_layout.addRow("Копировать из месяца:", self.copy_source_month_combo)
+        form_layout.addRow("Копировать в месяц:", self.copy_target_month_combo)
+        form_layout.addRow("", self.copy_month_position_button)
 
         form_layout.addRow("Сдвиг X:", self.shift_x_spin)
         form_layout.addRow("Сдвиг Y:", self.shift_y_spin)
@@ -341,3 +355,19 @@ class ImageExportSettingsDialog(QDialog):
 
         self.shift_x_spin.setValue(0)
         self.shift_y_spin.setValue(0)
+
+    def copy_month_position(self) -> None:
+        source_month = int(self.copy_source_month_combo.currentData())
+        target_month = int(self.copy_target_month_combo.currentData())
+
+        if source_month == target_month:
+            return
+
+        source_block = self.settings.layout.month_blocks[source_month]
+        target_block = self.settings.layout.month_blocks[target_month]
+
+        target_block.x = source_block.x
+        target_block.y = source_block.y
+
+        if self.get_selected_month() == target_month:
+            self.load_selected_month_position()
