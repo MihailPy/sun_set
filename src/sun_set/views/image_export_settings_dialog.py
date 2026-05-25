@@ -371,3 +371,8 @@ class ImageExportSettingsDialog(QDialog):
 
         if self.get_selected_month() == target_month:
             self.load_selected_month_position()
+
+    def save_to_path(self, path: Path) -> None:
+        self.update_settings_from_fields()
+        save_export_settings(self.settings, path)
+        self.settings_path = path

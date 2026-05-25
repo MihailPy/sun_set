@@ -1,3 +1,11 @@
+from PIL import Image
+
+from sun_set.image_export.service import build_city_image_preview_from_settings
+from sun_set.image_export.settings import (
+    create_default_export_settings,
+    load_export_settings,
+    validate_export_settings,
+)
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 
 
@@ -64,3 +72,43 @@ def test_image_export_settings_dialog_copies_month_position(qtbot, export_settin
 
     assert export_settings.layout.month_blocks[2].x == 111
     assert export_settings.layout.month_blocks[2].y == 222
+
+
+def test_image_export_settings_dialog_save_to_path(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(settings=export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(777)
+
+    settings_path = tmp_path / "settings.json"
+
+    dialog.save_to_path(settings_path)
+
+    loaded_settings = load_export_settings(settings_path)
+
+    assert loaded_settings.image.width == 777
+
+
+def test_create_default_export_settings_is_valid():
+    settings = create_default_export_settings()
+
+    validate_export_settings(settings)
+
+    assert settings.image.width == 1000
+    assert len(settings.layout.month_blocks) == 12
+
+
+def test_build_city_image_preview_from_settings_returns_image(
+    test_city,
+    export_settings,
+):
+    image = build_city_image_preview_from_settings(
+        city=test_city,
+        settings=export_settings,
+    )
+
+    assert isinstance(image, Image.Image)
