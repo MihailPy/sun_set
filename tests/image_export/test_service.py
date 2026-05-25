@@ -1,7 +1,3 @@
-# from pathlib import Path
-import copy
-
-from sun_set.core.astronomy import get_city_sunset
 from sun_set.image_export.service import (
     build_output_filename,
     export_cities_images,
@@ -46,16 +42,31 @@ def test_build_output_filename():
 
 def test_export_cities_images_continues_after_city_error(
     test_city,
+    second_test_city,
     settings_path,
     tmp_path,
+    monkeypatch,
 ):
-    bad_city = copy.deepcopy(test_city)
+    output_dir = tmp_path / "out"
+
+    from sun_set.image_export import service
+
+    real_build_export_data_from_city = service.build_export_data_from_city
+
+    def fake_build_export_data_from_city(city):
+        if city.name == "Bad City":
+            raise RuntimeError("Test city error")
+
+        return real_build_export_data_from_city(city)
+
+    bad_city = second_test_city
     bad_city.name = "Bad City"
 
-    bad_city.sunset_data = get_city_sunset(bad_city, 2024, 0, 1)
-    # тут оставляем все 12 месяцев, а в settings есть только 1,2,3
-
-    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        service,
+        "build_export_data_from_city",
+        fake_build_export_data_from_city,
+    )
 
     results = export_cities_images(
         cities=[test_city, bad_city],
@@ -66,7 +77,10 @@ def test_export_cities_images_continues_after_city_error(
     assert len(results) == 2
 
     assert results[0].success is True
+    assert results[0].output_path is not None
+
     assert results[1].success is False
+    assert results[1].output_path is None
     assert results[1].error is not None
 
     assert len(list(output_dir.glob("*.png"))) == 1

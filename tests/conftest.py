@@ -39,9 +39,11 @@ def valid_settings_dict() -> dict:
             "first_column_offset_x": 10,
             "second_column_offset_x": 120,
             "month_blocks": {
-                "1": {"x": 40, "y": 50},
-                "2": {"x": 80, "y": 50},
-                "3": {"x": 40, "y": 100},
+                str(month): {
+                    "x": 40 + ((month - 1) % 3) * 120,
+                    "y": 50 + ((month - 1) // 3) * 60,
+                }
+                for month in range(1, 13)
             },
         },
     }
@@ -76,9 +78,11 @@ def export_settings() -> ExportImageSettings:
             first_column_offset_x=10,
             second_column_offset_x=120,
             month_blocks={
-                1: MonthBlockSettings(x=40, y=50),
-                2: MonthBlockSettings(x=80, y=50),
-                3: MonthBlockSettings(x=40, y=100),
+                month: MonthBlockSettings(
+                    x=40 + ((month - 1) % 3) * 120,
+                    y=50 + ((month - 1) // 3) * 60,
+                )
+                for month in range(1, 13)
             },
         ),
     )

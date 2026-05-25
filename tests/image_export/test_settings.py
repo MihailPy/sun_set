@@ -3,10 +3,14 @@ from pathlib import Path
 
 import pytest
 
+from sun_set.image_export.errors import ExportSettingsError
 from sun_set.image_export.settings import (
     ExportImageSettings,
     ImageSettings,
+    create_default_export_settings,
     load_export_settings,
+    save_export_settings,
+    validate_export_settings,
 )
 
 
@@ -67,3 +71,57 @@ def test_load_example_default_white_settings():
     assert settings.image.width == 2384
     assert settings.image.height == 3508
     assert settings.layout.month_blocks[1].x == 100
+
+
+def test_save_export_settings(
+    tmp_path,
+    export_settings,
+):
+    settings_path = tmp_path / "settings.json"
+
+    save_export_settings(export_settings, settings_path)
+
+    assert settings_path.exists()
+
+    loaded_settings = load_export_settings(settings_path)
+
+    assert loaded_settings.image.width == export_settings.image.width
+    assert loaded_settings.image.height == export_settings.image.height
+    assert loaded_settings.text.font_size == export_settings.text.font_size
+    assert loaded_settings.layout.row_height == export_settings.layout.row_height
+    assert (
+        loaded_settings.layout.month_blocks[1].x
+        == export_settings.layout.month_blocks[1].x
+    )
+    assert (
+        loaded_settings.layout.month_blocks[1].y
+        == export_settings.layout.month_blocks[1].y
+    )
+
+
+def test_validate_export_settings_valid(export_settings):
+    validate_export_settings(export_settings)
+
+
+def test_validate_export_settings_invalid_width(export_settings):
+    export_settings.image.width = 0
+
+    with pytest.raises(ExportSettingsError):
+        validate_export_settings(export_settings)
+
+
+def test_validate_export_settings_missing_month(export_settings):
+    del export_settings.layout.month_blocks[12]
+
+    with pytest.raises(ExportSettingsError):
+        validate_export_settings(export_settings)
+
+
+def test_create_default_export_settings_is_valid():
+    settings = create_default_export_settings()
+
+    validate_export_settings(settings)
+
+    assert settings.image.width == 1000
+    assert settings.image.height == 1400
+    assert len(settings.layout.month_blocks) == 12

@@ -1,10 +1,12 @@
 # dataclass-модели настроек
 
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from dacite import Config, from_dict
+
+from sun_set.image_export.errors import ExportSettingsError
 
 
 @dataclass
@@ -47,7 +49,7 @@ def load_export_settings(path: Path) -> ExportImageSettings:
     with path.open("r", encoding="utf-8") as file:
         data = json.load(file)
 
-    return from_dict(
+    settings = from_dict(
         data_class=ExportImageSettings,
         data=data,
         config=Config(
@@ -56,6 +58,78 @@ def load_export_settings(path: Path) -> ExportImageSettings:
                 dict[int, MonthBlockSettings]: lambda d: {
                     int(k): from_dict(MonthBlockSettings, v) for k, v in d.items()
                 }
+            },
+        ),
+    )
+    validate_export_settings(settings)
+    return settings
+
+
+def save_export_settings(settings: ExportImageSettings, path: Path) -> None:
+    validate_export_settings(settings)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("w", encoding="utf-8") as file:
+        json.dump(
+            asdict(settings),
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
+
+
+def validate_export_settings(settings: ExportImageSettings) -> None:
+    if settings.image.width <= 0:
+        raise ExportSettingsError("Image width must be greater than 0")
+
+    if settings.image.height <= 0:
+        raise ExportSettingsError("Image height must be greater than 0")
+
+    if not settings.image.background_color:
+        raise ExportSettingsError("Background color is required")
+
+    if settings.text.font_size <= 0:
+        raise ExportSettingsError("Font size must be greater than 0")
+
+    if not settings.text.color:
+        raise ExportSettingsError("Text color is required")
+
+    if settings.layout.row_height <= 0:
+        raise ExportSettingsError("Row height must be greater than 0")
+
+    missing_months = [
+        month for month in range(1, 13) if month not in settings.layout.month_blocks
+    ]
+
+    if missing_months:
+        missing_months_text = ", ".join(str(month) for month in missing_months)
+
+        raise ExportSettingsError(f"Missing month blocks: {missing_months_text}")
+
+
+def create_default_export_settings() -> ExportImageSettings:
+    return ExportImageSettings(
+        image=ImageSettings(
+            width=1000,
+            height=1400,
+            background_color="#ffffff",
+            template_path=None,
+        ),
+        text=TextSettings(
+            font_path=None,
+            font_size=24,
+            color="#000000",
+        ),
+        layout=LayoutSettings(
+            row_height=32,
+            first_column_offset_x=10,
+            second_column_offset_x=130,
+            month_blocks={
+                month: MonthBlockSettings(
+                    x=40 + ((month - 1) % 3) * 320,
+                    y=60 + ((month - 1) // 3) * 320,
+                )
+                for month in range(1, 13)
             },
         ),
     )
