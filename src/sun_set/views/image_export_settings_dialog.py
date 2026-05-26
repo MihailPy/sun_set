@@ -196,8 +196,12 @@ class ImageExportSettingsDialog(QDialog):
         self.preview_scroll_area.setWidget(self.preview_label)
         self.preview_scroll_area.setWidgetResizable(False)
 
+        self.preview_error_label = QLabel()
+        self.preview_error_label.setWordWrap(True)
+
         left_layout = QVBoxLayout()
         left_layout.addWidget(self.preview_scroll_area)
+        left_layout.addWidget(self.preview_error_label)
 
         right_layout = QVBoxLayout()
         right_layout.addLayout(form_layout)
@@ -414,6 +418,7 @@ class ImageExportSettingsDialog(QDialog):
     def update_preview(self) -> None:
         if self.city is None:
             self.preview_label.setText("Выберите город для предпросмотра.")
+            self.preview_error_label.clear()
             return
 
         self.update_settings_from_fields()
@@ -424,11 +429,13 @@ class ImageExportSettingsDialog(QDialog):
                 settings=self.settings,
             )
         except Exception as error:
-            self.preview_label.setText(
-                f"Ошибка предпросмотра:\n{get_user_friendly_error(error)}"
+            self.preview_label.clear()
+            self.preview_error_label.setText(
+                f"Ошибка предпросмотра: {get_user_friendly_error(error)}"
             )
             return
 
+        self.preview_error_label.clear()
         self.set_preview_image(image)
 
     def schedule_preview_update(self) -> None:
