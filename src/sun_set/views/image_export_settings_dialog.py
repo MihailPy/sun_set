@@ -1,6 +1,9 @@
 from pathlib import Path
 from typing import cast
 
+from PIL import Image
+from PIL.ImageQt import ImageQt
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -8,9 +11,11 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -19,8 +24,6 @@ from PyQt6.QtWidgets import (
 from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import ExportImageSettings, save_export_settings
-from sun_set.models.city import City
-from sun_set.views.image_preview_dialog import ImagePreviewDialog
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -28,7 +31,7 @@ class ImageExportSettingsDialog(QDialog):
         self,
         settings: ExportImageSettings,
         settings_path: Path | None = None,
-        city: City | None = None,
+        city=None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -38,7 +41,7 @@ class ImageExportSettingsDialog(QDialog):
         self.city = city
 
         self.setWindowTitle("Настройки экспорта изображения")
-        self.resize(500, 400)
+        self.resize(1200, 800)
 
         self.width_spin = QSpinBox()
         self.width_spin.setRange(1, 10000)
@@ -152,9 +155,6 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow("X месяца:", self.month_x_spin)
         form_layout.addRow("Y месяца:", self.month_y_spin)
 
-        layout = QVBoxLayout(self)
-        layout.addLayout(form_layout)
-
         self.button_box = QDialogButtonBox()
         self.save_button = cast(
             QPushButton,
@@ -188,7 +188,25 @@ class ImageExportSettingsDialog(QDialog):
         self.save_as_button.clicked.connect(self.save_settings_as)
         self.close_button.clicked.connect(self.reject)
 
-        layout.addWidget(self.button_box)
+        self.preview_label = QLabel()
+        self.preview_label.setScaledContents(False)
+
+        self.preview_scroll_area = QScrollArea()
+        self.preview_scroll_area.setWidget(self.preview_label)
+        self.preview_scroll_area.setWidgetResizable(False)
+
+        left_layout = QVBoxLayout()
+        left_layout.addWidget(self.preview_scroll_area)
+
+        right_layout = QVBoxLayout()
+        right_layout.addLayout(form_layout)
+        right_layout.addWidget(self.button_box)
+
+        main_layout = QHBoxLayout(self)
+        main_layout.addLayout(left_layout, stretch=3)
+        main_layout.addLayout(right_layout, stretch=1)
+
+        self.update_preview()
 
     def get_selected_month(self) -> int:
         return int(self.month_combo.currentData())
@@ -314,31 +332,7 @@ class ImageExportSettingsDialog(QDialog):
         self.save_settings()
 
     def preview_image(self) -> None:
-        if self.city is None:
-            QMessageBox.warning(
-                self,
-                "Предпросмотр",
-                "Выберите город перед открытием редактора настроек.",
-            )
-            return
-
-        self.update_settings_from_fields()
-
-        try:
-            image = build_city_image_preview_from_settings(
-                city=self.city,
-                settings=self.settings,
-            )
-        except Exception as error:
-            QMessageBox.critical(
-                self,
-                "Ошибка предпросмотра",
-                get_user_friendly_error(error),
-            )
-            return
-
-        dialog = ImagePreviewDialog(image=image, parent=self)
-        dialog.exec()
+        self.update_preview()
 
     def shift_all_months(self) -> None:
         dx = self.shift_x_spin.value()
@@ -376,3 +370,30 @@ class ImageExportSettingsDialog(QDialog):
         self.update_settings_from_fields()
         save_export_settings(self.settings, path)
         self.settings_path = path
+
+    def set_preview_image(self, image: Image.Image) -> None:
+        image_qt = ImageQt(image)
+        pixmap = QPixmap.fromImage(image_qt)
+
+        self.preview_label.setPixmap(pixmap)
+        self.preview_label.resize(pixmap.size())
+
+    def update_preview(self) -> None:
+        if self.city is None:
+            self.preview_label.setText("Выберите город для предпросмотра.")
+            return
+
+        self.update_settings_from_fields()
+
+        try:
+            image = build_city_image_preview_from_settings(
+                city=self.city,
+                settings=self.settings,
+            )
+        except Exception as error:
+            self.preview_label.setText(
+                f"Ошибка предпросмотра:\n{get_user_friendly_error(error)}"
+            )
+            return
+
+        self.set_preview_image(image)
