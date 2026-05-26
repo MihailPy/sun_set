@@ -199,7 +199,25 @@ class ImageExportSettingsDialog(QDialog):
         self.preview_error_label = QLabel()
         self.preview_error_label.setWordWrap(True)
 
+        self.preview_scale_combo = QComboBox()
+        self.preview_scale_combo.addItem("По ширине", "fit_width")
+        self.preview_scale_combo.addItem("50%", 0.5)
+        self.preview_scale_combo.addItem("75%", 0.75)
+        self.preview_scale_combo.addItem("100%", 1.0)
+        self.preview_scale_combo.addItem("125%", 1.25)
+        self.preview_scale_combo.addItem("150%", 1.5)
+        self.preview_scale_combo.setCurrentText("По ширине")
+        self.preview_scale_combo.currentIndexChanged.connect(
+            self.refresh_preview_pixmap
+        )
+        self.preview_scale_combo.currentIndexChanged.connect(
+            self.refresh_preview_pixmap
+        )
+
+        self.current_preview_image = None
+
         left_layout = QVBoxLayout()
+        left_layout.addWidget(self.preview_scale_combo)
         left_layout.addWidget(self.preview_scroll_area)
         left_layout.addWidget(self.preview_error_label)
 
@@ -409,16 +427,14 @@ class ImageExportSettingsDialog(QDialog):
         self.settings_path = path
 
     def set_preview_image(self, image: Image.Image) -> None:
-        image_qt = ImageQt(image)
-        pixmap = QPixmap.fromImage(image_qt)
-
-        self.preview_label.setPixmap(pixmap)
-        self.preview_label.resize(pixmap.size())
+        self.current_preview_image = image
+        self.refresh_preview_pixmap()
 
     def update_preview(self) -> None:
         if self.city is None:
             self.preview_label.setText("Выберите город для предпросмотра.")
             self.preview_error_label.clear()
+            self.current_preview_image = None
             return
 
         self.update_settings_from_fields()
@@ -429,6 +445,7 @@ class ImageExportSettingsDialog(QDialog):
                 settings=self.settings,
             )
         except Exception as error:
+            self.current_preview_image = None
             self.preview_label.clear()
             self.preview_error_label.setText(
                 f"Ошибка предпросмотра: {get_user_friendly_error(error)}"
@@ -440,3 +457,40 @@ class ImageExportSettingsDialog(QDialog):
 
     def schedule_preview_update(self) -> None:
         self.preview_update_timer.start()
+
+    def refresh_preview_pixmap(self) -> None:
+        if self.current_preview_image is None:
+            return
+
+        image_qt = ImageQt(self.current_preview_image)
+        pixmap = QPixmap.fromImage(image_qt)
+
+        scale_data = self.preview_scale_combo.currentData()
+
+        if scale_data == "fit_width":
+            viewport = self.preview_scroll_area.viewport()
+
+            if viewport is None:
+                return
+
+            viewport_width = viewport.width()
+
+            if viewport_width > 0 and pixmap.width() > 0:
+                target_width = max(viewport_width - 20, 1)
+                scale = target_width / pixmap.width()
+
+                pixmap = pixmap.scaled(
+                    int(pixmap.width() * scale),
+                    int(pixmap.height() * scale),
+                )
+        else:
+            scale = float(scale_data)
+
+            if scale != 1.0:
+                pixmap = pixmap.scaled(
+                    int(pixmap.width() * scale),
+                    int(pixmap.height() * scale),
+                )
+
+        self.preview_label.setPixmap(pixmap)
+        self.preview_label.resize(pixmap.size())
