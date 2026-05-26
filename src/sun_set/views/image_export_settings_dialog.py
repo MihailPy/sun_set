@@ -3,6 +3,7 @@ from typing import cast
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
+from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -206,6 +207,30 @@ class ImageExportSettingsDialog(QDialog):
         main_layout.addLayout(left_layout, stretch=3)
         main_layout.addLayout(right_layout, stretch=1)
 
+        self.preview_update_timer = QTimer(self)
+        self.preview_update_timer.setSingleShot(True)
+        self.preview_update_timer.setInterval(300)
+        self.preview_update_timer.timeout.connect(self.update_preview)
+
+        self.width_spin.valueChanged.connect(self.schedule_preview_update)
+        self.height_spin.valueChanged.connect(self.schedule_preview_update)
+        self.background_color_edit.textChanged.connect(self.schedule_preview_update)
+        self.template_path_edit.textChanged.connect(self.schedule_preview_update)
+        self.font_path_edit.textChanged.connect(self.schedule_preview_update)
+        self.font_size_spin.valueChanged.connect(self.schedule_preview_update)
+        self.text_color_edit.textChanged.connect(self.schedule_preview_update)
+
+        self.row_height_spin.valueChanged.connect(self.schedule_preview_update)
+        self.first_column_offset_x_spin.valueChanged.connect(
+            self.schedule_preview_update
+        )
+        self.second_column_offset_x_spin.valueChanged.connect(
+            self.schedule_preview_update
+        )
+
+        self.month_x_spin.valueChanged.connect(self.schedule_preview_update)
+        self.month_y_spin.valueChanged.connect(self.schedule_preview_update)
+
         self.update_preview()
 
     def get_selected_month(self) -> int:
@@ -245,6 +270,8 @@ class ImageExportSettingsDialog(QDialog):
         self.template_path_edit.setText(file_path)
         self.settings.image.template_path = file_path
 
+        self.schedule_preview_update()
+
     def select_font_path(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -258,6 +285,8 @@ class ImageExportSettingsDialog(QDialog):
 
         self.font_path_edit.setText(file_path)
         self.settings.text.font_path = file_path
+
+        self.schedule_preview_update()
 
     def update_settings_from_fields(self) -> None:
         self.settings.image.width = self.width_spin.value()
@@ -350,6 +379,8 @@ class ImageExportSettingsDialog(QDialog):
         self.shift_x_spin.setValue(0)
         self.shift_y_spin.setValue(0)
 
+        self.schedule_preview_update()
+
     def copy_month_position(self) -> None:
         source_month = int(self.copy_source_month_combo.currentData())
         target_month = int(self.copy_target_month_combo.currentData())
@@ -362,6 +393,8 @@ class ImageExportSettingsDialog(QDialog):
 
         target_block.x = source_block.x
         target_block.y = source_block.y
+
+        self.schedule_preview_update()
 
         if self.get_selected_month() == target_month:
             self.load_selected_month_position()
@@ -397,3 +430,6 @@ class ImageExportSettingsDialog(QDialog):
             return
 
         self.set_preview_image(image)
+
+    def schedule_preview_update(self) -> None:
+        self.preview_update_timer.start()
