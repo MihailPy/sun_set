@@ -112,3 +112,60 @@ def test_build_city_image_preview_from_settings_returns_image(
     )
 
     assert isinstance(image, Image.Image)
+
+
+def test_image_export_settings_dialog_has_preview_widgets(qtbot, export_settings):
+    dialog = ImageExportSettingsDialog(settings=export_settings)
+
+    qtbot.addWidget(dialog)
+
+    assert dialog.preview_label is not None
+    assert dialog.preview_scroll_area is not None
+    assert dialog.preview_scale_combo is not None
+
+
+def test_image_export_settings_dialog_set_preview_image(qtbot, export_settings):
+    dialog = ImageExportSettingsDialog(settings=export_settings)
+
+    qtbot.addWidget(dialog)
+
+    image = Image.new("RGB", (100, 200), "#ffffff")
+
+    dialog.set_preview_image(image)
+
+    assert dialog.current_preview_image is image
+    assert dialog.preview_label.pixmap() is not None
+
+
+def test_image_export_settings_dialog_refresh_preview_pixmap_with_scale(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(settings=export_settings)
+
+    qtbot.addWidget(dialog)
+
+    image = Image.new("RGB", (100, 200), "#ffffff")
+    dialog.set_preview_image(image)
+
+    dialog.preview_scale_combo.setCurrentText("50%")
+    dialog.refresh_preview_pixmap()
+
+    pixmap = dialog.preview_label.pixmap()
+
+    assert pixmap is not None
+    assert pixmap.width() == 50
+    assert pixmap.height() == 100
+
+
+def test_image_export_settings_dialog_update_preview_without_city(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(settings=export_settings, city=None)
+
+    qtbot.addWidget(dialog)
+
+    dialog.update_preview()
+
+    assert dialog.preview_label.text() == "Выберите город для предпросмотра."
