@@ -1,6 +1,10 @@
 from pathlib import Path
 from typing import cast
 
+from PIL import Image
+from PIL.ImageQt import ImageQt
+from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -8,9 +12,11 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
+    QLabel,
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -19,8 +25,6 @@ from PyQt6.QtWidgets import (
 from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import ExportImageSettings, save_export_settings
-from sun_set.models.city import City
-from sun_set.views.image_preview_dialog import ImagePreviewDialog
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -28,7 +32,7 @@ class ImageExportSettingsDialog(QDialog):
         self,
         settings: ExportImageSettings,
         settings_path: Path | None = None,
-        city: City | None = None,
+        city=None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
@@ -38,7 +42,7 @@ class ImageExportSettingsDialog(QDialog):
         self.city = city
 
         self.setWindowTitle("Настройки экспорта изображения")
-        self.resize(500, 400)
+        self.resize(1200, 800)
 
         self.width_spin = QSpinBox()
         self.width_spin.setRange(1, 10000)
@@ -152,9 +156,6 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow("X месяца:", self.month_x_spin)
         form_layout.addRow("Y месяца:", self.month_y_spin)
 
-        layout = QVBoxLayout(self)
-        layout.addLayout(form_layout)
-
         self.button_box = QDialogButtonBox()
         self.save_button = cast(
             QPushButton,
@@ -165,11 +166,11 @@ class ImageExportSettingsDialog(QDialog):
         self.preview_button = cast(
             QPushButton,
             self.button_box.addButton(
-                "Предпросмотр",
+                "Обновить предпросмотр",
                 QDialogButtonBox.ButtonRole.ActionRole,
             ),
         )
-        self.preview_button.clicked.connect(self.preview_image)
+        self.preview_button.clicked.connect(self.update_preview)
         self.save_as_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -188,7 +189,71 @@ class ImageExportSettingsDialog(QDialog):
         self.save_as_button.clicked.connect(self.save_settings_as)
         self.close_button.clicked.connect(self.reject)
 
-        layout.addWidget(self.button_box)
+        self.preview_label = QLabel()
+        self.preview_label.setScaledContents(False)
+
+        self.preview_scroll_area = QScrollArea()
+        self.preview_scroll_area.setWidget(self.preview_label)
+        self.preview_scroll_area.setWidgetResizable(False)
+
+        self.preview_error_label = QLabel()
+        self.preview_error_label.setWordWrap(True)
+
+        self.preview_scale_combo = QComboBox()
+        self.preview_scale_combo.addItem("По ширине", "fit_width")
+        self.preview_scale_combo.addItem("50%", 0.5)
+        self.preview_scale_combo.addItem("75%", 0.75)
+        self.preview_scale_combo.addItem("100%", 1.0)
+        self.preview_scale_combo.addItem("125%", 1.25)
+        self.preview_scale_combo.addItem("150%", 1.5)
+        self.preview_scale_combo.setCurrentText("По ширине")
+        self.preview_scale_combo.currentIndexChanged.connect(
+            self.refresh_preview_pixmap
+        )
+        self.preview_scale_combo.currentIndexChanged.connect(
+            self.refresh_preview_pixmap
+        )
+
+        self.current_preview_image = None
+
+        left_layout = QVBoxLayout()
+        left_layout.addWidget(self.preview_scale_combo)
+        left_layout.addWidget(self.preview_scroll_area)
+        left_layout.addWidget(self.preview_error_label)
+
+        right_layout = QVBoxLayout()
+        right_layout.addLayout(form_layout)
+        right_layout.addWidget(self.button_box)
+
+        main_layout = QHBoxLayout(self)
+        main_layout.addLayout(left_layout, stretch=3)
+        main_layout.addLayout(right_layout, stretch=1)
+
+        self.preview_update_timer = QTimer(self)
+        self.preview_update_timer.setSingleShot(True)
+        self.preview_update_timer.setInterval(300)
+        self.preview_update_timer.timeout.connect(self.update_preview)
+
+        self.width_spin.valueChanged.connect(self.schedule_preview_update)
+        self.height_spin.valueChanged.connect(self.schedule_preview_update)
+        self.background_color_edit.textChanged.connect(self.schedule_preview_update)
+        self.template_path_edit.textChanged.connect(self.schedule_preview_update)
+        self.font_path_edit.textChanged.connect(self.schedule_preview_update)
+        self.font_size_spin.valueChanged.connect(self.schedule_preview_update)
+        self.text_color_edit.textChanged.connect(self.schedule_preview_update)
+
+        self.row_height_spin.valueChanged.connect(self.schedule_preview_update)
+        self.first_column_offset_x_spin.valueChanged.connect(
+            self.schedule_preview_update
+        )
+        self.second_column_offset_x_spin.valueChanged.connect(
+            self.schedule_preview_update
+        )
+
+        self.month_x_spin.valueChanged.connect(self.schedule_preview_update)
+        self.month_y_spin.valueChanged.connect(self.schedule_preview_update)
+
+        self.update_preview()
 
     def get_selected_month(self) -> int:
         return int(self.month_combo.currentData())
@@ -227,6 +292,8 @@ class ImageExportSettingsDialog(QDialog):
         self.template_path_edit.setText(file_path)
         self.settings.image.template_path = file_path
 
+        self.schedule_preview_update()
+
     def select_font_path(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -240,6 +307,8 @@ class ImageExportSettingsDialog(QDialog):
 
         self.font_path_edit.setText(file_path)
         self.settings.text.font_path = file_path
+
+        self.schedule_preview_update()
 
     def update_settings_from_fields(self) -> None:
         self.settings.image.width = self.width_spin.value()
@@ -313,33 +382,6 @@ class ImageExportSettingsDialog(QDialog):
         self.settings_path = path
         self.save_settings()
 
-    def preview_image(self) -> None:
-        if self.city is None:
-            QMessageBox.warning(
-                self,
-                "Предпросмотр",
-                "Выберите город перед открытием редактора настроек.",
-            )
-            return
-
-        self.update_settings_from_fields()
-
-        try:
-            image = build_city_image_preview_from_settings(
-                city=self.city,
-                settings=self.settings,
-            )
-        except Exception as error:
-            QMessageBox.critical(
-                self,
-                "Ошибка предпросмотра",
-                get_user_friendly_error(error),
-            )
-            return
-
-        dialog = ImagePreviewDialog(image=image, parent=self)
-        dialog.exec()
-
     def shift_all_months(self) -> None:
         dx = self.shift_x_spin.value()
         dy = self.shift_y_spin.value()
@@ -356,6 +398,8 @@ class ImageExportSettingsDialog(QDialog):
         self.shift_x_spin.setValue(0)
         self.shift_y_spin.setValue(0)
 
+        self.schedule_preview_update()
+
     def copy_month_position(self) -> None:
         source_month = int(self.copy_source_month_combo.currentData())
         target_month = int(self.copy_target_month_combo.currentData())
@@ -369,6 +413,8 @@ class ImageExportSettingsDialog(QDialog):
         target_block.x = source_block.x
         target_block.y = source_block.y
 
+        self.schedule_preview_update()
+
         if self.get_selected_month() == target_month:
             self.load_selected_month_position()
 
@@ -376,3 +422,72 @@ class ImageExportSettingsDialog(QDialog):
         self.update_settings_from_fields()
         save_export_settings(self.settings, path)
         self.settings_path = path
+
+    def set_preview_image(self, image: Image.Image) -> None:
+        self.current_preview_image = image
+        self.refresh_preview_pixmap()
+
+    def update_preview(self) -> None:
+        if self.city is None:
+            self.preview_label.setText("Выберите город для предпросмотра.")
+            self.preview_error_label.clear()
+            self.current_preview_image = None
+            return
+
+        self.update_settings_from_fields()
+
+        try:
+            image = build_city_image_preview_from_settings(
+                city=self.city,
+                settings=self.settings,
+            )
+        except Exception as error:
+            self.current_preview_image = None
+            self.preview_label.clear()
+            self.preview_error_label.setText(
+                f"Ошибка предпросмотра: {get_user_friendly_error(error)}"
+            )
+            return
+
+        self.preview_error_label.clear()
+        self.set_preview_image(image)
+
+    def schedule_preview_update(self) -> None:
+        self.preview_update_timer.start()
+
+    def refresh_preview_pixmap(self) -> None:
+        if self.current_preview_image is None:
+            return
+
+        image_qt = ImageQt(self.current_preview_image)
+        pixmap = QPixmap.fromImage(image_qt)
+
+        scale_data = self.preview_scale_combo.currentData()
+
+        if scale_data == "fit_width":
+            viewport = self.preview_scroll_area.viewport()
+
+            if viewport is None:
+                return
+
+            viewport_width = viewport.width()
+
+            if viewport_width > 0 and pixmap.width() > 0:
+                target_width = max(viewport_width - 20, 1)
+                scale = target_width / pixmap.width()
+
+                pixmap = pixmap.scaled(
+                    int(pixmap.width() * scale),
+                    int(pixmap.height() * scale),
+                )
+        else:
+            scale = float(scale_data)
+
+            if scale != 1.0:
+                pixmap = pixmap.scaled(
+                    int(pixmap.width() * scale),
+                    int(pixmap.height() * scale),
+                )
+
+        self.preview_label.setPixmap(pixmap)
+        self.preview_label.resize(pixmap.size())
