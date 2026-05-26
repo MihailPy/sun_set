@@ -166,11 +166,11 @@ class ImageExportSettingsDialog(QDialog):
         self.preview_button = cast(
             QPushButton,
             self.button_box.addButton(
-                "Предпросмотр",
+                "Обновить предпросмотр",
                 QDialogButtonBox.ButtonRole.ActionRole,
             ),
         )
-        self.preview_button.clicked.connect(self.preview_image)
+        self.preview_button.clicked.connect(self.update_preview)
         self.save_as_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -381,9 +381,6 @@ class ImageExportSettingsDialog(QDialog):
 
         self.settings_path = path
         self.save_settings()
-
-    def preview_image(self) -> None:
-        self.update_preview()
 
     def shift_all_months(self) -> None:
         dx = self.shift_x_spin.value()
