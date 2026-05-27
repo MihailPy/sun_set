@@ -5,8 +5,6 @@ from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
-    QDialog,
-    QDialogButtonBox,
     QFileDialog,
     QGroupBox,
     QHBoxLayout,
@@ -540,10 +538,18 @@ class MainWindow(QMainWindow):
             return
 
         result, error = load_from_json(file_path)
-        if error != None:
-            dlg = CustomDialog(error)
-            if dlg.exec():
+        if error is not None:
+            retry = QMessageBox.question(
+                self,
+                "Ошибка",
+                f"{error}\n\nВыбрать файл снова?",
+                QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Retry,
+            )
+
+            if retry == QMessageBox.StandardButton.Retry:
                 self.open_file_dialog()
+
             return
 
         if result != None:
@@ -638,28 +644,3 @@ class MainWindow(QMainWindow):
             return None
 
         return cities[0]
-
-
-class CustomDialog(QDialog):
-    def __init__(self, error_msg: str):
-        super().__init__()
-
-        self.setWindowTitle("Ошибка")
-
-        QBtn = (
-            QDialogButtonBox.StandardButton.Retry
-            | QDialogButtonBox.StandardButton.Cancel
-        )
-
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-
-        self.main_layout = QVBoxLayout()
-        error_label = QLabel(error_msg)
-        error_label.setStyleSheet("color: red;")
-        message = QLabel("Выбрать файл снова?")
-        self.main_layout.addWidget(error_label)
-        self.main_layout.addWidget(message)
-        self.main_layout.addWidget(self.buttonBox)
-        self.setLayout(self.main_layout)
