@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QLabel,
     QMainWindow,
+    QMenu,
     QMenuBar,
     QMessageBox,
     QPushButton,
@@ -127,21 +128,25 @@ class MainWindow(QMainWindow):
         self.preview_image_button.clicked.connect(self.preview_selected_city_image)
         city_btn_group_layout.addWidget(self.preview_image_button)
 
-        self.edit_image_export_settings_button = QPushButton(
-            "Редактировать настройки экспорта"
-        )
-        self.edit_image_export_settings_button.clicked.connect(
-            self.edit_image_export_settings
-        )
-        city_btn_group_layout.addWidget(self.edit_image_export_settings_button)
+        self.image_export_settings_button = QPushButton("Настройки экспорта", self)
 
-        self.create_image_export_settings_button = QPushButton(
-            "Создать настройки экспорта"
+        image_export_settings_menu = QMenu(self)
+
+        create_settings_action = image_export_settings_menu.addAction(
+            "Создать настройки"
         )
-        self.create_image_export_settings_button.clicked.connect(
-            self.create_image_export_settings
+        if create_settings_action is not None:
+            create_settings_action.triggered.connect(self.create_image_export_settings)
+
+        edit_settings_action = image_export_settings_menu.addAction(
+            "Редактировать настройки"
         )
-        city_btn_group_layout.addWidget(self.create_image_export_settings_button)
+        if edit_settings_action is not None:
+            edit_settings_action.triggered.connect(self.edit_image_export_settings)
+
+        self.image_export_settings_button.setMenu(image_export_settings_menu)
+        city_btn_group_layout.addWidget(self.image_export_settings_button)
+
         city_btn_group_layout.addStretch()
 
         city_main_layout.addLayout(city_btn_group_layout)
