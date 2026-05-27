@@ -210,13 +210,16 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
+    def show_no_cities_warning(self) -> None:
+        QMessageBox.warning(
+            self,
+            "Города",
+            "Сначала загрузите или создайте города.",
+        )
+
     def on_data_changed(self, top_left, bottom_right, roles):
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         if hasattr(self, "_updating") and self._updating:
@@ -247,11 +250,7 @@ class MainWindow(QMainWindow):
 
     def handle_city_update(self, row: int, action_type: str):
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         city = self.model.cities[row]
@@ -292,11 +291,7 @@ class MainWindow(QMainWindow):
     def on_city_data_changed(self, row: int):
         """Обработчик изменения данных города через окно редактирования"""
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         # Обновляем hash после редактирования
@@ -311,11 +306,7 @@ class MainWindow(QMainWindow):
     def update_city_row_display(self, row: int):
         """Вспомогательный метод для обновления отображения строки"""
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         index = self.model.index(row, 7)
@@ -340,19 +331,13 @@ class MainWindow(QMainWindow):
 
     def export_all_selected_city_image(self):
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         cities = self.model.get_selected_city()
 
         if cities is None:
-            QMessageBox.warning(
-                self, "Экспорт изображения", "Нет городов для экспорта."
-            )
+            self.show_no_cities_warning()
             return
 
         settings_file, _ = QFileDialog.getOpenFileName(
@@ -435,11 +420,7 @@ class MainWindow(QMainWindow):
 
     def preview_selected_city_image(self) -> None:
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         cities = self.model.get_selected_city()
@@ -448,11 +429,7 @@ class MainWindow(QMainWindow):
             city = cities[0]
 
         if city is None:
-            QMessageBox.warning(
-                self,
-                "Предпросмотр изображения",
-                "Выберите город.",
-            )
+            self.show_no_cities_warning()
             return
 
         settings_file, _ = QFileDialog.getOpenFileName(
