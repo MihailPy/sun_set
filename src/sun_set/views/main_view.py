@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
         weekday1 = self.combo_weekday1.currentIndex()
         weekday2 = self.combo_weekday2.currentIndex()
         if hasattr(self, "model") and self.model is not None:
-            updated_rows = self.model.updateCheckedCities(year, weekday1, weekday2)
+            updated_rows = self.model.update_checked_cities(year, weekday1, weekday2)
             if updated_rows:
                 self.table_view.resizeColumnToContents(7)
 
@@ -586,7 +586,7 @@ class MainWindow(QMainWindow):
             self.initial_prompt_text.hide()
         else:
             # Если модель уже есть, просто добавляем в неё данные
-            self.model.addCity(new_city)
+            self.model.add_city(new_city)
             if len(self.cities) == 1:
                 self.initial_prompt_text.hide()
                 self.table_view.show()
@@ -595,7 +595,7 @@ class MainWindow(QMainWindow):
 
     def delete_selected_cities(self):
         if hasattr(self, "model") and self.model is not None:
-            self.model.removeCheckedCities()
+            self.model.remove_checked_cities()
             self.table_view.resizeColumnsToContents()
             self.cities = self.model.cities
             if len(self.cities) == 0:

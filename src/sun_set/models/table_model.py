@@ -212,7 +212,7 @@ class CheckBoxHeader(QHeaderView):
 
             model = self.model()
             if isinstance(model, CityTableModel):
-                model.selectAll(self.is_checked)
+                model.select_all(self.is_checked)
         else:
             super().mousePressEvent(e)
 
@@ -377,7 +377,7 @@ class CityTableModel(QAbstractTableModel):
             return self.headers[section]
         return None
 
-    def addCity(self, city):
+    def add_city(self, city):
         last_row = len(self.cities)
 
         self.beginInsertRows(QModelIndex(), last_row, last_row)
@@ -385,7 +385,7 @@ class CityTableModel(QAbstractTableModel):
         self.checked_states.append(False)
         self.endInsertRows()
 
-    def selectAll(self, state: bool) -> None:
+    def select_all(self, state: bool) -> None:
         self.checked_states = [state] * len(self.cities)
         self.dataChanged.emit(
             self.index(0, 0),
@@ -399,7 +399,7 @@ class CityTableModel(QAbstractTableModel):
             return [self.cities[i] for i in selected_state_indices]
         return None
 
-    def removeCheckedCities(self):
+    def remove_checked_cities(self):
         indices_to_remove = [i for i, val in enumerate(self.checked_states) if val]
         indices_to_remove.sort(reverse=True)
 
@@ -409,7 +409,7 @@ class CityTableModel(QAbstractTableModel):
             del self.checked_states[row]
             self.endRemoveRows()
 
-    def updateCheckedCities(self, year: int, weekday1: int, weekday2: int):
+    def update_checked_cities(self, year: int, weekday1: int, weekday2: int):
         indices_to_update = [i for i, val in enumerate(self.checked_states) if val]
 
         for row in indices_to_update:
@@ -434,7 +434,7 @@ class CityTableModel(QAbstractTableModel):
                 )
         return indices_to_update
 
-    def handleButtonClick(self, row: int, action: str):
+    def handle_button_click(self, row: int, action: str):
         """Обработчик кликов от делегата"""
         if action == "view":
             # Логика просмотра

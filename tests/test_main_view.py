@@ -191,20 +191,20 @@ class TestMainWindow:
         mock_model = MagicMock()
         main_window.model = mock_model
 
-        mock_model.updateCheckedCities.return_value = 5
+        mock_model.update_checked_cities.return_value = 5
 
         main_window.table_view.resizeColumnToContents = MagicMock()
 
         main_window.initiate_sunset_fetch()
 
-        mock_model.updateCheckedCities.assert_called_once_with(2025, 0, 6)
+        mock_model.update_checked_cities.assert_called_once_with(2025, 0, 6)
 
         main_window.table_view.resizeColumnToContents.assert_called_once_with(7)
 
     def test_initiate_sunset_fetch_no_updates(self, main_window):
         """Тест отсутствия ресайза при пустом обновлении"""
         main_window.model = MagicMock()
-        main_window.model.updateCheckedCities.return_value = 0
+        main_window.model.update_checked_cities.return_value = 0
         main_window.table_view.resizeColumnToContents = MagicMock()
 
         main_window.initiate_sunset_fetch()

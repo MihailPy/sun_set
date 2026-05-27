@@ -419,7 +419,7 @@ class TestCityTableModel:
             sunset_data=YearData(2033, Source.CALCULATED, None, None),
         )
 
-        table_model.addCity(new_city)
+        table_model.add_city(new_city)
 
         assert table_model.rowCount() == initial_count + 1
         assert table_model.cities[-1] == new_city
@@ -428,11 +428,11 @@ class TestCityTableModel:
 
     def test_select_all(self, table_model):
         """Тест выбора всех элементов"""
-        table_model.selectAll(True)
+        table_model.select_all(True)
 
         assert all(table_model.checked_states)
 
-        table_model.selectAll(False)
+        table_model.select_all(False)
         assert not any(table_model.checked_states)
 
     def test_remove_checked_cities(self, table_model):
@@ -441,7 +441,7 @@ class TestCityTableModel:
 
         table_model.checked_states[0] = True
 
-        table_model.removeCheckedCities()
+        table_model.remove_checked_cities()
 
         assert table_model.rowCount() == initial_count - 1
         assert len(table_model.cities) == initial_count - 1
@@ -456,7 +456,7 @@ class TestCityTableModel:
         # Отмечаем первый город
         table_model.checked_states[0] = True
 
-        updated_indices = table_model.updateCheckedCities(2024, 1, 2)
+        updated_indices = table_model.update_checked_cities(2024, 1, 2)
 
         assert updated_indices == [0]
         mock_get_sunset.assert_called_once_with(sample_city, 2024, 1, 2)
@@ -472,14 +472,14 @@ class TestCityTableModel:
 
         sample_city.sunset_data.hash_before_edit = "old_hash"
 
-        table_model.handleButtonClick(0, "update")
+        table_model.handle_button_click(0, "update")
 
         mock_get_sunset.assert_called_once()
         assert sample_city.sunset_data == mock_sunset_data
 
     def test_handle_button_click_view(self, table_model):
         """Тест обработки клика по кнопке просмотра"""
-        table_model.handleButtonClick(0, "view")
+        table_model.handle_button_click(0, "view")
 
     def test_data_changed_signal(self, table_model):
         """Тест сигнала об изменении данных"""
@@ -515,6 +515,6 @@ class TestIntegration:
         assert not any(table_model.checked_states)
 
         checkbox_header.is_checked = True
-        table_model.selectAll(True)
+        table_model.select_all(True)
 
         assert all(table_model.checked_states)
