@@ -116,12 +116,12 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
         city_btn_group_layout.addWidget(self.btn_get_sunset_info)
 
-        self.btn_export_image = QPushButton("Экспорт изображения", self)
+        self.btn_export_image = QPushButton("Экспорт", self)
         self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
         self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
         city_btn_group_layout.addWidget(self.btn_export_image)
 
-        self.preview_image_button = QPushButton("Предпросмотр изображения", self)
+        self.preview_image_button = QPushButton("Предпросмотр", self)
         self.preview_image_button.setToolTip(
             "Предпросмотр перед сохранением изображения"
         )
