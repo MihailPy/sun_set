@@ -534,7 +534,7 @@ class MainWindow(QMainWindow):
 
             return
 
-        if result != None:
+        if result is not None:
             self.file_path = file_path
             self.cities = result
 
