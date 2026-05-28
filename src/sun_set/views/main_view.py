@@ -34,6 +34,7 @@ from sun_set.image_export.settings import (
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
+    STATUS_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     StatusActionDelegate,
@@ -161,11 +162,13 @@ class MainWindow(QMainWindow):
         self.table_view = QTableView()
         header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
         self.table_view.setHorizontalHeader(header)
-        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
         self.table_view.hide()  # Прячем, пока нет данных
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
         self.status_delegate = StatusActionDelegate(self.table_view)
-        self.table_view.setItemDelegateForColumn(7, self.status_delegate)
+        self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
         self.status_delegate.buttonClicked.connect(self.handle_city_update)
 
         city_main_layout.addWidget(self.table_view)
@@ -228,7 +231,7 @@ class MainWindow(QMainWindow):
         self._updating = True
 
         city = self.model.cities[top_left.row()]
-        index = self.model.index(top_left.row(), 7)
+        index = self.model.index(top_left.row(), STATUS_COLUMN)
 
         if city.get_stable_hash() != city.sunset_data.hash_before_edit:
             self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
@@ -244,7 +247,7 @@ class MainWindow(QMainWindow):
                 self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
                 self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
 
-        self.table_view.resizeColumnToContents(7)
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
         self._updating = False
 
@@ -271,11 +274,11 @@ class MainWindow(QMainWindow):
 
             city.sunset_data.hash_before_edit = city.get_stable_hash()
 
-            index = self.model.index(row, 7)
+            index = self.model.index(row, STATUS_COLUMN)
             if row in self.model.status_overrides:
                 del self.model.status_overrides[row]
 
-            index = self.model.index(row, 7)
+            index = self.model.index(row, STATUS_COLUMN)
             self.model.dataChanged.emit(
                 index,
                 index,
@@ -286,7 +289,7 @@ class MainWindow(QMainWindow):
                 ],
             )
 
-        self.table_view.resizeColumnToContents(7)
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def on_city_data_changed(self, row: int):
         """Обработчик изменения данных города через окно редактирования"""
@@ -301,7 +304,7 @@ class MainWindow(QMainWindow):
         # Обновляем отображение строки
         self.update_city_row_display(row)
 
-        self.table_view.resizeColumnToContents(7)
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def update_city_row_display(self, row: int):
         """Вспомогательный метод для обновления отображения строки"""
@@ -309,7 +312,7 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        index = self.model.index(row, 7)
+        index = self.model.index(row, STATUS_COLUMN)
         self.model.dataChanged.emit(
             index,
             index,
@@ -327,7 +330,7 @@ class MainWindow(QMainWindow):
         if hasattr(self, "model") and self.model is not None:
             updated_rows = self.model.update_checked_cities(year, weekday1, weekday2)
             if updated_rows:
-                self.table_view.resizeColumnToContents(7)
+                self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def export_all_selected_city_image(self):
         if self.model is None:

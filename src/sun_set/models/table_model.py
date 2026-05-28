@@ -23,6 +23,8 @@ from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source
 
+STATUS_COLUMN = 7
+
 
 class StatusActionDelegate(QStyledItemDelegate):
     buttonClicked = pyqtSignal(int, str)  # row, action_type ('view' или 'update')
@@ -245,7 +247,7 @@ class CityTableModel(QAbstractTableModel):
         base_flags = super().flags(index)
         if index.column() == 0:
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
-        if index.column() == 7:  # Колонка с кнопками
+        if index.column() == STATUS_COLUMN:
             return Qt.ItemFlag.ItemIsEnabled
         return base_flags | Qt.ItemFlag.ItemIsEditable
 
@@ -297,7 +299,7 @@ class CityTableModel(QAbstractTableModel):
                 return city.timezone
             if col == 6:
                 return str(city.elevation)
-            if col == 7:
+            if col == STATUS_COLUMN:
                 if row in self.status_overrides:
                     return self.status_overrides[row]
 
@@ -347,7 +349,7 @@ class CityTableModel(QAbstractTableModel):
                     city.timezone = value
                 elif col == 6:
                     city.elevation = int(value)
-                elif col == 7:
+                elif col == STATUS_COLUMN:
                     self.status_overrides[index.row()] = str(value)
 
                 # Обновляем все затронутые роли
@@ -421,8 +423,8 @@ class CityTableModel(QAbstractTableModel):
 
         if indices_to_update:
             for row in indices_to_update:
-                top_left = self.index(row, 7)
-                bottom_right = self.index(row, 7)
+                top_left = self.index(row, STATUS_COLUMN)
+                bottom_right = self.index(row, STATUS_COLUMN)
                 self.dataChanged.emit(
                     top_left,
                     bottom_right,
