@@ -213,6 +213,15 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
+    def setup_city_model(self, cities: list[City]) -> None:
+        self.cities = cities
+        self.model = CityTableModel(self.cities)
+        self.model.dataChanged.connect(self.on_data_changed)
+        self.table_view.setModel(self.model)
+        self.table_view.show()
+        self.initial_prompt_text.hide()
+        self.table_view.resizeColumnsToContents()
+
     def show_no_cities_warning(self) -> None:
         QMessageBox.warning(
             self,
@@ -539,16 +548,7 @@ class MainWindow(QMainWindow):
 
         if result is not None:
             self.file_path = file_path
-            self.cities = result
-
-            self.initial_prompt_text.hide()
-
-            self.model = CityTableModel(self.cities)
-            self.model.dataChanged.connect(self.on_data_changed)
-            self.table_view.setModel(self.model)
-            self.table_view.show()
-
-            self.table_view.resizeColumnsToContents()
+            self.setup_city_model(result)
 
     def save_file(self):
         if not self.file_path:
@@ -581,12 +581,7 @@ class MainWindow(QMainWindow):
         )
         # Если модель еще не была создана (например, при первом нажатии)
         if not hasattr(self, "model") or self.model is None:
-            self.cities = [new_city]
-            self.model = CityTableModel(self.cities)
-            self.model.dataChanged.connect(self.on_data_changed)
-            self.table_view.setModel(self.model)
-            self.table_view.show()
-            self.initial_prompt_text.hide()
+            self.setup_city_model([new_city])
         else:
             # Если модель уже есть, просто добавляем в неё данные
             self.model.add_city(new_city)
