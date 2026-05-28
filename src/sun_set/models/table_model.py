@@ -433,31 +433,3 @@ class CityTableModel(QAbstractTableModel):
                     ],
                 )
         return indices_to_update
-
-    def handle_button_click(self, row: int, action: str):
-        """Обработчик кликов от делегата"""
-        if action == "view":
-            # Логика просмотра
-            pass
-
-        elif action == "update":
-            # Логика обновления
-            city = self.cities[row]
-            if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-                # Обновляем только один город
-                city.sunset_data = get_city_sunset(
-                    city, 2024, 1, 2
-                )  # С параметрами по умолчанию
-                if row in self.status_overrides:
-                    del self.status_overrides[row]
-
-                # Обновляем отображение
-                index = self.index(row, 7)
-                self.dataChanged.emit(
-                    index,
-                    index,
-                    [
-                        Qt.ItemDataRole.DisplayRole,
-                        StatusActionDelegate.UpdateEnabledRole,
-                    ],
-                )

@@ -462,25 +462,6 @@ class TestCityTableModel:
         mock_get_sunset.assert_called_once_with(sample_city, 2024, 1, 2)
         assert table_model.cities[0].sunset_data == mock_sunset_data
 
-    @patch("sun_set.models.table_model.get_city_sunset")
-    def test_handle_button_click_update(
-        self, mock_get_sunset, table_model, sample_city
-    ):
-        """Тест обработки клика по кнопке обновления"""
-        mock_sunset_data = Mock(spec=YearData)
-        mock_get_sunset.return_value = mock_sunset_data
-
-        sample_city.sunset_data.hash_before_edit = "old_hash"
-
-        table_model.handle_button_click(0, "update")
-
-        mock_get_sunset.assert_called_once()
-        assert sample_city.sunset_data == mock_sunset_data
-
-    def test_handle_button_click_view(self, table_model):
-        """Тест обработки клика по кнопке просмотра"""
-        table_model.handle_button_click(0, "view")
-
     def test_data_changed_signal(self, table_model):
         """Тест сигнала об изменении данных"""
         signal_received = False
