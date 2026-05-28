@@ -342,11 +342,7 @@ class MainWindow(QMainWindow):
                 self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def export_all_selected_city_image(self):
-        if self.model is None:
-            self.show_no_cities_warning()
-            return
-
-        cities = self.model.get_selected_city()
+        cities = self.get_selected_cities_or_none()
 
         if cities is None:
             self.show_no_cities_warning()
@@ -431,14 +427,8 @@ class MainWindow(QMainWindow):
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
 
     def preview_selected_city_image(self) -> None:
-        if self.model is None:
-            self.show_no_cities_warning()
-            return
-
-        cities = self.model.get_selected_city()
-        city = None
-        if cities is not None:
-            city = cities[0]
+        cities = self.get_selected_cities_or_none()
+        city = cities[0] if cities else None
 
         if city is None:
             self.show_no_cities_warning()
@@ -615,12 +605,16 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def get_current_city_or_none(self):
-        if not hasattr(self, "model") or self.model is None:
+        cities = self.get_selected_cities_or_none()
+        return cities[0] if cities else None
+
+    def get_selected_cities_or_none(self) -> list[City] | None:
+        if self.model is None:
+            self.show_no_cities_warning()
             return None
 
         cities = self.model.get_selected_city()
-
         if not cities:
             return None
 
-        return cities[0]
+        return cities
