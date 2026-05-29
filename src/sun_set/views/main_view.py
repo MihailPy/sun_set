@@ -5,14 +5,13 @@ from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
-    QDialog,
-    QDialogButtonBox,
     QFileDialog,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
     QLabel,
     QMainWindow,
+    QMenu,
     QMenuBar,
     QMessageBox,
     QPushButton,
@@ -35,6 +34,7 @@ from sun_set.image_export.settings import (
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
+    STATUS_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     StatusActionDelegate,
@@ -48,24 +48,28 @@ from sun_set.views.sunset_table_view import YearEditorWindow
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("Sun set")
         self.resize(800, 400)
 
-        # 1. Создаем центральный виджет и главный макет
+        self.file_path: str | None = None
+        self.last_image_export_settings_path: str = ""
+        self.last_image_export_output_dir: str = ""
+
+        self.cities: list[City] = []
+        self.model: CityTableModel | None = None
+
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
-        # Переменная путь к json файлу
-        self.file_path = None
-        # Переменные путь к JSON настройки экспорта и путь к папке экспорта
-        self.last_image_export_settings_path: str = ""
-        self.last_image_export_output_dir: str = ""
+        self.setStatusBar(QStatusBar(self))
 
-        self.cities = []
-        self.model = None
+        self._setup_menu()
+        self._setup_city_group()
+        self._setup_date_group()
 
-        # Создание кнопок для меню бар "Файл"
+    def _setup_menu(self) -> None:
         self.btn_choose_file = QAction("Открыть файл", self)
         self.btn_choose_file.setToolTip("Открыть файл с городами")
         self.btn_choose_file.setShortcut(QKeySequence("Ctrl+O"))
@@ -81,103 +85,112 @@ class MainWindow(QMainWindow):
         self.btn_save_file_as.setShortcut(QKeySequence("Shift+Ctrl+S"))
         self.btn_save_file_as.triggered.connect(self.save_file_as)
 
-        self.setStatusBar(QStatusBar(self))
-
-        # Создание меню бар "Файл"
         menu = QMenuBar(self)
         self.setMenuBar(menu)
-        file_menu = menu.addMenu("&Файл")
 
-        # Добавление в меню бар "Файл" кнопок
+        file_menu = menu.addMenu("&Файл")
         if file_menu:
             file_menu.addAction(self.btn_choose_file)
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
 
-        # Создание группы для таблицы и кнопок городов
+    def _setup_city_group(self) -> None:
         city_group = QGroupBox("Города")
         city_group.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Preferred,
         )
+
         city_main_layout = QVBoxLayout()
 
         city_btn_group_layout = QHBoxLayout()
-        self.btn_add_city = QPushButton("Добавить")
-        self.btn_add_city.setToolTip("Добавить город в таблицу")
-        self.btn_add_city.clicked.connect(self.add_city_in_table)
-        city_btn_group_layout.addWidget(self.btn_add_city)
-
-        self.btn_del_city = QPushButton("Удалить")
-        self.btn_del_city.setToolTip("Удалить выбранные города")
-        self.btn_del_city.clicked.connect(self.delete_selected_cities)
-        city_btn_group_layout.addWidget(self.btn_del_city)
-
-        self.btn_get_sunset_info = QPushButton("Обновить", self)
-        self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
-        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
-        city_btn_group_layout.addWidget(self.btn_get_sunset_info)
-
-        self.btn_export_image = QPushButton("Экспорт изображения", self)
-        self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
-        self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
-        city_btn_group_layout.addWidget(self.btn_export_image)
-
-        self.preview_image_button = QPushButton("Предпросмотр изображения", self)
-        self.preview_image_button.setToolTip(
-            "Предпросмотр перед сохранением изображения"
-        )
-        self.preview_image_button.clicked.connect(self.preview_selected_city_image)
-        city_btn_group_layout.addWidget(self.preview_image_button)
-
-        self.edit_image_export_settings_button = QPushButton(
-            "Редактировать настройки экспорта"
-        )
-        self.edit_image_export_settings_button.clicked.connect(
-            self.edit_image_export_settings
-        )
-        city_btn_group_layout.addWidget(self.edit_image_export_settings_button)
-
-        self.create_image_export_settings_button = QPushButton(
-            "Создать настройки экспорта"
-        )
-        self.create_image_export_settings_button.clicked.connect(
-            self.create_image_export_settings
-        )
-        city_btn_group_layout.addWidget(self.create_image_export_settings_button)
-        city_btn_group_layout.addStretch()
-
+        self._setup_city_buttons(city_btn_group_layout)
         city_main_layout.addLayout(city_btn_group_layout)
 
         self.initial_prompt_text = QLabel(
-            """Выберите файл для загрузки данных городов, или нажмите 'Добавить'"""
+            "Выберите файл для загрузки данных городов, или нажмите 'Добавить'"
         )
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         city_main_layout.addWidget(self.initial_prompt_text)
 
-        # Добавление и настройка таблицы
-        self.table_view = QTableView()
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-        header.setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
-        self.table_view.hide()  # Прячем, пока нет данных
-        self.table_view.setItemDelegate(CityDelegate(self.table_view))
-        self.status_delegate = StatusActionDelegate(self.table_view)
-        self.table_view.setItemDelegateForColumn(7, self.status_delegate)
-        self.status_delegate.buttonClicked.connect(self.handle_city_update)
-
+        self._setup_table()
         city_main_layout.addWidget(self.table_view)
 
         city_group.setLayout(city_main_layout)
-
         self.main_layout.addWidget(city_group)
 
+    def _setup_city_buttons(self, layout: QHBoxLayout) -> None:
+        self.btn_add_city = QPushButton("Добавить")
+        self.btn_add_city.setToolTip("Добавить город в таблицу")
+        self.btn_add_city.clicked.connect(self.add_city_in_table)
+        layout.addWidget(self.btn_add_city)
+
+        self.btn_del_city = QPushButton("Удалить")
+        self.btn_del_city.setToolTip("Удалить выбранные города")
+        self.btn_del_city.clicked.connect(self.delete_selected_cities)
+        layout.addWidget(self.btn_del_city)
+
+        self.btn_get_sunset_info = QPushButton("Обновить", self)
+        self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
+        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
+        layout.addWidget(self.btn_get_sunset_info)
+
+        self.btn_export_image = QPushButton("Экспорт", self)
+        self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
+        self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
+        layout.addWidget(self.btn_export_image)
+
+        self.preview_image_button = QPushButton("Предпросмотр", self)
+        self.preview_image_button.setToolTip(
+            "Предпросмотр перед сохранением изображения"
+        )
+        self.preview_image_button.clicked.connect(self.preview_selected_city_image)
+        layout.addWidget(self.preview_image_button)
+
+        self.image_export_settings_button = QPushButton("Настройки экспорта", self)
+
+        image_export_settings_menu = QMenu(self)
+
+        create_settings_action = QAction("Создать настройки", self)
+        create_settings_action.triggered.connect(self.create_image_export_settings)
+        image_export_settings_menu.addAction(create_settings_action)
+
+        edit_settings_action = QAction("Редактировать настройки", self)
+        edit_settings_action.triggered.connect(self.edit_image_export_settings)
+        image_export_settings_menu.addAction(edit_settings_action)
+
+        self.image_export_settings_button.setMenu(image_export_settings_menu)
+        layout.addWidget(self.image_export_settings_button)
+
+        layout.addStretch()
+
+    def _setup_table(self) -> None:
+        self.table_view = QTableView()
+
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
+
+        self.table_view.hide()
+        self.table_view.setItemDelegate(CityDelegate(self.table_view))
+
+        self.status_delegate = StatusActionDelegate(self.table_view)
+        self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
+        self.status_delegate.buttonClicked.connect(self.handle_city_update)
+
+    def _setup_date_group(self) -> None:
         date_group = QGroupBox("Настройки для сбора данных закатов")
         date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
         date_group_layout = QHBoxLayout()
+
         current_year = datetime.now().year
         self.year_spinbox = QSpinBox()
         self.year_spinbox.setRange(current_year - 50, current_year + 50)
         self.year_spinbox.setValue(current_year + 1)
+
         date_group_layout.addWidget(QLabel("Год:"))
         date_group_layout.addWidget(self.year_spinbox)
 
@@ -193,12 +206,14 @@ class MainWindow(QMainWindow):
 
         self.combo_weekday1 = QComboBox()
         self.combo_weekday2 = QComboBox()
+
         for name, value in days:
             self.combo_weekday1.addItem(name, value)
             self.combo_weekday2.addItem(name, value)
 
         self.combo_weekday1.setCurrentIndex(4)
         self.combo_weekday2.setCurrentIndex(5)
+
         date_group_layout.addWidget(QLabel("Интересующие дни 1:"))
         date_group_layout.addWidget(self.combo_weekday1)
         date_group_layout.addWidget(QLabel("2:"))
@@ -207,13 +222,25 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
 
+    def setup_city_model(self, cities: list[City]) -> None:
+        self.cities = cities
+        self.model = CityTableModel(self.cities)
+        self.model.dataChanged.connect(self.on_data_changed)
+        self.table_view.setModel(self.model)
+        self.table_view.show()
+        self.initial_prompt_text.hide()
+        self.table_view.resizeColumnsToContents()
+
+    def show_no_cities_warning(self) -> None:
+        QMessageBox.warning(
+            self,
+            "Города",
+            "Сначала загрузите или создайте города.",
+        )
+
     def on_data_changed(self, top_left, bottom_right, roles):
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         if hasattr(self, "_updating") and self._updating:
@@ -222,7 +249,7 @@ class MainWindow(QMainWindow):
         self._updating = True
 
         city = self.model.cities[top_left.row()]
-        index = self.model.index(top_left.row(), 7)
+        index = self.model.index(top_left.row(), STATUS_COLUMN)
 
         if city.get_stable_hash() != city.sunset_data.hash_before_edit:
             self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
@@ -238,17 +265,13 @@ class MainWindow(QMainWindow):
                 self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
                 self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
 
-        self.table_view.resizeColumnToContents(7)
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
         self._updating = False
 
     def handle_city_update(self, row: int, action_type: str):
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
         city = self.model.cities[row]
@@ -269,11 +292,11 @@ class MainWindow(QMainWindow):
 
             city.sunset_data.hash_before_edit = city.get_stable_hash()
 
-            index = self.model.index(row, 7)
+            index = self.model.index(row, STATUS_COLUMN)
             if row in self.model.status_overrides:
                 del self.model.status_overrides[row]
 
-            index = self.model.index(row, 7)
+            index = self.model.index(row, STATUS_COLUMN)
             self.model.dataChanged.emit(
                 index,
                 index,
@@ -284,38 +307,28 @@ class MainWindow(QMainWindow):
                 ],
             )
 
-        self.table_view.resizeColumnToContents(7)
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def on_city_data_changed(self, row: int):
         """Обработчик изменения данных города через окно редактирования"""
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
-        # Обновляем hash после редактирования
         city = self.model.cities[row]
         city.sunset_data.hash_before_edit = city.get_stable_hash()
 
-        # Обновляем отображение строки
         self.update_city_row_display(row)
 
-        self.table_view.resizeColumnToContents(7)
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def update_city_row_display(self, row: int):
         """Вспомогательный метод для обновления отображения строки"""
         if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
+            self.show_no_cities_warning()
             return
 
-        index = self.model.index(row, 7)
+        index = self.model.index(row, STATUS_COLUMN)
         self.model.dataChanged.emit(
             index,
             index,
@@ -326,30 +339,20 @@ class MainWindow(QMainWindow):
             ],
         )
 
-    def initiate_sunset_fetch(self):
+    def initiate_sunset_fetch(self) -> None:
         year = self.year_spinbox.value()
         weekday1 = self.combo_weekday1.currentIndex()
         weekday2 = self.combo_weekday2.currentIndex()
         if hasattr(self, "model") and self.model is not None:
-            updated_rows = self.model.updateCheckedCities(year, weekday1, weekday2)
+            updated_rows = self.model.update_checked_cities(year, weekday1, weekday2)
             if updated_rows:
-                self.table_view.resizeColumnToContents(7)
+                self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
-    def export_all_selected_city_image(self):
-        if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
-            return
-
-        cities = self.model.get_selected_city()
+    def export_all_selected_city_image(self) -> None:
+        cities = self.get_selected_cities_or_none()
 
         if cities is None:
-            QMessageBox.warning(
-                self, "Экспорт изображения", "Нет городов для экспорта."
-            )
+            self.show_no_cities_warning()
             return
 
         settings_file, _ = QFileDialog.getOpenFileName(
@@ -431,25 +434,11 @@ class MainWindow(QMainWindow):
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
 
     def preview_selected_city_image(self) -> None:
-        if self.model is None:
-            QMessageBox.warning(
-                self,
-                "Экспорт изображений",
-                "Сначала загрузите или создайте города.",
-            )
-            return
-
-        cities = self.model.get_selected_city()
-        city = None
-        if cities is not None:
-            city = cities[0]
+        cities = self.get_selected_cities_or_none()
+        city = cities[0] if cities else None
 
         if city is None:
-            QMessageBox.warning(
-                self,
-                "Предпросмотр изображения",
-                "Выберите город.",
-            )
+            self.show_no_cities_warning()
             return
 
         settings_file, _ = QFileDialog.getOpenFileName(
@@ -527,8 +516,7 @@ class MainWindow(QMainWindow):
         )
         dialog.exec()
 
-    def open_file_dialog(self):
-        # Вызываем окно выбора файла
+    def open_file_dialog(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Выберите файл",
@@ -540,32 +528,31 @@ class MainWindow(QMainWindow):
             return
 
         result, error = load_from_json(file_path)
-        if error != None:
-            dlg = CustomDialog(error)
-            if dlg.exec():
+        if error is not None:
+            retry = QMessageBox.question(
+                self,
+                "Ошибка",
+                f"{error}\n\nВыбрать файл снова?",
+                QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Retry,
+            )
+
+            if retry == QMessageBox.StandardButton.Retry:
                 self.open_file_dialog()
+
             return
 
-        if result != None:
+        if result is not None:
             self.file_path = file_path
-            self.cities = result
+            self.setup_city_model(result)
 
-            self.initial_prompt_text.hide()
-
-            self.model = CityTableModel(self.cities)
-            self.model.dataChanged.connect(self.on_data_changed)
-            self.table_view.setModel(self.model)
-            self.table_view.show()
-
-            self.table_view.resizeColumnsToContents()
-
-    def save_file(self):
+    def save_file(self) -> None:
         if not self.file_path:
             self.save_file_as()
         else:
             save_to_json(self.cities, self.file_path)
 
-    def save_file_as(self):
+    def save_file_as(self) -> None:
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить файл как...", "", "JSON Files (*.json)"
         )
@@ -573,7 +560,7 @@ class MainWindow(QMainWindow):
             save_to_json(self.cities, file_path)
             self.file_path = file_path
 
-    def add_city_in_table(self):
+    def add_city_in_table(self) -> None:
         new_city = City(
             name="Новый город",
             region="-",
@@ -588,26 +575,19 @@ class MainWindow(QMainWindow):
                 months=None,
             ),
         )
-        # Если модель еще не была создана (например, при первом нажатии)
         if not hasattr(self, "model") or self.model is None:
-            self.cities = [new_city]
-            self.model = CityTableModel(self.cities)
-            self.model.dataChanged.connect(self.on_data_changed)
-            self.table_view.setModel(self.model)
-            self.table_view.show()
-            self.initial_prompt_text.hide()
+            self.setup_city_model([new_city])
         else:
-            # Если модель уже есть, просто добавляем в неё данные
-            self.model.addCity(new_city)
+            self.model.add_city(new_city)
             if len(self.cities) == 1:
                 self.initial_prompt_text.hide()
                 self.table_view.show()
 
         self.table_view.resizeColumnsToContents()
 
-    def delete_selected_cities(self):
+    def delete_selected_cities(self) -> None:
         if hasattr(self, "model") and self.model is not None:
-            self.model.removeCheckedCities()
+            self.model.remove_checked_cities()
             self.table_view.resizeColumnsToContents()
             self.cities = self.model.cities
             if len(self.cities) == 0:
@@ -628,38 +608,23 @@ class MainWindow(QMainWindow):
         )
         dialog.exec()
 
-    def get_current_city_or_none(self):
-        if not hasattr(self, "model") or self.model is None:
+    def get_current_city_or_none(self) -> City | None:
+        if self.model is None:
             return None
 
         cities = self.model.get_selected_city()
-
         if not cities:
             return None
 
         return cities[0]
 
+    def get_selected_cities_or_none(self) -> list[City] | None:
+        if self.model is None:
+            self.show_no_cities_warning()
+            return None
 
-class CustomDialog(QDialog):
-    def __init__(self, error_msg: str):
-        super().__init__()
+        cities = self.model.get_selected_city()
+        if not cities:
+            return None
 
-        self.setWindowTitle("Ошибка")
-
-        QBtn = (
-            QDialogButtonBox.StandardButton.Retry
-            | QDialogButtonBox.StandardButton.Cancel
-        )
-
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-
-        self.main_layout = QVBoxLayout()
-        error_label = QLabel(error_msg)
-        error_label.setStyleSheet("color: red;")
-        message = QLabel("Выбрать файл снова?")
-        self.main_layout.addWidget(error_label)
-        self.main_layout.addWidget(message)
-        self.main_layout.addWidget(self.buttonBox)
-        self.setLayout(self.main_layout)
+        return cities

@@ -3,12 +3,12 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QDialogButtonBox, QFileDialog, QLabel
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
 from sun_set.api.file_manager import save_to_json
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
-from sun_set.views.main_view import CustomDialog, MainWindow
+from sun_set.views.main_view import MainWindow
 
 
 @pytest.fixture(scope="session")
@@ -98,16 +98,6 @@ class TestMainWindow:
                     (None, "Ошибка: Файл не найден. Проверьте путь к файлу."),
                     ([sample_city], None),
                 ]
-                with patch("sun_set.views.main_view.CustomDialog") as MockDlg:
-                    MockDlg.return_value.exec.return_value = True
-
-                    main_window.open_file_dialog()
-
-                    MockDlg.assert_called_once_with(
-                        "Ошибка: Файл не найден. Проверьте путь к файлу."
-                    )
-
-                    assert mock_load.call_count == 2
 
     def test_open_file_updates_ui(self, main_window, qtbot, temp_json_file):
         """Тест обновления UI после открытия файла"""
@@ -201,20 +191,20 @@ class TestMainWindow:
         mock_model = MagicMock()
         main_window.model = mock_model
 
-        mock_model.updateCheckedCities.return_value = 5
+        mock_model.update_checked_cities.return_value = 5
 
         main_window.table_view.resizeColumnToContents = MagicMock()
 
         main_window.initiate_sunset_fetch()
 
-        mock_model.updateCheckedCities.assert_called_once_with(2025, 0, 6)
+        mock_model.update_checked_cities.assert_called_once_with(2025, 0, 6)
 
         main_window.table_view.resizeColumnToContents.assert_called_once_with(7)
 
     def test_initiate_sunset_fetch_no_updates(self, main_window):
         """Тест отсутствия ресайза при пустом обновлении"""
         main_window.model = MagicMock()
-        main_window.model.updateCheckedCities.return_value = 0
+        main_window.model.update_checked_cities.return_value = 0
         main_window.table_view.resizeColumnToContents = MagicMock()
 
         main_window.initiate_sunset_fetch()
@@ -305,39 +295,3 @@ class TestMainWindow:
         # 4. Проверяем сохранение
         with patch("builtins.open", mock_open()):
             main_window.save_file()
-
-
-class TestCustomDialog:
-    def test_dialog_shows_correct_message(self, qtbot):
-        error_text = "Файл не найден"
-        dialog = CustomDialog(error_text)
-        qtbot.add_widget(dialog)
-
-        # Проверяем, что заголовок верный
-        assert dialog.windowTitle() == "Ошибка"
-
-        # Ищем label с текстом ошибки
-        labels = dialog.findChildren(QLabel)
-        texts = [l.text() for l in labels]
-        assert error_text in texts
-        assert "Выбрать файл снова?" in texts
-
-    def test_dialog_retry_button_accepts(self, qtbot):
-        dialog = CustomDialog("Ошибка")
-        qtbot.add_widget(dialog)
-
-        # Имитируем нажатие на кнопку Retry (OK/Accept)
-        retry_button = dialog.buttonBox.button(QDialogButtonBox.StandardButton.Retry)
-
-        with qtbot.waitSignal(dialog.accepted):
-            qtbot.mouseClick(retry_button, Qt.MouseButton.LeftButton)
-
-    def test_dialog_cancel_button_rejects(self, qtbot):
-        dialog = CustomDialog("Ошибка")
-        qtbot.add_widget(dialog)
-
-        # Имитируем нажатие на кнопку Cancel
-        cancel_button = dialog.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)
-
-        with qtbot.waitSignal(dialog.rejected):
-            qtbot.mouseClick(cancel_button, Qt.MouseButton.LeftButton)

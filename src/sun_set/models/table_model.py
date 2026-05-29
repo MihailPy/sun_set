@@ -1,4 +1,4 @@
-import typing
+from typing import Any
 
 from PyQt6 import QtGui
 from PyQt6.QtCore import (
@@ -22,6 +22,8 @@ from PyQt6.QtWidgets import (
 from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source
+
+STATUS_COLUMN = 7
 
 
 class StatusActionDelegate(QStyledItemDelegate):
@@ -212,7 +214,7 @@ class CheckBoxHeader(QHeaderView):
 
             model = self.model()
             if isinstance(model, CityTableModel):
-                model.selectAll(self.is_checked)
+                model.select_all(self.is_checked)
         else:
             super().mousePressEvent(e)
 
@@ -245,7 +247,7 @@ class CityTableModel(QAbstractTableModel):
         base_flags = super().flags(index)
         if index.column() == 0:
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
-        if index.column() == 7:  # Колонка с кнопками
+        if index.column() == STATUS_COLUMN:
             return Qt.ItemFlag.ItemIsEnabled
         return base_flags | Qt.ItemFlag.ItemIsEditable
 
@@ -297,7 +299,7 @@ class CityTableModel(QAbstractTableModel):
                 return city.timezone
             if col == 6:
                 return str(city.elevation)
-            if col == 7:
+            if col == STATUS_COLUMN:
                 if row in self.status_overrides:
                     return self.status_overrides[row]
 
@@ -314,7 +316,7 @@ class CityTableModel(QAbstractTableModel):
     def setData(
         self,
         index: QModelIndex,
-        value: typing.Any,
+        value: Any,
         role: int = Qt.ItemDataRole.EditRole,
     ) -> bool:
         if not index.isValid():
@@ -347,7 +349,7 @@ class CityTableModel(QAbstractTableModel):
                     city.timezone = value
                 elif col == 6:
                     city.elevation = int(value)
-                elif col == 7:
+                elif col == STATUS_COLUMN:
                     self.status_overrides[index.row()] = str(value)
 
                 # Обновляем все затронутые роли
@@ -377,7 +379,7 @@ class CityTableModel(QAbstractTableModel):
             return self.headers[section]
         return None
 
-    def addCity(self, city):
+    def add_city(self, city):
         last_row = len(self.cities)
 
         self.beginInsertRows(QModelIndex(), last_row, last_row)
@@ -385,7 +387,7 @@ class CityTableModel(QAbstractTableModel):
         self.checked_states.append(False)
         self.endInsertRows()
 
-    def selectAll(self, state: bool) -> None:
+    def select_all(self, state: bool) -> None:
         self.checked_states = [state] * len(self.cities)
         self.dataChanged.emit(
             self.index(0, 0),
@@ -399,7 +401,7 @@ class CityTableModel(QAbstractTableModel):
             return [self.cities[i] for i in selected_state_indices]
         return None
 
-    def removeCheckedCities(self):
+    def remove_checked_cities(self):
         indices_to_remove = [i for i, val in enumerate(self.checked_states) if val]
         indices_to_remove.sort(reverse=True)
 
@@ -409,7 +411,7 @@ class CityTableModel(QAbstractTableModel):
             del self.checked_states[row]
             self.endRemoveRows()
 
-    def updateCheckedCities(self, year: int, weekday1: int, weekday2: int):
+    def update_checked_cities(self, year: int, weekday1: int, weekday2: int):
         indices_to_update = [i for i, val in enumerate(self.checked_states) if val]
 
         for row in indices_to_update:
@@ -421,8 +423,8 @@ class CityTableModel(QAbstractTableModel):
 
         if indices_to_update:
             for row in indices_to_update:
-                top_left = self.index(row, 7)
-                bottom_right = self.index(row, 7)
+                top_left = self.index(row, STATUS_COLUMN)
+                bottom_right = self.index(row, STATUS_COLUMN)
                 self.dataChanged.emit(
                     top_left,
                     bottom_right,
@@ -433,31 +435,3 @@ class CityTableModel(QAbstractTableModel):
                     ],
                 )
         return indices_to_update
-
-    def handleButtonClick(self, row: int, action: str):
-        """Обработчик кликов от делегата"""
-        if action == "view":
-            # Логика просмотра
-            pass
-
-        elif action == "update":
-            # Логика обновления
-            city = self.cities[row]
-            if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-                # Обновляем только один город
-                city.sunset_data = get_city_sunset(
-                    city, 2024, 1, 2
-                )  # С параметрами по умолчанию
-                if row in self.status_overrides:
-                    del self.status_overrides[row]
-
-                # Обновляем отображение
-                index = self.index(row, 7)
-                self.dataChanged.emit(
-                    index,
-                    index,
-                    [
-                        Qt.ItemDataRole.DisplayRole,
-                        StatusActionDelegate.UpdateEnabledRole,
-                    ],
-                )
