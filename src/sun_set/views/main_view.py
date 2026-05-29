@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QSpinBox,
+    QStatusBar,
     QTableView,
     QVBoxLayout,
     QWidget,
@@ -47,27 +48,25 @@ from sun_set.views.sunset_table_view import YearEditorWindow
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("Sun set")
         self.resize(800, 400)
 
-        # 1. Создаем центральный виджет и главный макет
+        self.file_path = None
+        self.last_image_export_settings_path: str = ""
+        self.last_image_export_output_dir: str = ""
+
+        self.cities: list[City] = []
+        self.model: CityTableModel | None = None
+
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
-        # Переменная путь к json файлу
-        self.file_path = None
-        # Переменные путь к JSON настройки экспорта и путь к папке экспорта
-        self.last_image_export_settings_path: str = ""
-        self.last_image_export_output_dir: str = ""
-
-        self.cities = []
-        self.model = None
+        self.setStatusBar(QStatusBar(self))
 
         self._setup_menu()
-
         self._setup_city_group()
-
         self._setup_date_group()
 
     def _setup_menu(self) -> None:
