@@ -1,0 +1,22 @@
+{
+  "title": "Sun Set",
+  "status": "in-development",
+  "category": "Desktop app",
+  "priority": 1,
+  "stack": [
+    "Python",
+    "PyQt6",
+    "astral",
+    "pytest",
+    "pytest-qt",
+    "uv"
+  ],
+  "summary": "Desktop-приложение для расчёта, редактирования и экспорта расписания закатов по городам.",
+  "highlights": [
+    "GUI-приложение на PyQt6",
+    "Расчёт времени заката по городам",
+    "Редактирование данных по месяцам и дням",
+    "Экспорт расписания в PNG",
+    "Unit и UI-тесты"
+  ]
+}
