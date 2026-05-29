@@ -130,18 +130,7 @@ class MainWindow(QMainWindow):
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         city_main_layout.addWidget(self.initial_prompt_text)
 
-        # Добавление и настройка таблицы
-        self.table_view = QTableView()
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-        header.setSectionResizeMode(
-            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
-        )
-        self.table_view.hide()  # Прячем, пока нет данных
-        self.table_view.setItemDelegate(CityDelegate(self.table_view))
-        self.status_delegate = StatusActionDelegate(self.table_view)
-        self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
-        self.status_delegate.buttonClicked.connect(self.handle_city_update)
+        self._setup_table()
 
         city_main_layout.addWidget(self.table_view)
 
@@ -175,6 +164,22 @@ class MainWindow(QMainWindow):
             file_menu.addAction(self.btn_choose_file)
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
+
+    def _setup_table(self) -> None:
+        self.table_view = QTableView()
+
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
+
+        self.table_view.hide()
+        self.table_view.setItemDelegate(CityDelegate(self.table_view))
+
+        self.status_delegate = StatusActionDelegate(self.table_view)
+        self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
+        self.status_delegate.buttonClicked.connect(self.handle_city_update)
 
     def _setup_date_group(self) -> None:
         date_group = QGroupBox("Настройки для сбора данных закатов")
