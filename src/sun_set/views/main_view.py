@@ -66,77 +66,7 @@ class MainWindow(QMainWindow):
 
         self._setup_menu()
 
-        # Создание группы для таблицы и кнопок городов
-        city_group = QGroupBox("Города")
-        city_group.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
-        )
-        city_main_layout = QVBoxLayout()
-
-        city_btn_group_layout = QHBoxLayout()
-        self.btn_add_city = QPushButton("Добавить")
-        self.btn_add_city.setToolTip("Добавить город в таблицу")
-        self.btn_add_city.clicked.connect(self.add_city_in_table)
-        city_btn_group_layout.addWidget(self.btn_add_city)
-
-        self.btn_del_city = QPushButton("Удалить")
-        self.btn_del_city.setToolTip("Удалить выбранные города")
-        self.btn_del_city.clicked.connect(self.delete_selected_cities)
-        city_btn_group_layout.addWidget(self.btn_del_city)
-
-        self.btn_get_sunset_info = QPushButton("Обновить", self)
-        self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
-        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
-        city_btn_group_layout.addWidget(self.btn_get_sunset_info)
-
-        self.btn_export_image = QPushButton("Экспорт", self)
-        self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
-        self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
-        city_btn_group_layout.addWidget(self.btn_export_image)
-
-        self.preview_image_button = QPushButton("Предпросмотр", self)
-        self.preview_image_button.setToolTip(
-            "Предпросмотр перед сохранением изображения"
-        )
-        self.preview_image_button.clicked.connect(self.preview_selected_city_image)
-        city_btn_group_layout.addWidget(self.preview_image_button)
-
-        self.image_export_settings_button = QPushButton("Настройки экспорта", self)
-
-        image_export_settings_menu = QMenu(self)
-
-        create_settings_action = image_export_settings_menu.addAction(
-            "Создать настройки"
-        )
-        if create_settings_action is not None:
-            create_settings_action.triggered.connect(self.create_image_export_settings)
-
-        edit_settings_action = image_export_settings_menu.addAction(
-            "Редактировать настройки"
-        )
-        if edit_settings_action is not None:
-            edit_settings_action.triggered.connect(self.edit_image_export_settings)
-
-        self.image_export_settings_button.setMenu(image_export_settings_menu)
-        city_btn_group_layout.addWidget(self.image_export_settings_button)
-
-        city_btn_group_layout.addStretch()
-
-        city_main_layout.addLayout(city_btn_group_layout)
-
-        self.initial_prompt_text = QLabel(
-            """Выберите файл для загрузки данных городов, или нажмите 'Добавить'"""
-        )
-        self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        city_main_layout.addWidget(self.initial_prompt_text)
-
-        self._setup_table()
-
-        city_main_layout.addWidget(self.table_view)
-
-        city_group.setLayout(city_main_layout)
-
-        self.main_layout.addWidget(city_group)
+        self._setup_city_group()
 
         self._setup_date_group()
 
@@ -164,6 +94,78 @@ class MainWindow(QMainWindow):
             file_menu.addAction(self.btn_choose_file)
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
+
+    def _setup_city_group(self) -> None:
+        city_group = QGroupBox("Города")
+        city_group.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Preferred,
+        )
+
+        city_main_layout = QVBoxLayout()
+
+        city_btn_group_layout = QHBoxLayout()
+        self._setup_city_buttons(city_btn_group_layout)
+        city_main_layout.addLayout(city_btn_group_layout)
+
+        self.initial_prompt_text = QLabel(
+            "Выберите файл для загрузки данных городов, или нажмите 'Добавить'"
+        )
+        self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        city_main_layout.addWidget(self.initial_prompt_text)
+
+        self._setup_table()
+        city_main_layout.addWidget(self.table_view)
+
+        city_group.setLayout(city_main_layout)
+        self.main_layout.addWidget(city_group)
+
+    def _setup_city_buttons(self, layout: QHBoxLayout) -> None:
+        self.btn_add_city = QPushButton("Добавить")
+        self.btn_add_city.setToolTip("Добавить город в таблицу")
+        self.btn_add_city.clicked.connect(self.add_city_in_table)
+        layout.addWidget(self.btn_add_city)
+
+        self.btn_del_city = QPushButton("Удалить")
+        self.btn_del_city.setToolTip("Удалить выбранные города")
+        self.btn_del_city.clicked.connect(self.delete_selected_cities)
+        layout.addWidget(self.btn_del_city)
+
+        self.btn_get_sunset_info = QPushButton("Обновить", self)
+        self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
+        self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
+        layout.addWidget(self.btn_get_sunset_info)
+
+        self.btn_export_image = QPushButton("Экспорт", self)
+        self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
+        self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
+        layout.addWidget(self.btn_export_image)
+
+        self.preview_image_button = QPushButton("Предпросмотр", self)
+        self.preview_image_button.setToolTip(
+            "Предпросмотр перед сохранением изображения"
+        )
+        self.preview_image_button.clicked.connect(self.preview_selected_city_image)
+        layout.addWidget(self.preview_image_button)
+
+        self.image_export_settings_button = QPushButton("Настройки экспорта", self)
+
+        image_export_settings_menu = QMenu(self)
+
+        create_settings_action = image_export_settings_menu.addAction(
+            "Создать настройки"
+        )
+        create_settings_action.triggered.connect(self.create_image_export_settings)
+
+        edit_settings_action = image_export_settings_menu.addAction(
+            "Редактировать настройки"
+        )
+        edit_settings_action.triggered.connect(self.edit_image_export_settings)
+
+        self.image_export_settings_button.setMenu(image_export_settings_menu)
+        layout.addWidget(self.image_export_settings_button)
+
+        layout.addStretch()
 
     def _setup_table(self) -> None:
         self.table_view = QTableView()
