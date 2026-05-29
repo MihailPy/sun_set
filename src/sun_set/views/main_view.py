@@ -151,15 +151,13 @@ class MainWindow(QMainWindow):
 
         image_export_settings_menu = QMenu(self)
 
-        create_settings_action = image_export_settings_menu.addAction(
-            "Создать настройки"
-        )
+        create_settings_action = QAction("Создать настройки", self)
         create_settings_action.triggered.connect(self.create_image_export_settings)
+        image_export_settings_menu.addAction(create_settings_action)
 
-        edit_settings_action = image_export_settings_menu.addAction(
-            "Редактировать настройки"
-        )
+        edit_settings_action = QAction("Редактировать настройки", self)
         edit_settings_action.triggered.connect(self.edit_image_export_settings)
+        image_export_settings_menu.addAction(edit_settings_action)
 
         self.image_export_settings_button.setMenu(image_export_settings_menu)
         layout.addWidget(self.image_export_settings_button)
