@@ -1,4 +1,4 @@
-import typing
+from typing import Any
 
 from PyQt6 import QtGui
 from PyQt6.QtCore import (
@@ -316,7 +316,7 @@ class CityTableModel(QAbstractTableModel):
     def setData(
         self,
         index: QModelIndex,
-        value: typing.Any,
+        value: Any,
         role: int = Qt.ItemDataRole.EditRole,
     ) -> bool:
         if not index.isValid():
