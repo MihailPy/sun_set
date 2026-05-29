@@ -149,41 +149,7 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(city_group)
 
-        date_group = QGroupBox("Настройки для сбора данных закатов")
-        date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        date_group_layout = QHBoxLayout()
-        current_year = datetime.now().year
-        self.year_spinbox = QSpinBox()
-        self.year_spinbox.setRange(current_year - 50, current_year + 50)
-        self.year_spinbox.setValue(current_year + 1)
-        date_group_layout.addWidget(QLabel("Год:"))
-        date_group_layout.addWidget(self.year_spinbox)
-
-        days = [
-            ("Пн", 0),
-            ("Вт", 1),
-            ("Ср", 2),
-            ("Чт", 3),
-            ("Пт", 4),
-            ("Сб", 5),
-            ("Вс", 6),
-        ]
-
-        self.combo_weekday1 = QComboBox()
-        self.combo_weekday2 = QComboBox()
-        for name, value in days:
-            self.combo_weekday1.addItem(name, value)
-            self.combo_weekday2.addItem(name, value)
-
-        self.combo_weekday1.setCurrentIndex(4)
-        self.combo_weekday2.setCurrentIndex(5)
-        date_group_layout.addWidget(QLabel("Интересующие дни 1:"))
-        date_group_layout.addWidget(self.combo_weekday1)
-        date_group_layout.addWidget(QLabel("2:"))
-        date_group_layout.addWidget(self.combo_weekday2)
-
-        date_group.setLayout(date_group_layout)
-        self.main_layout.addWidget(date_group)
+        self._setup_date_group()
 
     def _setup_menu(self) -> None:
         self.btn_choose_file = QAction("Открыть файл", self)
@@ -209,6 +175,48 @@ class MainWindow(QMainWindow):
             file_menu.addAction(self.btn_choose_file)
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
+
+    def _setup_date_group(self) -> None:
+        date_group = QGroupBox("Настройки для сбора данных закатов")
+        date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+        date_group_layout = QHBoxLayout()
+
+        current_year = datetime.now().year
+        self.year_spinbox = QSpinBox()
+        self.year_spinbox.setRange(current_year - 50, current_year + 50)
+        self.year_spinbox.setValue(current_year + 1)
+
+        date_group_layout.addWidget(QLabel("Год:"))
+        date_group_layout.addWidget(self.year_spinbox)
+
+        days = [
+            ("Пн", 0),
+            ("Вт", 1),
+            ("Ср", 2),
+            ("Чт", 3),
+            ("Пт", 4),
+            ("Сб", 5),
+            ("Вс", 6),
+        ]
+
+        self.combo_weekday1 = QComboBox()
+        self.combo_weekday2 = QComboBox()
+
+        for name, value in days:
+            self.combo_weekday1.addItem(name, value)
+            self.combo_weekday2.addItem(name, value)
+
+        self.combo_weekday1.setCurrentIndex(4)
+        self.combo_weekday2.setCurrentIndex(5)
+
+        date_group_layout.addWidget(QLabel("Интересующие дни 1:"))
+        date_group_layout.addWidget(self.combo_weekday1)
+        date_group_layout.addWidget(QLabel("2:"))
+        date_group_layout.addWidget(self.combo_weekday2)
+
+        date_group.setLayout(date_group_layout)
+        self.main_layout.addWidget(date_group)
 
     def setup_city_model(self, cities: list[City]) -> None:
         self.cities = cities
