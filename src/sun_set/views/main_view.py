@@ -17,7 +17,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QSizePolicy,
     QSpinBox,
-    QStatusBar,
     QTableView,
     QVBoxLayout,
     QWidget,
@@ -65,34 +64,7 @@ class MainWindow(QMainWindow):
         self.cities = []
         self.model = None
 
-        # Создание кнопок для меню бар "Файл"
-        self.btn_choose_file = QAction("Открыть файл", self)
-        self.btn_choose_file.setToolTip("Открыть файл с городами")
-        self.btn_choose_file.setShortcut(QKeySequence("Ctrl+O"))
-        self.btn_choose_file.triggered.connect(self.open_file_dialog)
-
-        self.btn_save_file = QAction("Сохранить файл", self)
-        self.btn_save_file.setStatusTip("Сохранить файл с городами")
-        self.btn_save_file.setShortcut(QKeySequence("Ctrl+S"))
-        self.btn_save_file.triggered.connect(self.save_file)
-
-        self.btn_save_file_as = QAction("Сохранить файл как...", self)
-        self.btn_save_file_as.setToolTip("Сохранить города в новый файл")
-        self.btn_save_file_as.setShortcut(QKeySequence("Shift+Ctrl+S"))
-        self.btn_save_file_as.triggered.connect(self.save_file_as)
-
-        self.setStatusBar(QStatusBar(self))
-
-        # Создание меню бар "Файл"
-        menu = QMenuBar(self)
-        self.setMenuBar(menu)
-        file_menu = menu.addMenu("&Файл")
-
-        # Добавление в меню бар "Файл" кнопок
-        if file_menu:
-            file_menu.addAction(self.btn_choose_file)
-            file_menu.addAction(self.btn_save_file)
-            file_menu.addAction(self.btn_save_file_as)
+        self._setup_menu()
 
         # Создание группы для таблицы и кнопок городов
         city_group = QGroupBox("Города")
@@ -212,6 +184,31 @@ class MainWindow(QMainWindow):
 
         date_group.setLayout(date_group_layout)
         self.main_layout.addWidget(date_group)
+
+    def _setup_menu(self) -> None:
+        self.btn_choose_file = QAction("Открыть файл", self)
+        self.btn_choose_file.setToolTip("Открыть файл с городами")
+        self.btn_choose_file.setShortcut(QKeySequence("Ctrl+O"))
+        self.btn_choose_file.triggered.connect(self.open_file_dialog)
+
+        self.btn_save_file = QAction("Сохранить файл", self)
+        self.btn_save_file.setStatusTip("Сохранить файл с городами")
+        self.btn_save_file.setShortcut(QKeySequence("Ctrl+S"))
+        self.btn_save_file.triggered.connect(self.save_file)
+
+        self.btn_save_file_as = QAction("Сохранить файл как...", self)
+        self.btn_save_file_as.setToolTip("Сохранить города в новый файл")
+        self.btn_save_file_as.setShortcut(QKeySequence("Shift+Ctrl+S"))
+        self.btn_save_file_as.triggered.connect(self.save_file_as)
+
+        menu = QMenuBar(self)
+        self.setMenuBar(menu)
+
+        file_menu = menu.addMenu("&Файл")
+        if file_menu:
+            file_menu.addAction(self.btn_choose_file)
+            file_menu.addAction(self.btn_save_file)
+            file_menu.addAction(self.btn_save_file_as)
 
     def setup_city_model(self, cities: list[City]) -> None:
         self.cities = cities
