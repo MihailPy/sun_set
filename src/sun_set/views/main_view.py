@@ -317,11 +317,9 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        # Обновляем hash после редактирования
         city = self.model.cities[row]
         city.sunset_data.hash_before_edit = city.get_stable_hash()
 
-        # Обновляем отображение строки
         self.update_city_row_display(row)
 
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
@@ -521,7 +519,6 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def open_file_dialog(self):
-        # Вызываем окно выбора файла
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Выберите файл",
@@ -580,11 +577,9 @@ class MainWindow(QMainWindow):
                 months=None,
             ),
         )
-        # Если модель еще не была создана (например, при первом нажатии)
         if not hasattr(self, "model") or self.model is None:
             self.setup_city_model([new_city])
         else:
-            # Если модель уже есть, просто добавляем в неё данные
             self.model.add_city(new_city)
             if len(self.cities) == 1:
                 self.initial_prompt_text.hide()
