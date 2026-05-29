@@ -604,9 +604,15 @@ class MainWindow(QMainWindow):
         )
         dialog.exec()
 
-    def get_current_city_or_none(self):
-        cities = self.get_selected_cities_or_none()
-        return cities[0] if cities else None
+    def get_current_city_or_none(self) -> City | None:
+        if self.model is None:
+            return None
+
+        cities = self.model.get_selected_city()
+        if not cities:
+            return None
+
+        return cities[0]
 
     def get_selected_cities_or_none(self) -> list[City] | None:
         if self.model is None:

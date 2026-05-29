@@ -9,7 +9,7 @@ all:
 		uv run pytest
 		uv run start-app
 
-pyt:
+test:
 		uv run pytest
 
 pytv:
