@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Sun set")
         self.resize(800, 400)
 
-        self.file_path = None
+        self.file_path: str | None = None
         self.last_image_export_settings_path: str = ""
         self.last_image_export_output_dir: str = ""
 
@@ -341,7 +341,7 @@ class MainWindow(QMainWindow):
             ],
         )
 
-    def initiate_sunset_fetch(self):
+    def initiate_sunset_fetch(self) -> None:
         year = self.year_spinbox.value()
         weekday1 = self.combo_weekday1.currentIndex()
         weekday2 = self.combo_weekday2.currentIndex()
@@ -350,7 +350,7 @@ class MainWindow(QMainWindow):
             if updated_rows:
                 self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
-    def export_all_selected_city_image(self):
+    def export_all_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()
 
         if cities is None:
@@ -518,7 +518,7 @@ class MainWindow(QMainWindow):
         )
         dialog.exec()
 
-    def open_file_dialog(self):
+    def open_file_dialog(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Выберите файл",
@@ -548,13 +548,13 @@ class MainWindow(QMainWindow):
             self.file_path = file_path
             self.setup_city_model(result)
 
-    def save_file(self):
+    def save_file(self) -> None:
         if not self.file_path:
             self.save_file_as()
         else:
             save_to_json(self.cities, self.file_path)
 
-    def save_file_as(self):
+    def save_file_as(self) -> None:
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить файл как...", "", "JSON Files (*.json)"
         )
@@ -562,7 +562,7 @@ class MainWindow(QMainWindow):
             save_to_json(self.cities, file_path)
             self.file_path = file_path
 
-    def add_city_in_table(self):
+    def add_city_in_table(self) -> None:
         new_city = City(
             name="Новый город",
             region="-",
@@ -587,7 +587,7 @@ class MainWindow(QMainWindow):
 
         self.table_view.resizeColumnsToContents()
 
-    def delete_selected_cities(self):
+    def delete_selected_cities(self) -> None:
         if hasattr(self, "model") and self.model is not None:
             self.model.remove_checked_cities()
             self.table_view.resizeColumnsToContents()
