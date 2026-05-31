@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
 
         self.status_bar = QStatusBar(self)
         self.setStatusBar(self.status_bar)
-        self.status_bar.showMessage("Файл не открыт")
+        self.update_status_bar()
 
         self._setup_menu()
         self._setup_city_group()
@@ -246,6 +246,9 @@ class MainWindow(QMainWindow):
         self.model = CityTableModel(self.cities)
         self.model.dataChanged.connect(self.on_data_changed)
         self.model.dataChanged.connect(lambda: self.update_action_buttons_state())
+        self.model.selection_changed.connect(self.update_status_bar)
+        self.model.selection_changed.connect(self.update_action_buttons_state)
+        self.update_status_bar()
         self.table_view.setModel(self.model)
         self.table_view.show()
         self.initial_prompt_text.hide()
@@ -565,7 +568,7 @@ class MainWindow(QMainWindow):
 
         if result is not None:
             self.file_path = file_path
-            self.status_bar.showMessage(f"Файл: {Path(file_path).name}")
+            self.update_status_bar()
             self.setup_city_model(result)
 
     def save_file(self) -> None:
@@ -581,7 +584,7 @@ class MainWindow(QMainWindow):
         if file_path:
             save_to_json(self.cities, file_path)
             self.file_path = file_path
-            self.status_bar.showMessage(f"Файл: {Path(file_path).name}")
+            self.update_status_bar()
 
     def add_city_in_table(self) -> None:
         new_city = City(
@@ -607,12 +610,14 @@ class MainWindow(QMainWindow):
                 self.table_view.show()
 
         self.table_view.resizeColumnsToContents()
+        self.update_status_bar()
 
     def delete_selected_cities(self) -> None:
         if hasattr(self, "model") and self.model is not None:
             self.model.remove_checked_cities()
 
             self.update_action_buttons_state()
+            self.update_status_bar()
 
             self.table_view.resizeColumnsToContents()
             self.cities = self.model.cities
@@ -665,3 +670,19 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
         self.preview_image_button.setEnabled(has_selected_cities)
         self.btn_export_image.setEnabled(has_selected_cities)
+
+    def update_status_bar(self) -> None:
+        file_name = "Файл не открыт"
+        if self.file_path is not None:
+            file_name = f"Файл: {Path(self.file_path).name}"
+
+        total_cities = len(self.cities)
+        selected_cities = 0
+
+        if self.model is not None:
+            selected = self.model.get_selected_city()
+            selected_cities = len(selected) if selected else 0
+
+        self.status_bar.showMessage(
+            f"{file_name} | Городов: {total_cities} | Выбрано: {selected_cities}"
+        )

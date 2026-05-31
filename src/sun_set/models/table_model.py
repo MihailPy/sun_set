@@ -220,6 +220,8 @@ class CheckBoxHeader(QHeaderView):
 
 
 class CityTableModel(QAbstractTableModel):
+    selection_changed = pyqtSignal()
+
     def __init__(self, cities: list[City]) -> None:
         super().__init__()
         self.cities = cities
@@ -330,6 +332,7 @@ class CityTableModel(QAbstractTableModel):
 
             self.checked_states[index.row()] = is_checked
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])
+            self.selection_changed.emit()
             return True
 
         if role == Qt.ItemDataRole.EditRole:
@@ -394,6 +397,7 @@ class CityTableModel(QAbstractTableModel):
             self.index(len(self.cities) - 1, 0),
             [Qt.ItemDataRole.CheckStateRole],
         )
+        self.selection_changed.emit()
 
     def get_selected_city(self) -> list[City] | None:
         selected_state_indices = [i for i, val in enumerate(self.checked_states) if val]
