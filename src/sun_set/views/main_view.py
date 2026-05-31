@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
         self.status_delegate.buttonClicked.connect(self.handle_city_update)
 
     def _setup_date_group(self) -> None:
-        date_group = QGroupBox("Настройки для сбора данных закатов")
+        date_group = QGroupBox("Параметры расчёта закатов")
         date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         date_group_layout = QHBoxLayout()
@@ -225,9 +225,9 @@ class MainWindow(QMainWindow):
         self.combo_weekday1.setCurrentIndex(4)
         self.combo_weekday2.setCurrentIndex(5)
 
-        date_group_layout.addWidget(QLabel("Интересующие дни 1:"))
+        date_group_layout.addWidget(QLabel("Дни недели для расчёта:"))
         date_group_layout.addWidget(self.combo_weekday1)
-        date_group_layout.addWidget(QLabel("2:"))
+        date_group_layout.addWidget(QLabel("и"))
         date_group_layout.addWidget(self.combo_weekday2)
 
         date_group.setLayout(date_group_layout)
