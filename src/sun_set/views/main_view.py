@@ -149,6 +149,9 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
         layout.addWidget(self.btn_get_sunset_info)
 
+        self.btn_del_city.setEnabled(False)
+        self.btn_get_sunset_info.setEnabled(False)
+
     def _setup_export_buttons(self, layout: QHBoxLayout) -> None:
         self.preview_image_button = QPushButton("Предпросмотр", self)
         self.preview_image_button.setToolTip(
@@ -176,6 +179,9 @@ class MainWindow(QMainWindow):
 
         self.image_export_settings_button.setMenu(image_export_settings_menu)
         layout.addWidget(self.image_export_settings_button)
+
+        self.preview_image_button.setEnabled(False)
+        self.btn_export_image.setEnabled(False)
 
     def _setup_table(self) -> None:
         self.table_view = QTableView()
@@ -243,6 +249,9 @@ class MainWindow(QMainWindow):
         self.table_view.show()
         self.initial_prompt_text.hide()
         self.table_view.resizeColumnsToContents()
+
+        self.model.dataChanged.connect(lambda: self.update_action_buttons_state())
+        self.update_action_buttons_state()
 
     def show_no_cities_warning(self) -> None:
         QMessageBox.warning(
@@ -603,6 +612,9 @@ class MainWindow(QMainWindow):
     def delete_selected_cities(self) -> None:
         if hasattr(self, "model") and self.model is not None:
             self.model.remove_checked_cities()
+
+            self.update_action_buttons_state()
+
             self.table_view.resizeColumnsToContents()
             self.cities = self.model.cities
             if len(self.cities) == 0:
@@ -643,3 +655,13 @@ class MainWindow(QMainWindow):
             return None
 
         return cities
+
+    def update_action_buttons_state(self) -> None:
+        has_selected_cities = bool(
+            self.model is not None and self.model.get_selected_city()
+        )
+
+        self.btn_del_city.setEnabled(has_selected_cities)
+        self.btn_get_sunset_info.setEnabled(has_selected_cities)
+        self.preview_image_button.setEnabled(has_selected_cities)
+        self.btn_export_image.setEnabled(has_selected_cities)
