@@ -63,7 +63,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
-        self.setStatusBar(QStatusBar(self))
+        self.status_bar = QStatusBar(self)
+        self.setStatusBar(self.status_bar)
+        self.status_bar.showMessage("Файл не открыт")
 
         self._setup_menu()
         self._setup_city_group()
@@ -553,6 +555,7 @@ class MainWindow(QMainWindow):
 
         if result is not None:
             self.file_path = file_path
+            self.status_bar.showMessage(f"Файл: {Path(file_path).name}")
             self.setup_city_model(result)
 
     def save_file(self) -> None:
@@ -568,6 +571,7 @@ class MainWindow(QMainWindow):
         if file_path:
             save_to_json(self.cities, file_path)
             self.file_path = file_path
+            self.status_bar.showMessage(f"Файл: {Path(file_path).name}")
 
     def add_city_in_table(self) -> None:
         new_city = City(
