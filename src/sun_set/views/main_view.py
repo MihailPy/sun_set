@@ -245,12 +245,11 @@ class MainWindow(QMainWindow):
         self.cities = cities
         self.model = CityTableModel(self.cities)
         self.model.dataChanged.connect(self.on_data_changed)
+        self.model.dataChanged.connect(lambda: self.update_action_buttons_state())
         self.table_view.setModel(self.model)
         self.table_view.show()
         self.initial_prompt_text.hide()
         self.table_view.resizeColumnsToContents()
-
-        self.model.dataChanged.connect(lambda: self.update_action_buttons_state())
         self.update_action_buttons_state()
 
     def show_no_cities_warning(self) -> None:
@@ -657,9 +656,10 @@ class MainWindow(QMainWindow):
         return cities
 
     def update_action_buttons_state(self) -> None:
-        has_selected_cities = bool(
-            self.model is not None and self.model.get_selected_city()
-        )
+        has_selected_cities = False
+
+        if self.model is not None:
+            has_selected_cities = bool(self.model.get_selected_city())
 
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
