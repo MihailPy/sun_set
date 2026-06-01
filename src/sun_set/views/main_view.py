@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
         export_actions_group.setMaximumHeight(export_actions_group.sizeHint().height())
 
         actions_layout.addWidget(city_actions_group)
+        actions_layout.addSpacing(12)
         actions_layout.addWidget(export_actions_group)
         actions_layout.addStretch()
 
