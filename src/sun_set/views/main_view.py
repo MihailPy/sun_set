@@ -153,6 +153,11 @@ class MainWindow(QMainWindow):
         self.btn_add_city.clicked.connect(self.add_city_in_table)
         layout.addWidget(self.btn_add_city)
 
+        self.btn_open_file = QPushButton("Открыть файл", self)
+        self.btn_open_file.setToolTip("Открыть JSON-файл с городами")
+        self.btn_open_file.clicked.connect(self.open_file_dialog)
+        layout.addWidget(self.btn_open_file)
+
         self.btn_del_city = QPushButton("Удалить")
         self.btn_del_city.setToolTip("Удалить выбранные города")
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
