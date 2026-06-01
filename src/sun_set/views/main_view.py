@@ -598,8 +598,9 @@ class MainWindow(QMainWindow):
         if result is not None:
             self.file_path = file_path
             self.update_window_title()
-            self.update_status_bar()
             self.setup_city_model(result)
+            self.update_action_buttons_state()
+            self.update_status_bar()
 
     def save_file(self) -> None:
         if not self.file_path:
@@ -641,6 +642,7 @@ class MainWindow(QMainWindow):
                 self.table_view.show()
 
         self.table_view.resizeColumnsToContents()
+        self.update_action_buttons_state()
         self.update_status_bar()
 
     def delete_selected_cities(self) -> None:
