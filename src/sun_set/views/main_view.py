@@ -71,6 +71,8 @@ class MainWindow(QMainWindow):
         self._setup_date_group()
         self._setup_city_group()
 
+        self.update_window_title()
+
     def _setup_menu(self) -> None:
         self.btn_choose_file = QAction("Открыть файл", self)
         self.btn_choose_file.setToolTip("Открыть файл с городами")
@@ -584,6 +586,7 @@ class MainWindow(QMainWindow):
 
         if result is not None:
             self.file_path = file_path
+            self.update_window_title()
             self.update_status_bar()
             self.setup_city_model(result)
 
@@ -600,6 +603,7 @@ class MainWindow(QMainWindow):
         if file_path:
             save_to_json(self.cities, file_path)
             self.file_path = file_path
+            self.update_window_title()
             self.update_status_bar()
 
     def add_city_in_table(self) -> None:
@@ -719,3 +723,9 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(
             f"{file_name} | Городов: {total_cities} | Выбрано: {selected_cities}"
         )
+
+    def update_window_title(self) -> None:
+        if self.file_path is None:
+            self.setWindowTitle("Sun set")
+        else:
+            self.setWindowTitle(f"Sun set — {Path(self.file_path).name}")
