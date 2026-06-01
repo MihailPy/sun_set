@@ -109,7 +109,7 @@ class MainWindow(QMainWindow):
         city_actions_group.setLayout(city_actions_layout)
         city_actions_group.setMaximumHeight(city_actions_group.sizeHint().height())
 
-        export_actions_group = QGroupBox("Экспорт")
+        export_actions_group = QGroupBox("Изображения")
 
         export_actions_layout = QVBoxLayout()
 
@@ -212,7 +212,10 @@ class MainWindow(QMainWindow):
 
     def _setup_date_group(self) -> None:
         date_group = QGroupBox("Параметры расчёта закатов")
-        date_group.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        date_group.setSizePolicy(
+            QSizePolicy.Policy.Maximum,
+            QSizePolicy.Policy.Fixed,
+        )
 
         date_group_layout = QHBoxLayout()
 
@@ -250,6 +253,7 @@ class MainWindow(QMainWindow):
         date_group_layout.addWidget(self.combo_weekday2)
 
         date_group.setLayout(date_group_layout)
+        date_group.setMaximumHeight(date_group.sizeHint().height())
         self.main_layout.addWidget(date_group)
 
     def setup_city_model(self, cities: list[City]) -> None:
