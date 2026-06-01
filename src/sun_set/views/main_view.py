@@ -162,6 +162,7 @@ class MainWindow(QMainWindow):
         self.btn_save_file_main.setToolTip("Сохранить текущий JSON-файл с городами")
         self.btn_save_file_main.clicked.connect(self.save_file)
         layout.addWidget(self.btn_save_file_main)
+        self.btn_save_file_main.setEnabled(False)
 
         self.btn_del_city = QPushButton("Удалить")
         self.btn_del_city.setToolTip("Удалить выбранные города")
@@ -717,6 +718,9 @@ class MainWindow(QMainWindow):
             self.btn_export_image,
         ):
             button.setEnabled(has_selected_cities)
+
+        has_cities = bool(self.cities)
+        self.btn_save_file_main.setEnabled(has_cities)
 
     def update_status_bar(self) -> None:
         file_name = "Файл не открыт"
