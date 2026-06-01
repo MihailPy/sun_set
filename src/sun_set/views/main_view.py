@@ -110,9 +110,20 @@ class MainWindow(QMainWindow):
         city_actions_group.setMaximumHeight(city_actions_group.sizeHint().height())
 
         export_actions_group = QGroupBox("Экспорт")
-        export_actions_layout = QHBoxLayout()
-        self._setup_export_buttons(export_actions_layout)
+
+        export_actions_layout = QVBoxLayout()
+
+        export_hint = QLabel("Использует JSON-настройки экспорта и выбранные города")
+        export_hint.setWordWrap(True)
+
+        export_buttons_layout = QHBoxLayout()
+        self._setup_export_buttons(export_buttons_layout)
+
+        export_actions_layout.addWidget(export_hint)
+        export_actions_layout.addLayout(export_buttons_layout)
+
         export_actions_group.setLayout(export_actions_layout)
+
         export_actions_group.setMaximumHeight(export_actions_group.sizeHint().height())
 
         actions_layout.addWidget(city_actions_group)
