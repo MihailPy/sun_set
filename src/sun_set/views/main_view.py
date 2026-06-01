@@ -68,8 +68,8 @@ class MainWindow(QMainWindow):
         self.update_status_bar()
 
         self._setup_menu()
-        self._setup_city_group()
         self._setup_date_group()
+        self._setup_city_group()
 
     def _setup_menu(self) -> None:
         self.btn_choose_file = QAction("Открыть файл", self)
