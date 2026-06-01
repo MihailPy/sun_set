@@ -666,10 +666,27 @@ class MainWindow(QMainWindow):
         if self.model is not None:
             has_selected_cities = bool(self.model.get_selected_city())
 
-        self.btn_del_city.setEnabled(has_selected_cities)
-        self.btn_get_sunset_info.setEnabled(has_selected_cities)
-        self.preview_image_button.setEnabled(has_selected_cities)
-        self.btn_export_image.setEnabled(has_selected_cities)
+        if has_selected_cities:
+            self.btn_del_city.setToolTip("Удалить выбранные города")
+            self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
+            self.preview_image_button.setToolTip(
+                "Предпросмотр перед сохранением изображения"
+            )
+            self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
+        else:
+            tooltip = "Выберите один или несколько городов в таблице"
+            self.btn_del_city.setToolTip(tooltip)
+            self.btn_get_sunset_info.setToolTip(tooltip)
+            self.preview_image_button.setToolTip(tooltip)
+            self.btn_export_image.setToolTip(tooltip)
+
+        for button in (
+            self.btn_del_city,
+            self.btn_get_sunset_info,
+            self.preview_image_button,
+            self.btn_export_image,
+        ):
+            button.setEnabled(has_selected_cities)
 
     def update_status_bar(self) -> None:
         file_name = "Файл не открыт"
