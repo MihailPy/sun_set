@@ -432,3 +432,18 @@ class CityTableModel(QAbstractTableModel):
                 StatusActionDelegate.ViewEnabledRole,
             ],
         )
+
+    def refresh_status_row(self, row: int) -> None:
+        if row in self.status_overrides:
+            del self.status_overrides[row]
+
+        index = self.index(row, STATUS_COLUMN)
+        self.dataChanged.emit(
+            index,
+            index,
+            [
+                Qt.ItemDataRole.DisplayRole,
+                StatusActionDelegate.UpdateEnabledRole,
+                StatusActionDelegate.ViewEnabledRole,
+            ],
+        )

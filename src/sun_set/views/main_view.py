@@ -347,20 +347,7 @@ class MainWindow(QMainWindow):
 
             update_city_sunset(city, year, weekday1, weekday2)
 
-            index = self.model.index(row, STATUS_COLUMN)
-            if row in self.model.status_overrides:
-                del self.model.status_overrides[row]
-
-            index = self.model.index(row, STATUS_COLUMN)
-            self.model.dataChanged.emit(
-                index,
-                index,
-                [
-                    Qt.ItemDataRole.DisplayRole,
-                    StatusActionDelegate.UpdateEnabledRole,
-                    StatusActionDelegate.ViewEnabledRole,
-                ],
-            )
+            self.model.refresh_status_row(row)
 
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
