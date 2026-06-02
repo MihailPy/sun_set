@@ -38,7 +38,11 @@ from sun_set.models.table_model import (
     CityTableModel,
     StatusActionDelegate,
 )
-from sun_set.services.city_service import create_default_city, update_city_sunset
+from sun_set.services.city_service import (
+    create_default_city,
+    update_cities_sunset,
+    update_city_sunset,
+)
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -391,13 +395,23 @@ class MainWindow(QMainWindow):
         )
 
     def initiate_sunset_fetch(self) -> None:
+        if self.model is None:
+            self.show_no_cities_warning()
+            return
+
+        cities = self.model.get_selected_city()
+        if not cities:
+            return
+
         year = self.year_spinbox.value()
         weekday1 = self.combo_weekday1.currentIndex()
         weekday2 = self.combo_weekday2.currentIndex()
-        if hasattr(self, "model") and self.model is not None:
-            updated_rows = self.model.update_checked_cities(year, weekday1, weekday2)
-            if updated_rows:
-                self.table_view.resizeColumnToContents(STATUS_COLUMN)
+
+        update_cities_sunset(cities, year, weekday1, weekday2)
+
+        self.model.clear_status_overrides_for_cities(cities)
+        self.model.refresh_status_column()
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def export_all_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()

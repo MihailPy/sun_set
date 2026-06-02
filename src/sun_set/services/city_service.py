@@ -28,3 +28,13 @@ def update_city_sunset(
 ) -> None:
     city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
     city.sunset_data.hash_before_edit = city.get_stable_hash()
+
+
+def update_cities_sunset(
+    cities: list[City],
+    year: int,
+    weekday1: int,
+    weekday2: int,
+) -> None:
+    for city in cities:
+        update_city_sunset(city, year, weekday1, weekday2)

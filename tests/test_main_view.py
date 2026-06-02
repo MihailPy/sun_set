@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication, QFileDialog
 from sun_set.api.file_manager import save_to_json
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
+from sun_set.models.table_model import STATUS_COLUMN
 from sun_set.views.main_view import MainWindow
 
 
@@ -182,33 +183,55 @@ class TestMainWindow:
             assert main_window.combo_weekday1.itemText(i) == expected_day
             assert main_window.combo_weekday2.itemText(i) == expected_day
 
-    def test_initiate_sunset_fetch_success(self, main_window):
-        """Тест успешного обновления данных и ресайза колонок"""
+    @patch("sun_set.views.main_view.update_cities_sunset")
+    def test_initiate_sunset_fetch_success(
+        self, mock_update_cities_sunset, main_window
+    ):
+        """Тест успешного обновления выбранных городов и ресайза колонки статуса"""
         main_window.year_spinbox.setValue(2025)
         main_window.combo_weekday1.setCurrentIndex(0)
         main_window.combo_weekday2.setCurrentIndex(6)
 
+        selected_cities = [MagicMock()]
+
         mock_model = MagicMock()
+        mock_model.get_selected_city.return_value = selected_cities
         main_window.model = mock_model
 
-        mock_model.update_checked_cities.return_value = 5
+        main_window.table_view.resizeColumnToContents = MagicMock()
+
+        main_window.initiate_sunset_fetch()
+
+        mock_update_cities_sunset.assert_called_once_with(
+            selected_cities,
+            2025,
+            0,
+            6,
+        )
+        mock_model.clear_status_overrides_for_cities.assert_called_once_with(
+            selected_cities
+        )
+        mock_model.refresh_status_column.assert_called_once()
+        main_window.table_view.resizeColumnToContents.assert_called_once_with(
+            STATUS_COLUMN
+        )
+
+    @patch("sun_set.views.main_view.update_cities_sunset")
+    def test_initiate_sunset_fetch_no_updates(
+        self, mock_update_cities_sunset, main_window
+    ):
+        """Тест отсутствия обновления, если города не выбраны"""
+        mock_model = MagicMock()
+        mock_model.get_selected_city.return_value = None
+        main_window.model = mock_model
 
         main_window.table_view.resizeColumnToContents = MagicMock()
 
         main_window.initiate_sunset_fetch()
 
-        mock_model.update_checked_cities.assert_called_once_with(2025, 0, 6)
-
-        main_window.table_view.resizeColumnToContents.assert_called_once_with(7)
-
-    def test_initiate_sunset_fetch_no_updates(self, main_window):
-        """Тест отсутствия ресайза при пустом обновлении"""
-        main_window.model = MagicMock()
-        main_window.model.update_checked_cities.return_value = 0
-        main_window.table_view.resizeColumnToContents = MagicMock()
-
-        main_window.initiate_sunset_fetch()
-
+        mock_update_cities_sunset.assert_not_called()
+        mock_model.clear_status_overrides_for_cities.assert_not_called()
+        mock_model.refresh_status_column.assert_not_called()
         main_window.table_view.resizeColumnToContents.assert_not_called()
 
     def test_handle_city_update_logic(self, qtbot, main_window, temp_json_file):

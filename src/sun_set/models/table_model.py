@@ -19,7 +19,6 @@ from PyQt6.QtWidgets import (
     QStyleOptionButton,
 )
 
-from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source
 
@@ -415,27 +414,21 @@ class CityTableModel(QAbstractTableModel):
             del self.checked_states[row]
             self.endRemoveRows()
 
-    def update_checked_cities(self, year: int, weekday1: int, weekday2: int):
-        indices_to_update = [i for i, val in enumerate(self.checked_states) if val]
-
-        for row in indices_to_update:
-            city = self.cities[row]
-            city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
-            city.sunset_data.hash_before_edit = city.get_stable_hash()
-            if row in self.status_overrides:
+    def clear_status_overrides_for_cities(self, cities: list[City]) -> None:
+        for row, city in enumerate(self.cities):
+            if city in cities and row in self.status_overrides:
                 del self.status_overrides[row]
 
-        if indices_to_update:
-            for row in indices_to_update:
-                top_left = self.index(row, STATUS_COLUMN)
-                bottom_right = self.index(row, STATUS_COLUMN)
-                self.dataChanged.emit(
-                    top_left,
-                    bottom_right,
-                    [
-                        Qt.ItemDataRole.DisplayRole,
-                        StatusActionDelegate.UpdateEnabledRole,
-                        StatusActionDelegate.ViewEnabledRole,
-                    ],
-                )
-        return indices_to_update
+    def refresh_status_column(self) -> None:
+        if not self.cities:
+            return
+
+        self.dataChanged.emit(
+            self.index(0, STATUS_COLUMN),
+            self.index(len(self.cities) - 1, STATUS_COLUMN),
+            [
+                Qt.ItemDataRole.DisplayRole,
+                StatusActionDelegate.UpdateEnabledRole,
+                StatusActionDelegate.ViewEnabledRole,
+            ],
+        )
