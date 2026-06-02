@@ -24,7 +24,6 @@ from PyQt6.QtWidgets import (
 )
 
 from sun_set.api.file_manager import load_from_json, save_to_json
-from sun_set.core.astronomy import get_city_sunset
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview, export_cities_images
 from sun_set.image_export.settings import (
@@ -39,7 +38,7 @@ from sun_set.models.table_model import (
     CityTableModel,
     StatusActionDelegate,
 )
-from sun_set.services.city_service import create_default_city
+from sun_set.services.city_service import create_default_city, update_city_sunset
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -342,9 +341,7 @@ class MainWindow(QMainWindow):
             weekday1 = self.combo_weekday1.currentIndex()
             weekday2 = self.combo_weekday2.currentIndex()
 
-            city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
-
-            city.sunset_data.hash_before_edit = city.get_stable_hash()
+            update_city_sunset(city, year, weekday1, weekday2)
 
             index = self.model.index(row, STATUS_COLUMN)
             if row in self.model.status_overrides:

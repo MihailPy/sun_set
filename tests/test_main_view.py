@@ -222,7 +222,8 @@ class TestMainWindow:
         mock_sunset_data.get_stable_hash.return_value = "new_hash_123"
 
         with patch(
-            "sun_set.views.main_view.get_city_sunset", return_value=mock_sunset_data
+            "sun_set.services.city_service.get_city_sunset",
+            return_value=mock_sunset_data,
         ) as mock_get:
             with qtbot.waitSignal(main_window.model.dataChanged):
                 main_window.handle_city_update(0, "update")

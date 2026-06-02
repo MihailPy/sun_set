@@ -1,3 +1,4 @@
+from sun_set.core.astronomy import get_city_sunset
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 
@@ -17,3 +18,13 @@ def create_default_city(year: int) -> City:
             months=None,
         ),
     )
+
+
+def update_city_sunset(
+    city: City,
+    year: int,
+    weekday1: int,
+    weekday2: int,
+) -> None:
+    city.sunset_data = get_city_sunset(city, year, weekday1, weekday2)
+    city.sunset_data.hash_before_edit = city.get_stable_hash()
