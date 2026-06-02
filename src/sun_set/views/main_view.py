@@ -23,7 +23,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview, export_cities_images
 from sun_set.image_export.settings import (
@@ -37,6 +36,10 @@ from sun_set.models.table_model import (
     CheckBoxHeader,
     CityTableModel,
     StatusActionDelegate,
+)
+from sun_set.services.city_file_service import (
+    load_cities_from_file,
+    save_cities_to_file,
 )
 from sun_set.services.city_service import (
     create_default_city,
@@ -579,7 +582,7 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        result, error = load_from_json(file_path)
+        result, error = load_cities_from_file(file_path)
         if error is not None:
             retry = QMessageBox.question(
                 self,
@@ -605,14 +608,14 @@ class MainWindow(QMainWindow):
         if not self.file_path:
             self.save_file_as()
         else:
-            save_to_json(self.cities, self.file_path)
+            save_cities_to_file(self.cities, self.file_path)
 
     def save_file_as(self) -> None:
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить файл как...", "", "JSON Files (*.json)"
         )
         if file_path:
-            save_to_json(self.cities, file_path)
+            save_cities_to_file(self.cities, file_path)
             self.file_path = file_path
             self.update_window_title()
             self.update_status_bar()

@@ -93,7 +93,7 @@ class TestMainWindow:
             mock_file.side_effect = [("invalid_name.json", ""), (temp_json_file, "")]
 
             with patch(
-                "sun_set.views.main_view.load_from_json",
+                "sun_set.services.city_file_service.load_from_json",
             ) as mock_load:
                 mock_load.side_effect = [
                     (None, "Ошибка: Файл не найден. Проверьте путь к файлу."),
