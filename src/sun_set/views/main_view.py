@@ -32,13 +32,14 @@ from sun_set.image_export.settings import (
     load_export_settings,
 )
 from sun_set.models.city import City
-from sun_set.models.sunset import Source, YearData
+from sun_set.models.sunset import Source
 from sun_set.models.table_model import (
     STATUS_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     StatusActionDelegate,
 )
+from sun_set.services.city_service import create_default_city
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -619,20 +620,7 @@ class MainWindow(QMainWindow):
             self.update_status_bar()
 
     def add_city_in_table(self) -> None:
-        new_city = City(
-            name="Новый город",
-            region="-",
-            lat=0.0,
-            lon=0.0,
-            timezone="UTC",
-            elevation=0,
-            sunset_data=YearData(
-                year=self.year_spinbox.value(),
-                source=Source.CALCULATED,
-                hash_before_edit=None,
-                months=None,
-            ),
-        )
+        new_city = create_default_city(self.year_spinbox.value())
         if not hasattr(self, "model") or self.model is None:
             self.setup_city_model([new_city])
         else:
