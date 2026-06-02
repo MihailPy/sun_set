@@ -103,3 +103,22 @@ def build_city_image_preview_from_settings(
         settings=settings,
         text_blocks=text_blocks,
     )
+
+
+def build_export_report(results: list[ExportResult]) -> str:
+    success_count = sum(result.success for result in results)
+    error_count = len(results) - success_count
+
+    report_lines = [
+        f"Готово: {success_count}",
+        f"Ошибки: {error_count}",
+        "",
+    ]
+
+    for result in results:
+        if result.success:
+            report_lines.append(f"OK: {result.city_name} -> {result.output_path}")
+        else:
+            report_lines.append(f"ERROR: {result.city_name} -> {result.error}")
+
+    return "\n".join(report_lines)

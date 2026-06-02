@@ -24,7 +24,11 @@ from PyQt6.QtWidgets import (
 )
 
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
-from sun_set.image_export.service import build_city_image_preview, export_cities_images
+from sun_set.image_export.service import (
+    build_city_image_preview,
+    build_export_report,
+    export_cities_images,
+)
 from sun_set.image_export.settings import (
     create_default_export_settings,
     load_export_settings,
@@ -458,19 +462,7 @@ class MainWindow(QMainWindow):
                 message += f"\n...и ещё {len(failed_results) - 10}"
 
         report_path = Path(output_dir) / "image_export_report.txt"
-        report_lines = [
-            f"Готово: {success_count}",
-            f"Ошибки: {error_count}",
-            "",
-        ]
-
-        for result in results:
-            if result.success:
-                report_lines.append(f"OK: {result.city_name} -> {result.output_path}")
-            else:
-                report_lines.append(f"ERROR: {result.city_name} -> {result.error}")
-
-        report_path.write_text("\n".join(report_lines), encoding="utf-8")
+        report_path.write_text(build_export_report(results), encoding="utf-8")
 
         message_box = QMessageBox(self)
         message_box.setWindowTitle("Экспорт изображений")
