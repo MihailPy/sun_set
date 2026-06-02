@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from sun_set.api.file_manager import load_from_json
 from sun_set.image_export.service import export_city_image
+from sun_set.storage.city_json_storage import load_from_json
 
 
 def main() -> None:

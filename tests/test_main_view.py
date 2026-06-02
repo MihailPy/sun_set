@@ -5,10 +5,10 @@ import pytest
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
-from sun_set.api.file_manager import save_to_json
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import STATUS_COLUMN
+from sun_set.storage.city_json_storage import save_to_json
 from sun_set.views.main_view import MainWindow
 
 

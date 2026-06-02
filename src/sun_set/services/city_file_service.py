@@ -1,5 +1,5 @@
-from sun_set.api.file_manager import load_from_json, save_to_json
 from sun_set.models.city import City
+from sun_set.storage.city_json_storage import load_from_json, save_to_json
 
 
 def load_cities_from_file(file_path: str) -> tuple[list[City] | None, str | None]:
