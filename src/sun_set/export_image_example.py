@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from sun_set.image_export.service import export_city_image
-from sun_set.storage.city_json_storage import load_from_json
+from sun_set.storage.city_json_storage import load_cities_from_json
 
 
 def main() -> None:
@@ -9,7 +9,7 @@ def main() -> None:
     settings_path = Path("examples/image_export/default_white.json")
     output_path = Path("out/image_export_example.png")
 
-    cities, _ = load_from_json(cities_path)
+    cities, _ = load_cities_from_json(cities_path)
 
     if cities is None:
         print("Cities is None")

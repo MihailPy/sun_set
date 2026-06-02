@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication, QFileDialog
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import STATUS_COLUMN
-from sun_set.storage.city_json_storage import save_to_json
+from sun_set.storage.city_json_storage import save_cities_to_json
 from sun_set.views.main_view import MainWindow
 
 
@@ -50,7 +50,7 @@ def sample_city():
 @pytest.fixture
 def temp_json_file(tmp_path, sample_city):
     file_path = tmp_path / "test_cities.json"
-    save_to_json([sample_city], str(file_path))
+    save_cities_to_json([sample_city], str(file_path))
     return str(file_path)
 
 

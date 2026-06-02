@@ -17,13 +17,13 @@ def custom_asdict_factory(data):
     return {key: convert_value(value) for key, value in data}
 
 
-def save_to_json(cities: list[City], filename: str) -> None:
+def save_cities_to_json(cities: list[City], filename: str) -> None:
     data_to_save = [asdict(city, dict_factory=custom_asdict_factory) for city in cities]
 
     write_json(Path(filename), data_to_save)
 
 
-def load_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
+def load_cities_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
     try:
         data_list = read_json(Path(file_path))
         config = Config(cast=[Enum])
