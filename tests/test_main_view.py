@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QFileDialog
+from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
@@ -80,12 +80,10 @@ class TestMainWindow:
         assert main_window.initial_prompt_text.isVisible() is True
 
     def test_open_file_dialog_called(self, main_window, qtbot, temp_json_file):
-        """Тест открытия файла через диалог"""
-        with patch.object(
-            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
-            assert main_window.file_path == temp_json_file
+
+        assert main_window.file_path == temp_json_file
 
     def test_open_file_error(self, main_window, qtbot, temp_json_file, sample_city):
         """Тест вывода окна с ошибкой, если при открытии файла произошла ошибка"""
@@ -102,9 +100,7 @@ class TestMainWindow:
 
     def test_open_file_updates_ui(self, main_window, qtbot, temp_json_file):
         """Тест обновления UI после открытия файла"""
-        with patch.object(
-            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
             # Таблица должна стать видимой
@@ -123,8 +119,8 @@ class TestMainWindow:
 
     def test_save_file_as_dialog(self, main_window, qtbot):
         """Тест диалога 'Сохранить как'"""
-        with patch.object(
-            QFileDialog, "getSaveFileName", return_value=("new_file.json", "")
+        with patch(
+            "sun_set.views.main_view.choose_save_file", return_value="new_file.json"
         ):
             with patch("builtins.open", mock_open()):
                 main_window.save_file_as()
@@ -147,9 +143,7 @@ class TestMainWindow:
 
     def test_delete_selected_cities(self, main_window, qtbot, temp_json_file):
         """Тест удаления выбранных городов через чекбокс"""
-        with patch.object(
-            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
         model = main_window.table_view.model()
@@ -303,9 +297,7 @@ class TestMainWindow:
     def test_full_workflow(self, main_window, qtbot, temp_json_file):
         """Интеграционный тест полного рабочего процесса"""
         # 1. Открываем файл
-        with patch.object(
-            QFileDialog, "getOpenFileName", return_value=(temp_json_file, "")
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
         # 2. Проверяем что данные загрузились
