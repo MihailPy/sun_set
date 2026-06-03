@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMessageBox, QWidget
+from PyQt6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 
 def show_warning(
@@ -51,3 +51,45 @@ def ask_retry(
     )
 
     return result == QMessageBox.StandardButton.Retry
+
+
+def choose_file(
+    parent: QWidget,
+    title: str,
+    file_filter: str,
+    initial_path: str = "",
+) -> str:
+    file_path, _ = QFileDialog.getOpenFileName(
+        parent,
+        title,
+        initial_path,
+        file_filter,
+    )
+    return file_path
+
+
+def choose_directory(
+    parent: QWidget,
+    title: str,
+    initial_path: str = "",
+) -> str:
+    return QFileDialog.getExistingDirectory(
+        parent,
+        title,
+        initial_path,
+    )
+
+
+def choose_save_file(
+    parent: QWidget,
+    title: str,
+    file_filter: str,
+    initial_path: str = "",
+) -> str:
+    file_path, _ = QFileDialog.getSaveFileName(
+        parent,
+        title,
+        initial_path,
+        file_filter,
+    )
+    return file_path

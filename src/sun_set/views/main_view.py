@@ -5,7 +5,6 @@ from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
-    QFileDialog,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
@@ -51,7 +50,14 @@ from sun_set.services.city_service import (
     update_cities_sunset,
     update_city_sunset,
 )
-from sun_set.services.dialog_service import ask_retry, show_error, show_warning
+from sun_set.services.dialog_service import (
+    ask_retry,
+    choose_directory,
+    choose_file,
+    choose_save_file,
+    show_error,
+    show_warning,
+)
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -416,7 +422,7 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        settings_file, _ = QFileDialog.getOpenFileName(
+        settings_file, _ = choose_file(
             self,
             "Выберите настройки экспорта",
             self.last_image_export_settings_path,
@@ -428,7 +434,7 @@ class MainWindow(QMainWindow):
 
         if not settings_file:
             return
-        output_dir = QFileDialog.getExistingDirectory(
+        output_dir = choose_directory(
             self,
             "Выберите папку для сохранения изображений",
             self.last_image_export_output_dir,
@@ -474,7 +480,7 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        settings_file, _ = QFileDialog.getOpenFileName(
+        settings_file, _ = choose_file(
             self,
             "Выберите настройки экспорта",
             self.last_image_export_settings_path,
@@ -510,7 +516,7 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def edit_image_export_settings(self) -> None:
-        settings_file, _ = QFileDialog.getOpenFileName(
+        settings_file, _ = choose_file(
             self,
             "Выберите настройки экспорта",
             self.last_image_export_settings_path,
@@ -550,7 +556,7 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def open_file_dialog(self) -> None:
-        file_path, _ = QFileDialog.getOpenFileName(
+        file_path = choose_file(
             self,
             "Выберите файл",
             "",
@@ -581,7 +587,7 @@ class MainWindow(QMainWindow):
             save_cities_to_file(self.cities, self.file_path)
 
     def save_file_as(self) -> None:
-        file_path, _ = QFileDialog.getSaveFileName(
+        file_path = choose_save_file(
             self, "Сохранить файл как...", "", "JSON Files (*.json)"
         )
         if file_path:

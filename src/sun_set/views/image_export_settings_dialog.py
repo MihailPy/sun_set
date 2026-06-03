@@ -9,7 +9,6 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QFileDialog,
     QFormLayout,
     QHBoxLayout,
     QLabel,
@@ -24,7 +23,12 @@ from PyQt6.QtWidgets import (
 from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import ExportImageSettings, save_export_settings
-from sun_set.services.dialog_service import show_error, show_information
+from sun_set.services.dialog_service import (
+    choose_file,
+    choose_save_file,
+    show_error,
+    show_information,
+)
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -279,7 +283,7 @@ class ImageExportSettingsDialog(QDialog):
         month_block.y = self.month_y_spin.value()
 
     def select_template_path(self) -> None:
-        file_path, _ = QFileDialog.getOpenFileName(
+        file_path, _ = choose_file(
             self,
             "Выберите шаблон изображения",
             self.template_path_edit.text(),
@@ -295,7 +299,7 @@ class ImageExportSettingsDialog(QDialog):
         self.schedule_preview_update()
 
     def select_font_path(self) -> None:
-        file_path, _ = QFileDialog.getOpenFileName(
+        file_path, _ = choose_file(
             self,
             "Выберите шрифт",
             self.font_path_edit.text(),
@@ -364,7 +368,7 @@ class ImageExportSettingsDialog(QDialog):
         if self.settings_path is not None:
             start_path = str(self.settings_path)
 
-        settings_file, _ = QFileDialog.getSaveFileName(
+        settings_file, _ = choose_save_file(
             self,
             "Сохранить настройки экспорта как",
             start_path,
