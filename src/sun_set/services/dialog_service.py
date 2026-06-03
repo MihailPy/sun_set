@@ -93,3 +93,23 @@ def choose_save_file(
         file_filter,
     )
     return file_path
+
+
+def ask_open_folder_after_export(
+    parent: QWidget,
+    message: str,
+) -> bool:
+    message_box = QMessageBox(parent)
+    message_box.setWindowTitle("Экспорт изображений")
+    message_box.setText(message)
+    message_box.setIcon(QMessageBox.Icon.Information)
+
+    open_folder_button = message_box.addButton(
+        "Открыть папку",
+        QMessageBox.ButtonRole.ActionRole,
+    )
+    message_box.addButton(QMessageBox.StandardButton.Ok)
+
+    message_box.exec()
+
+    return message_box.clickedButton() == open_folder_button

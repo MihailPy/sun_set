@@ -12,7 +12,6 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMenu,
     QMenuBar,
-    QMessageBox,
     QPushButton,
     QSizePolicy,
     QSpinBox,
@@ -51,6 +50,7 @@ from sun_set.services.city_service import (
     update_city_sunset,
 )
 from sun_set.services.dialog_service import (
+    ask_open_folder_after_export,
     ask_retry,
     choose_directory,
     choose_file,
@@ -456,20 +456,7 @@ class MainWindow(QMainWindow):
 
         save_export_report(results, Path(output_dir))
 
-        message_box = QMessageBox(self)
-        message_box.setWindowTitle("Экспорт изображений")
-        message_box.setText(message)
-        message_box.setIcon(QMessageBox.Icon.Information)
-
-        open_folder_button = message_box.addButton(
-            "Открыть папку",
-            QMessageBox.ButtonRole.ActionRole,
-        )
-        message_box.addButton(QMessageBox.StandardButton.Ok)
-
-        message_box.exec()
-
-        if message_box.clickedButton() == open_folder_button:
+        if ask_open_folder_after_export(self, message):
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
 
     def preview_selected_city_image(self) -> None:
