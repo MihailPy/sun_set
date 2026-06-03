@@ -51,6 +51,7 @@ from sun_set.services.city_service import (
     update_cities_sunset,
     update_city_sunset,
 )
+from sun_set.services.dialog_service import show_error, show_warning
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -297,7 +298,7 @@ class MainWindow(QMainWindow):
         self.update_action_buttons_state()
 
     def show_no_cities_warning(self) -> None:
-        QMessageBox.warning(
+        show_warning(
             self,
             "Города",
             "Сначала загрузите или создайте города.",
@@ -491,14 +492,14 @@ class MainWindow(QMainWindow):
                 settings_path=Path(settings_file),
             )
         except ImageExportError as error:
-            QMessageBox.critical(
+            show_error(
                 self,
                 "Ошибка предпросмотра",
                 get_user_friendly_error(error),
             )
             return
         except Exception as error:
-            QMessageBox.critical(
+            show_error(
                 self,
                 "Ошибка предпросмотра",
                 get_user_friendly_error(error),
@@ -524,14 +525,14 @@ class MainWindow(QMainWindow):
         try:
             settings = load_export_settings(Path(settings_file))
         except ImageExportError as error:
-            QMessageBox.critical(
+            show_error(
                 self,
                 "Ошибка настроек экспорта",
                 get_user_friendly_error(error),
             )
             return
         except Exception as error:
-            QMessageBox.critical(
+            show_error(
                 self,
                 "Ошибка настроек экспорта",
                 str(error),

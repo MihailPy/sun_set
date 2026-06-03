@@ -14,7 +14,6 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QScrollArea,
     QSpinBox,
@@ -25,6 +24,7 @@ from PyQt6.QtWidgets import (
 from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import ExportImageSettings, save_export_settings
+from sun_set.services.dialog_service import show_error, show_information
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -338,21 +338,21 @@ class ImageExportSettingsDialog(QDialog):
         try:
             save_export_settings(self.settings, self.settings_path)
         except ExportSettingsError as error:
-            QMessageBox.critical(
+            show_error(
                 self,
                 "Ошибка сохранения настроек",
                 get_user_friendly_error(error),
             )
             return
         except Exception as error:
-            QMessageBox.critical(
+            show_error(
                 self,
                 "Ошибка сохранения настроек",
                 str(error),
             )
             return
 
-        QMessageBox.information(
+        show_information(
             self,
             "Сохранение настроек",
             "Настройки сохранены.",
