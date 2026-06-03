@@ -51,7 +51,7 @@ from sun_set.services.city_service import (
     update_cities_sunset,
     update_city_sunset,
 )
-from sun_set.services.dialog_service import show_error, show_warning
+from sun_set.services.dialog_service import ask_retry, show_error, show_warning
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -562,15 +562,7 @@ class MainWindow(QMainWindow):
 
         result, error = load_cities_from_file(file_path)
         if error is not None:
-            retry = QMessageBox.question(
-                self,
-                "Ошибка",
-                f"{error}\n\nВыбрать файл снова?",
-                QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Cancel,
-                QMessageBox.StandardButton.Retry,
-            )
-
-            if retry == QMessageBox.StandardButton.Retry:
+            if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
                 self.open_file_dialog()
 
             return

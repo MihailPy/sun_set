@@ -35,3 +35,19 @@ def show_error(
         title,
         message,
     )
+
+
+def ask_retry(
+    parent: QWidget,
+    title: str,
+    message: str,
+) -> bool:
+    result = QMessageBox.question(
+        parent,
+        title,
+        message,
+        QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Cancel,
+        QMessageBox.StandardButton.Retry,
+    )
+
+    return result == QMessageBox.StandardButton.Retry
