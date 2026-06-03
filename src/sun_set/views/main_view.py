@@ -27,6 +27,7 @@ from sun_set.image_export.errors import ImageExportError, get_user_friendly_erro
 from sun_set.image_export.service import (
     build_city_image_preview,
     build_export_report,
+    build_export_summary_message,
     export_cities_images,
 )
 from sun_set.image_export.settings import (
@@ -444,22 +445,7 @@ class MainWindow(QMainWindow):
             output_dir=Path(output_dir),
         )
 
-        failed_results = [result for result in results if not result.success]
-        success_count = sum(result.success for result in results)
-        error_count = len(results) - success_count
-
-        message = f"Готово: {success_count}\nОшибки: {error_count}"
-
-        if failed_results:
-            errors_text = "\n".join(
-                f"- {result.city_name}: {result.error}"
-                for result in failed_results[:10]
-            )
-
-            message += f"\n\nОшибки:\n{errors_text}"
-
-            if len(failed_results) > 10:
-                message += f"\n...и ещё {len(failed_results) - 10}"
+        message = build_export_summary_message(results)
 
         report_path = Path(output_dir) / "image_export_report.txt"
         report_path.write_text(build_export_report(results), encoding="utf-8")
