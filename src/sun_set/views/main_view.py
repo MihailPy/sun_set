@@ -26,9 +26,9 @@ from PyQt6.QtWidgets import (
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
     build_city_image_preview,
-    build_export_report,
     build_export_summary_message,
     export_cities_images,
+    save_export_report,
 )
 from sun_set.image_export.settings import (
     create_default_export_settings,
@@ -447,8 +447,7 @@ class MainWindow(QMainWindow):
 
         message = build_export_summary_message(results)
 
-        report_path = Path(output_dir) / "image_export_report.txt"
-        report_path.write_text(build_export_report(results), encoding="utf-8")
+        save_export_report(results, Path(output_dir))
 
         message_box = QMessageBox(self)
         message_box.setWindowTitle("Экспорт изображений")

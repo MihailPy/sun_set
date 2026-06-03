@@ -143,3 +143,15 @@ def build_export_summary_message(results: list[ExportResult]) -> str:
             message += f"\n...и ещё {len(failed_results) - 10}"
 
     return message
+
+
+def save_export_report(
+    results: list[ExportResult],
+    output_dir: Path,
+) -> Path:
+    report_path = output_dir / "image_export_report.txt"
+    report_path.write_text(
+        build_export_report(results),
+        encoding="utf-8",
+    )
+    return report_path
