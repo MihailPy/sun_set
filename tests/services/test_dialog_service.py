@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 from PyQt6.QtWidgets import QMessageBox
 
 from sun_set.services.dialog_service import (
+    ask_open_folder_after_export,
     ask_retry,
     choose_directory,
     choose_file,
@@ -92,3 +93,39 @@ def test_choose_directory(mock_get_existing_directory):
     )
 
     assert result == "exports"
+
+
+@patch("sun_set.services.dialog_service.QMessageBox")
+def test_ask_open_folder_after_export_returns_true(mock_message_box_class):
+    parent = Mock()
+
+    message_box = Mock()
+    open_folder_button = Mock()
+
+    mock_message_box_class.return_value = message_box
+    message_box.addButton.side_effect = [open_folder_button, Mock()]
+    message_box.clickedButton.return_value = open_folder_button
+
+    result = ask_open_folder_after_export(parent, "Готово: 1")
+
+    assert result is True
+    message_box.setWindowTitle.assert_called_once_with("Экспорт изображений")
+    message_box.setText.assert_called_once_with("Готово: 1")
+    message_box.exec.assert_called_once()
+
+
+@patch("sun_set.services.dialog_service.QMessageBox")
+def test_ask_open_folder_after_export_returns_false(mock_message_box_class):
+    parent = Mock()
+
+    message_box = Mock()
+    open_folder_button = Mock()
+    ok_button = Mock()
+
+    mock_message_box_class.return_value = message_box
+    message_box.addButton.side_effect = [open_folder_button, ok_button]
+    message_box.clickedButton.return_value = ok_button
+
+    result = ask_open_folder_after_export(parent, "Готово: 1")
+
+    assert result is False
