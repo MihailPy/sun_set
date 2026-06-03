@@ -7,6 +7,7 @@ from sun_set.image_export.service import (
     build_output_filename,
     export_cities_images,
     export_city_image,
+    save_export_report,
 )
 
 
@@ -136,3 +137,20 @@ def test_build_export_summary_message():
     assert "Готово: 1" in message
     assert "Ошибки: 1" in message
     assert "- Berlin: Ошибка экспорта" in message
+
+
+def test_save_export_report(tmp_path):
+    results = [
+        ExportResult(
+            city_name="Amsterdam",
+            output_path=Path("amsterdam.png"),
+            success=True,
+            error=None,
+        )
+    ]
+
+    report_path = save_export_report(results, tmp_path)
+
+    assert report_path == tmp_path / "image_export_report.txt"
+    assert report_path.exists()
+    assert "Готово: 1" in report_path.read_text(encoding="utf-8")
