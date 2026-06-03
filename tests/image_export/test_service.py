@@ -1,4 +1,9 @@
+from pathlib import Path
+
 from sun_set.image_export.service import (
+    ExportResult,
+    build_export_report,
+    build_export_summary_message,
     build_output_filename,
     export_cities_images,
     export_city_image,
@@ -84,3 +89,50 @@ def test_export_cities_images_continues_after_city_error(
     assert results[1].error is not None
 
     assert len(list(output_dir.glob("*.png"))) == 1
+
+
+def test_build_export_report():
+    results = [
+        ExportResult(
+            city_name="Amsterdam",
+            output_path=Path("amsterdam.png"),
+            success=True,
+            error=None,
+        ),
+        ExportResult(
+            city_name="Berlin",
+            output_path=None,
+            success=False,
+            error="Ошибка экспорта",
+        ),
+    ]
+
+    report = build_export_report(results)
+
+    assert "Готово: 1" in report
+    assert "Ошибки: 1" in report
+    assert "OK: Amsterdam -> amsterdam.png" in report
+    assert "ERROR: Berlin -> Ошибка экспорта" in report
+
+
+def test_build_export_summary_message():
+    results = [
+        ExportResult(
+            city_name="Amsterdam",
+            output_path=Path("amsterdam.png"),
+            success=True,
+            error=None,
+        ),
+        ExportResult(
+            city_name="Berlin",
+            output_path=None,
+            success=False,
+            error="Ошибка экспорта",
+        ),
+    ]
+
+    message = build_export_summary_message(results)
+
+    assert "Готово: 1" in message
+    assert "Ошибки: 1" in message
+    assert "- Berlin: Ошибка экспорта" in message
