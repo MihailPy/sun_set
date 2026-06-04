@@ -447,3 +447,15 @@ class CityTableModel(QAbstractTableModel):
                 StatusActionDelegate.ViewEnabledRole,
             ],
         )
+
+    def update_status_for_row(self, row: int) -> None:
+        city = self.cities[row]
+
+        if city.get_stable_hash() != city.sunset_data.hash_before_edit:
+            self.status_overrides[row] = "❗️ Неактуальные данные"
+        elif city.sunset_data.source == Source.CALCULATED:
+            self.status_overrides[row] = "✅ Загружено"
+        elif city.sunset_data.source == Source.EDITED:
+            self.status_overrides[row] = "⚠️ Изменено"
+
+        self.refresh_status_row(row)

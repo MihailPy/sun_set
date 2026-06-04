@@ -34,7 +34,6 @@ from sun_set.image_export.settings import (
     load_export_settings,
 )
 from sun_set.models.city import City
-from sun_set.models.sunset import Source
 from sun_set.models.table_model import (
     STATUS_COLUMN,
     CheckBoxHeader,
@@ -322,23 +321,7 @@ class MainWindow(QMainWindow):
 
         self._updating = True
 
-        city = self.model.cities[top_left.row()]
-        index = self.model.index(top_left.row(), STATUS_COLUMN)
-
-        if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-            self.model.status_overrides[index.row()] = "❗️ Неактуальные данные"
-            self.model.setData(index, False, StatusActionDelegate.ViewEnabledRole)
-            self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
-        else:
-            if city.sunset_data.source == Source.CALCULATED:
-                self.model.status_overrides[index.row()] = "✅ Загружено"
-                self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
-                self.model.setData(index, False, StatusActionDelegate.UpdateEnabledRole)
-            elif city.sunset_data.source == Source.EDITED:
-                self.model.status_overrides[index.row()] = "⚠️ Изменено"
-                self.model.setData(index, True, StatusActionDelegate.ViewEnabledRole)
-                self.model.setData(index, True, StatusActionDelegate.UpdateEnabledRole)
-
+        self.model.update_status_for_row(top_left.row())
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
         self._updating = False
