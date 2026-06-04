@@ -519,18 +519,20 @@ class MainWindow(QMainWindow):
             return
 
         result, error = load_cities_from_file(file_path)
+
         if error is not None:
             if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
                 self.open_file_dialog()
-
             return
 
-        if result is not None:
-            self.file_path = file_path
-            self.update_window_title()
-            self.setup_city_model(result)
-            self.update_action_buttons_state()
-            self.update_status_bar()
+        if result is None:
+            return
+
+        self.file_path = file_path
+        self.update_window_title()
+        self.setup_city_model(result)
+        self.update_action_buttons_state()
+        self.update_status_bar()
 
     def save_file(self) -> None:
         if not self.file_path:
