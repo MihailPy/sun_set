@@ -423,18 +423,10 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        settings_file, _ = choose_file(
-            self,
-            "Выберите настройки экспорта",
-            self.last_image_export_settings_path,
-            "JSON files (*.json)",
-        )
-
-        if settings_file:
-            self.last_image_export_settings_path = settings_file
-
-        if not settings_file:
+        settings_path = self.choose_export_settings_file()
+        if settings_path is None:
             return
+
         output_dir = choose_directory(
             self,
             "Выберите папку для сохранения изображений",
@@ -449,7 +441,7 @@ class MainWindow(QMainWindow):
 
         results = export_cities_images(
             cities=cities,
-            settings_path=Path(settings_file),
+            settings_path=settings_path,
             output_dir=Path(output_dir),
         )
 
@@ -468,22 +460,14 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        settings_file, _ = choose_file(
-            self,
-            "Выберите настройки экспорта",
-            self.last_image_export_settings_path,
-            "JSON files (*.json)",
-        )
-
-        if settings_file:
-            self.last_image_export_settings_path = settings_file
-        if not settings_file:
+        settings_path = self.choose_export_settings_file()
+        if settings_path is None:
             return
 
         try:
             image = build_city_image_preview(
                 city=city,
-                settings_path=Path(settings_file),
+                settings_path=settings_path,
             )
         except ImageExportError as error:
             show_error(
@@ -504,20 +488,12 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def edit_image_export_settings(self) -> None:
-        settings_file, _ = choose_file(
-            self,
-            "Выберите настройки экспорта",
-            self.last_image_export_settings_path,
-            "JSON files (*.json)",
-        )
-
-        if not settings_file:
+        settings_path = self.choose_export_settings_file()
+        if settings_path is None:
             return
 
-        self.last_image_export_settings_path = settings_file
-
         try:
-            settings = load_export_settings(Path(settings_file))
+            settings = load_export_settings(settings_path)
         except ImageExportError as error:
             show_error(
                 self,
@@ -537,7 +513,7 @@ class MainWindow(QMainWindow):
 
         dialog = ImageExportSettingsDialog(
             settings=settings,
-            settings_path=Path(settings_file),
+            settings_path=settings_path,
             city=city,
             parent=self,
         )
@@ -698,3 +674,17 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("Sun set")
         else:
             self.setWindowTitle(f"Sun set — {Path(self.file_path).name}")
+
+    def choose_export_settings_file(self) -> Path | None:
+        settings_file = choose_file(
+            self,
+            "Выберите JSON-файл настроек экспорта",
+            "JSON Files (*.json)",
+            self.last_image_export_settings_path,
+        )
+
+        if not settings_file:
+            return None
+
+        self.last_image_export_settings_path = settings_file
+        return Path(settings_file)
