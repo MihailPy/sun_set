@@ -427,16 +427,8 @@ class MainWindow(QMainWindow):
         if settings_path is None:
             return
 
-        output_dir = choose_directory(
-            self,
-            "Выберите папку для сохранения изображений",
-            self.last_image_export_output_dir,
-        )
-
-        if output_dir:
-            self.last_image_export_output_dir = output_dir
-
-        if not output_dir:
+        output_dir = self.choose_image_export_output_dir()
+        if output_dir is None:
             return
 
         results = export_cities_images(
@@ -688,3 +680,16 @@ class MainWindow(QMainWindow):
 
         self.last_image_export_settings_path = settings_file
         return Path(settings_file)
+
+    def choose_image_export_output_dir(self) -> Path | None:
+        output_dir = choose_directory(
+            self,
+            "Выберите папку, куда сохранить изображения",
+            self.last_image_export_output_dir,
+        )
+
+        if not output_dir:
+            return None
+
+        self.last_image_export_output_dir = output_dir
+        return Path(output_dir)
