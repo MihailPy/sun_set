@@ -1,8 +1,8 @@
 from datetime import datetime
 from pathlib import Path
 
-from PyQt6.QtCore import Qt, QUrl
-from PyQt6.QtGui import QAction, QDesktopServices, QKeySequence
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
     QGroupBox,
@@ -55,6 +55,7 @@ from sun_set.services.dialog_service import (
     choose_directory,
     choose_file,
     choose_save_file,
+    open_directory,
     show_error,
     show_warning,
 )
@@ -457,7 +458,7 @@ class MainWindow(QMainWindow):
         save_export_report(results, Path(output_dir))
 
         if ask_open_folder_after_export(self, message):
-            QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_dir)))
+            open_directory(Path(output_dir))
 
     def preview_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()

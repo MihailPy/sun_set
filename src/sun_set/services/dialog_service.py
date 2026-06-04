@@ -1,3 +1,7 @@
+from pathlib import Path
+
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import QFileDialog, QMessageBox, QWidget
 
 
@@ -113,3 +117,7 @@ def ask_open_folder_after_export(
     message_box.exec()
 
     return message_box.clickedButton() == open_folder_button
+
+
+def open_directory(path: Path) -> None:
+    QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
