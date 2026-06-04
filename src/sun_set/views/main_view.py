@@ -419,7 +419,6 @@ class MainWindow(QMainWindow):
 
     def export_all_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()
-
         if cities is None:
             self.show_no_cities_warning()
             return
@@ -439,7 +438,6 @@ class MainWindow(QMainWindow):
         )
 
         save_export_report(results, Path(output_dir))
-
         self.show_image_export_result(results, output_dir)
 
     def preview_selected_city_image(self) -> None:
