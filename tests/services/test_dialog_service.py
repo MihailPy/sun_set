@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 from PyQt6.QtWidgets import QMessageBox
@@ -8,6 +9,7 @@ from sun_set.services.dialog_service import (
     choose_directory,
     choose_file,
     choose_save_file,
+    open_directory,
     show_error,
     show_information,
     show_warning,
@@ -129,3 +131,15 @@ def test_ask_open_folder_after_export_returns_false(mock_message_box_class):
     result = ask_open_folder_after_export(parent, "Готово: 1")
 
     assert result is False
+
+
+@patch("sun_set.services.dialog_service.QDesktopServices.openUrl")
+@patch("sun_set.services.dialog_service.QUrl.fromLocalFile")
+def test_open_directory(mock_from_local_file, mock_open_url):
+    mock_url = Mock()
+    mock_from_local_file.return_value = mock_url
+
+    open_directory(Path("exports"))
+
+    mock_from_local_file.assert_called_once_with("exports")
+    mock_open_url.assert_called_once_with(mock_url)
