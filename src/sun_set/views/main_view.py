@@ -316,15 +316,11 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        if hasattr(self, "_updating") and self._updating:
+        if Qt.ItemDataRole.EditRole not in roles:
             return
-
-        self._updating = True
 
         self.model.update_status_for_row(top_left.row())
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
-
-        self._updating = False
 
     def handle_city_update(self, row: int, action_type: str):
         if self.model is None:
