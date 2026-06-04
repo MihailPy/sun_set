@@ -535,20 +535,26 @@ class MainWindow(QMainWindow):
         self.update_status_bar()
 
     def save_file(self) -> None:
-        if not self.file_path:
+        if self.file_path is None:
             self.save_file_as()
-        else:
-            save_cities_to_file(self.cities, self.file_path)
+            return
+
+        save_cities_to_file(self.cities, self.file_path)
+        self.update_status_bar()
 
     def save_file_as(self) -> None:
         file_path = choose_save_file(
-            self, "Сохранить файл как...", "", "JSON Files (*.json)"
+            self, "Сохранить файл как...", "JSON Files (*.json)"
         )
-        if file_path:
-            save_cities_to_file(self.cities, file_path)
-            self.file_path = file_path
-            self.update_window_title()
-            self.update_status_bar()
+
+        if not file_path:
+            return
+
+        save_cities_to_file(self.cities, file_path)
+        self.file_path = file_path
+        self.update_window_title()
+        self.update_status_bar()
+        self.update_action_buttons_state()
 
     def add_city_in_table(self) -> None:
         new_city = create_default_city(self.year_spinbox.value())
