@@ -511,7 +511,6 @@ class MainWindow(QMainWindow):
         file_path = choose_file(
             self,
             "Выберите файл",
-            "",
             "JSON Files (*.json)",
         )
 

@@ -286,8 +286,8 @@ class ImageExportSettingsDialog(QDialog):
         file_path, _ = choose_file(
             self,
             "Выберите шаблон изображения",
-            self.template_path_edit.text(),
             "Images (*.png *.jpg *.jpeg)",
+            self.template_path_edit.text(),
         )
 
         if not file_path:
@@ -302,8 +302,8 @@ class ImageExportSettingsDialog(QDialog):
         file_path, _ = choose_file(
             self,
             "Выберите шрифт",
-            self.font_path_edit.text(),
             "Fonts (*.ttf *.otf)",
+            self.font_path_edit.text(),
         )
 
         if not file_path:
