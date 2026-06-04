@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
+    ExportResult,
     build_city_image_preview,
     build_export_summary_message,
     export_cities_images,
@@ -437,12 +438,9 @@ class MainWindow(QMainWindow):
             output_dir=Path(output_dir),
         )
 
-        message = build_export_summary_message(results)
-
         save_export_report(results, Path(output_dir))
 
-        if ask_open_folder_after_export(self, message):
-            open_directory(Path(output_dir))
+        self.show_image_export_result(results, output_dir)
 
     def preview_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()
@@ -693,3 +691,13 @@ class MainWindow(QMainWindow):
 
         self.last_image_export_output_dir = output_dir
         return Path(output_dir)
+
+    def show_image_export_result(
+        self,
+        results: list[ExportResult],
+        output_dir: Path,
+    ) -> None:
+        message = build_export_summary_message(results)
+
+        if ask_open_folder_after_export(self, message):
+            open_directory(output_dir)
