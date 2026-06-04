@@ -383,12 +383,18 @@ class MainWindow(QMainWindow):
         )
 
     def initiate_sunset_fetch(self) -> None:
-        if self.model is None:
-            self.show_no_cities_warning()
+        cities = self.get_selected_cities_or_none()
+
+        if cities is None:
+            show_warning(
+                self,
+                "Обновление данных",
+                "Выберите хотя бы один город.",
+            )
             return
 
-        cities = self.model.get_selected_city()
-        if not cities:
+        model = self.model
+        if model is None:
             return
 
         year = self.year_spinbox.value()
@@ -397,8 +403,8 @@ class MainWindow(QMainWindow):
 
         update_cities_sunset(cities, year, weekday1, weekday2)
 
-        self.model.clear_status_overrides_for_cities(cities)
-        self.model.refresh_status_column()
+        model.clear_status_overrides_for_cities(cities)
+        model.refresh_status_column()
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def export_all_selected_city_image(self) -> None:
@@ -426,11 +432,16 @@ class MainWindow(QMainWindow):
 
     def preview_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()
-        city = cities[0] if cities else None
 
-        if city is None:
-            self.show_no_cities_warning()
+        if cities is None:
+            show_warning(
+                self,
+                "Предпросмотр изображения",
+                "Выберите город.",
+            )
             return
+
+        city = cities[0]
 
         settings_path = self.choose_export_settings_file()
         if settings_path is None:
@@ -592,7 +603,6 @@ class MainWindow(QMainWindow):
 
     def get_selected_cities_or_none(self) -> list[City] | None:
         if self.model is None:
-            self.show_no_cities_warning()
             return None
 
         cities = self.model.get_selected_city()
