@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QModelIndex, Qt
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -311,7 +311,12 @@ class MainWindow(QMainWindow):
             "Сначала загрузите или создайте города.",
         )
 
-    def on_data_changed(self, top_left, bottom_right, roles):
+    def on_data_changed(
+        self,
+        top_left: QModelIndex,
+        bottom_right: QModelIndex,
+        roles: list[int],
+    ) -> None:
         if self.model is None:
             self.show_no_cities_warning()
             return
