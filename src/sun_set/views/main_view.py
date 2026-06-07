@@ -450,13 +450,6 @@ class MainWindow(QMainWindow):
                 city=city,
                 settings_path=settings_path,
             )
-        except ImageExportError as error:
-            show_error(
-                self,
-                "Ошибка предпросмотра",
-                get_user_friendly_error(error),
-            )
-            return
         except Exception as error:
             show_error(
                 self,
