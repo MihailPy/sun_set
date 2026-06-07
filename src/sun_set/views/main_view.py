@@ -573,11 +573,17 @@ class MainWindow(QMainWindow):
 
             self.table_view.resizeColumnsToContents()
             self.cities = self.model.cities
-            if len(self.cities) == 0:
-                self.table_view.hide()
-                header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-                self.table_view.setHorizontalHeader(header)
-                self.initial_prompt_text.show()
+
+            if not self.cities:
+                self.show_empty_city_state()
+
+    def show_empty_city_state(self) -> None:
+        self.table_view.hide()
+
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
+
+        self.initial_prompt_text.show()
 
     def create_image_export_settings(self) -> None:
         settings = create_default_export_settings()
