@@ -565,17 +565,19 @@ class MainWindow(QMainWindow):
         self.update_status_bar()
 
     def delete_selected_cities(self) -> None:
-        if hasattr(self, "model") and self.model is not None:
-            self.model.remove_checked_cities()
+        if self.model is None:
+            return
 
-            self.update_action_buttons_state()
-            self.update_status_bar()
+        self.model.remove_checked_cities()
+        self.table_view.resizeColumnsToContents()
 
-            self.table_view.resizeColumnsToContents()
-            self.cities = self.model.cities
+        self.cities = self.model.cities
 
-            if not self.cities:
-                self.show_empty_city_state()
+        if not self.cities:
+            self.show_empty_city_state()
+
+        self.update_action_buttons_state()
+        self.update_status_bar()
 
     def show_empty_city_state(self) -> None:
         self.table_view.hide()
