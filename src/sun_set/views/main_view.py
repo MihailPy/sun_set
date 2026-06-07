@@ -375,22 +375,12 @@ class MainWindow(QMainWindow):
 
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
-    def update_city_row_display(self, row: int):
-        """Вспомогательный метод для обновления отображения строки"""
+    def update_city_row_display(self, row: int) -> None:
         if self.model is None:
             self.show_no_cities_warning()
             return
 
-        index = self.model.index(row, STATUS_COLUMN)
-        self.model.dataChanged.emit(
-            index,
-            index,
-            [
-                Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.UpdateEnabledRole,
-                StatusActionDelegate.ViewEnabledRole,
-            ],
-        )
+        self.model.refresh_status_row(row)
 
     def initiate_sunset_fetch(self) -> None:
         cities = self.get_selected_cities_or_none()
