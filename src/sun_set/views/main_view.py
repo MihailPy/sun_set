@@ -298,15 +298,20 @@ class MainWindow(QMainWindow):
         model.selection_changed.connect(self.update_status_bar)
         model.selection_changed.connect(self.update_action_buttons_state)
 
-    def setup_city_model(self, cities: list[City]) -> None:
-        self.cities = cities
-        self.model = CityTableModel(self.cities)
-        self.connect_city_model_signals(self.model)
-        self.update_status_bar()
-        self.table_view.setModel(self.model)
+    def show_city_model(self, model: CityTableModel) -> None:
+        self.table_view.setModel(model)
         self.table_view.show()
         self.initial_prompt_text.hide()
         self.table_view.resizeColumnsToContents()
+
+    def setup_city_model(self, cities: list[City]) -> None:
+        self.cities = cities
+        self.model = CityTableModel(self.cities)
+
+        self.connect_city_model_signals(self.model)
+        self.show_city_model(self.model)
+
+        self.update_status_bar()
         self.update_action_buttons_state()
 
     def show_no_cities_warning(self) -> None:
