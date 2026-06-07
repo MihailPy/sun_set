@@ -291,13 +291,17 @@ class MainWindow(QMainWindow):
         date_group.setMaximumHeight(date_group.sizeHint().height())
         self.main_layout.addWidget(date_group)
 
+    def connect_city_model_signals(self, model: CityTableModel) -> None:
+        model.dataChanged.connect(self.on_data_changed)
+        model.dataChanged.connect(lambda: self.update_action_buttons_state())
+
+        model.selection_changed.connect(self.update_status_bar)
+        model.selection_changed.connect(self.update_action_buttons_state)
+
     def setup_city_model(self, cities: list[City]) -> None:
         self.cities = cities
         self.model = CityTableModel(self.cities)
-        self.model.dataChanged.connect(self.on_data_changed)
-        self.model.dataChanged.connect(lambda: self.update_action_buttons_state())
-        self.model.selection_changed.connect(self.update_status_bar)
-        self.model.selection_changed.connect(self.update_action_buttons_state)
+        self.connect_city_model_signals(self.model)
         self.update_status_bar()
         self.table_view.setModel(self.model)
         self.table_view.show()
