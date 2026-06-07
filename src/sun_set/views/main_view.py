@@ -431,17 +431,15 @@ class MainWindow(QMainWindow):
         self.show_image_export_result(results, output_dir)
 
     def preview_selected_city_image(self) -> None:
-        cities = self.get_selected_cities_or_none()
+        city = self.get_current_city_or_none()
 
-        if cities is None:
+        if city is None:
             show_warning(
                 self,
                 "Предпросмотр изображения",
                 "Выберите город.",
             )
             return
-
-        city = cities[0]
 
         settings_path = self.choose_export_settings_file()
         if settings_path is None:
