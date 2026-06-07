@@ -189,7 +189,7 @@ class TestMainWindow:
         selected_cities = [MagicMock()]
 
         mock_model = MagicMock()
-        mock_model.get_selected_city.return_value = selected_cities
+        mock_model.get_selected_cities.return_value = selected_cities
         main_window.model = mock_model
 
         main_window.table_view.resizeColumnToContents = MagicMock()
@@ -216,7 +216,7 @@ class TestMainWindow:
     ):
         """Тест отсутствия обновления, если города не выбраны"""
         mock_model = MagicMock()
-        mock_model.get_selected_city.return_value = None
+        mock_model.get_selected_cities.return_value = None
         main_window.model = mock_model
 
         main_window.table_view.resizeColumnToContents = MagicMock()

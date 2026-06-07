@@ -592,7 +592,7 @@ class MainWindow(QMainWindow):
         if self.model is None:
             return None
 
-        cities = self.model.get_selected_city()
+        cities = self.model.get_selected_cities()
         if not cities:
             return None
 
@@ -602,7 +602,7 @@ class MainWindow(QMainWindow):
         if self.model is None:
             return None
 
-        cities = self.model.get_selected_city()
+        cities = self.model.get_selected_cities()
         if not cities:
             return None
 
@@ -612,7 +612,7 @@ class MainWindow(QMainWindow):
         has_selected_cities = False
 
         if self.model is not None:
-            has_selected_cities = bool(self.model.get_selected_city())
+            has_selected_cities = bool(self.model.get_selected_cities())
 
         if has_selected_cities:
             self.btn_del_city.setToolTip("Удалить выбранные города")
@@ -648,7 +648,7 @@ class MainWindow(QMainWindow):
         selected_cities = 0
 
         if self.model is not None:
-            selected = self.model.get_selected_city()
+            selected = self.model.get_selected_cities()
             selected_cities = len(selected) if selected else 0
 
         self.status_bar.showMessage(
