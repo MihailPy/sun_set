@@ -552,15 +552,14 @@ class MainWindow(QMainWindow):
 
     def add_city_in_table(self) -> None:
         new_city = create_default_city(self.year_spinbox.value())
-        if not hasattr(self, "model") or self.model is None:
+
+        if self.model is None:
             self.setup_city_model([new_city])
         else:
             self.model.add_city(new_city)
-            if len(self.cities) == 1:
-                self.initial_prompt_text.hide()
-                self.table_view.show()
+            self.cities = self.model.cities
+            self.table_view.resizeColumnsToContents()
 
-        self.table_view.resizeColumnsToContents()
         self.update_action_buttons_state()
         self.update_status_bar()
 
