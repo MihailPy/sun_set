@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 
+from PIL import Image
 from PyQt6.QtCore import QModelIndex, Qt
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import (
@@ -458,8 +459,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        dialog = ImagePreviewDialog(image=image, parent=self)
-        dialog.exec()
+        self.show_image_preview(image)
 
     def edit_image_export_settings(self) -> None:
         settings_path = self.choose_export_settings_file()
@@ -691,3 +691,10 @@ class MainWindow(QMainWindow):
 
         if ask_open_folder_after_export(self, message):
             open_directory(output_dir)
+
+    def show_image_preview(self, image: Image.Image) -> None:
+        dialog = ImagePreviewDialog(
+            image=image,
+            parent=self,
+        )
+        dialog.exec()
