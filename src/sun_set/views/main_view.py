@@ -35,6 +35,7 @@ from sun_set.image_export.settings import (
     load_export_settings,
 )
 from sun_set.models.city import City
+from sun_set.models.project_data import ProjectData
 from sun_set.models.table_model import (
     STATUS_COLUMN,
     CheckBoxHeader,
@@ -704,3 +705,11 @@ class MainWindow(QMainWindow):
             parent=self,
         )
         dialog.exec()
+
+    def build_current_project_data(self) -> ProjectData:
+        return ProjectData(
+            year=self.year_spinbox.value(),
+            weekday1=self.combo_weekday1.currentIndex(),
+            weekday2=self.combo_weekday2.currentIndex(),
+            cities=self.cities,
+        )
