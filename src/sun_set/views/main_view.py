@@ -304,7 +304,7 @@ class MainWindow(QMainWindow):
         self.initial_prompt_text.hide()
         self.table_view.resizeColumnsToContents()
 
-    def setup_city_model(self, cities: list[City]) -> None:
+    def load_cities_into_table(self, cities: list[City]) -> None:
         self.cities = cities
         self.model = CityTableModel(self.cities)
 
@@ -514,7 +514,7 @@ class MainWindow(QMainWindow):
 
         self.file_path = file_path
         self.update_window_title()
-        self.setup_city_model(result)
+        self.load_cities_into_table(result)
         self.update_action_buttons_state()
         self.update_status_bar()
 
@@ -544,7 +544,7 @@ class MainWindow(QMainWindow):
         new_city = create_default_city(self.year_spinbox.value())
 
         if self.model is None:
-            self.setup_city_model([new_city])
+            self.load_cities_into_table([new_city])
         else:
             self.model.add_city(new_city)
             self.cities = self.model.cities
