@@ -42,9 +42,6 @@ from sun_set.models.table_model import (
     CityTableModel,
     StatusActionDelegate,
 )
-from sun_set.services.city_file_service import (
-    load_cities_from_file,
-)
 from sun_set.services.city_service import (
     create_default_city,
     update_cities_sunset,
@@ -60,7 +57,7 @@ from sun_set.services.dialog_service import (
     show_error,
     show_warning,
 )
-from sun_set.services.project_file_service import save_project
+from sun_set.services.project_file_service import load_project, save_project
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -503,19 +500,19 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        result, error = load_cities_from_file(file_path)
+        project, error = load_project(file_path)
 
         if error is not None:
             if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
                 self.open_file_dialog()
             return
 
-        if result is None:
+        if project is None:
             return
 
         self.file_path = file_path
         self.update_window_title()
-        self.load_cities_into_table(result)
+        self.apply_project_data(project)
         self.update_action_buttons_state()
         self.update_status_bar()
 
@@ -715,3 +712,10 @@ class MainWindow(QMainWindow):
             weekday2=self.combo_weekday2.currentIndex(),
             cities=self.cities,
         )
+
+    def apply_project_data(self, project: ProjectData) -> None:
+        self.year_spinbox.setValue(project.year)
+        self.combo_weekday1.setCurrentIndex(project.weekday1)
+        self.combo_weekday2.setCurrentIndex(project.weekday2)
+
+        self.load_cities_into_table(project.cities)
