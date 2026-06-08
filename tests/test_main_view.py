@@ -124,6 +124,20 @@ class TestMainWindow:
             # Приглашение должно скрыться
             assert main_window.initial_prompt_text.isHidden() is True
 
+    def test_apply_project_data(self, main_window, sample_city):
+        project = ProjectData(
+            year=2030,
+            weekday1=1,
+            weekday2=3,
+            cities=[sample_city],
+        )
+
+        main_window.apply_project_data(project)
+
+        assert main_window.year_spinbox.value() == 2030
+        assert main_window.combo_weekday1.currentIndex() == 1
+        assert main_window.combo_weekday2.currentIndex() == 3
+
     def test_save_file_with_valid_path(self, main_window, qtbot, temp_json_file):
         """Тест сохранения файла с существующим путем"""
         main_window.file_path = temp_json_file
