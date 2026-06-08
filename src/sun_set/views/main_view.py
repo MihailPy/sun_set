@@ -44,7 +44,6 @@ from sun_set.models.table_model import (
 )
 from sun_set.services.city_file_service import (
     load_cities_from_file,
-    save_cities_to_file,
 )
 from sun_set.services.city_service import (
     create_default_city,
@@ -61,6 +60,7 @@ from sun_set.services.dialog_service import (
     show_error,
     show_warning,
 )
+from sun_set.services.project_file_service import save_project
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -524,7 +524,8 @@ class MainWindow(QMainWindow):
             self.save_file_as()
             return
 
-        save_cities_to_file(self.cities, self.file_path)
+        project = self.build_current_project_data()
+        save_project(project, self.file_path)
         self.update_status_bar()
 
     def save_file_as(self) -> None:
@@ -535,7 +536,8 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        save_cities_to_file(self.cities, file_path)
+        project = self.build_current_project_data()
+        save_project(project, file_path)
         self.file_path = file_path
         self.update_window_title()
         self.update_status_bar()
