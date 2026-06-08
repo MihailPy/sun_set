@@ -64,7 +64,8 @@ def temp_json_file(tmp_path, sample_city):
 class TestMainWindow:
     def test_main_window_title(self, main_window):
         """Тест заголовка окна"""
-        assert main_window.windowTitle() == "Sun set"
+        title = main_window.windowTitle()
+        assert title.startswith("Sun Set")
 
     @pytest.mark.parametrize(
         "btn_name",

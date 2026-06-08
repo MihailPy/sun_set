@@ -244,7 +244,7 @@ class MainWindow(QMainWindow):
         self.status_delegate.buttonClicked.connect(self.handle_city_update)
 
     def _setup_date_group(self) -> None:
-        date_group = QGroupBox("Параметры расчёта закатов")
+        date_group = QGroupBox("Дни расчёта")
         date_group.setSizePolicy(
             QSizePolicy.Policy.Maximum,
             QSizePolicy.Policy.Fixed,
