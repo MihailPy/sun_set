@@ -285,6 +285,10 @@ class MainWindow(QMainWindow):
         date_group_layout.addWidget(QLabel("и"))
         date_group_layout.addWidget(self.combo_weekday2)
 
+        self.year_spinbox.valueChanged.connect(self.update_window_title)
+        self.combo_weekday1.currentIndexChanged.connect(self.update_window_title)
+        self.combo_weekday2.currentIndexChanged.connect(self.update_window_title)
+
         date_group.setLayout(date_group_layout)
         date_group.setMaximumHeight(date_group.sizeHint().height())
         self.main_layout.addWidget(date_group)
@@ -513,6 +517,7 @@ class MainWindow(QMainWindow):
         self.file_path = file_path
         self.update_window_title()
         self.apply_project_data(project)
+        self.update_window_title()
         self.update_action_buttons_state()
         self.update_status_bar()
 
@@ -657,9 +662,17 @@ class MainWindow(QMainWindow):
 
     def update_window_title(self) -> None:
         if self.file_path is None:
-            self.setWindowTitle("Sun set")
-        else:
-            self.setWindowTitle(f"Sun set — {Path(self.file_path).name}")
+            self.setWindowTitle("Sun Set")
+            return
+
+        file_name = Path(self.file_path).name
+
+        self.setWindowTitle(
+            f"Sun Set — {file_name} "
+            f"({self.year_spinbox.value()}, "
+            f"{self.combo_weekday1.currentText()} / "
+            f"{self.combo_weekday2.currentText()})"
+        )
 
     def choose_export_settings_file(self) -> Path | None:
         settings_file = choose_file(
