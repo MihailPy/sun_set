@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 
@@ -28,6 +29,25 @@ def load_project_from_json(
         data = read_json(Path(file_path))
 
         config = Config(cast=[Enum])
+
+        if isinstance(data, list):
+            return (
+                ProjectData(
+                    year=datetime.now().year,
+                    weekday1=5,
+                    weekday2=6,
+                    cities=[
+                        from_dict(
+                            data_class=City,
+                            data=item,
+                            config=config,
+                        )
+                        for item in data
+                        if isinstance(item, dict)
+                    ],
+                ),
+                None,
+            )
 
         project = from_dict(
             data_class=ProjectData,

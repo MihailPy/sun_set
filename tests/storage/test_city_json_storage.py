@@ -2,6 +2,7 @@ from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.storage.city_json_storage import (
     load_cities_from_json,
+    load_project_from_json,
     save_cities_to_json,
 )
 
@@ -40,3 +41,35 @@ def test_save_and_load_cities_json(tmp_path):
     assert loaded_city.elevation == city.elevation
     assert loaded_city.sunset_data.year == 2026
     assert loaded_city.sunset_data.source == Source.CALCULATED
+
+
+def test_load_old_city_list_format(tmp_path):
+    path = tmp_path / "cities.json"
+
+    path.write_text(
+        """
+        [
+            {
+                "name": "Amsterdam",
+                "region": "North Holland",
+                "lat": 52.37,
+                "lon": 4.89,
+                "timezone": "Europe/Amsterdam",
+                "elevation": 0,
+                "sunset_data": {
+                    "year": 2033,
+                    "source": 1,
+                    "hash_before_edit": "79983d577c9c688558f92e38e6e60d98cbd4419df4a4d93db293d027c7ad8963",
+                    "months": null
+                }
+            }
+        ]
+        """,
+        encoding="utf-8",
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert project is not None
+    assert len(project.cities) == 1

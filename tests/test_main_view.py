@@ -6,9 +6,10 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
+from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import STATUS_COLUMN
-from sun_set.storage.city_json_storage import save_cities_to_json
+from sun_set.storage.city_json_storage import save_project_to_json
 from sun_set.views.main_view import MainWindow
 
 
@@ -50,7 +51,13 @@ def sample_city():
 @pytest.fixture
 def temp_json_file(tmp_path, sample_city):
     file_path = tmp_path / "test_cities.json"
-    save_cities_to_json([sample_city], str(file_path))
+    project = ProjectData(
+        year=2025,
+        weekday1=4,
+        weekday2=5,
+        cities=[sample_city],
+    )
+    save_project_to_json(project, str(file_path))
     return str(file_path)
 
 
@@ -86,17 +93,26 @@ class TestMainWindow:
         assert main_window.file_path == temp_json_file
 
     def test_open_file_error(self, main_window, qtbot, temp_json_file, sample_city):
-        """Тест вывода окна с ошибкой, если при открытии файла произошла ошибка"""
-        with patch("PyQt6.QtWidgets.QFileDialog.getOpenFileName") as mock_file:
-            mock_file.side_effect = [("invalid_name.json", ""), (temp_json_file, "")]
+        project = ProjectData(
+            year=2025,
+            weekday1=4,
+            weekday2=5,
+            cities=[sample_city],
+        )
 
-            with patch(
-                "sun_set.services.city_file_service.load_cities_from_file",
-            ) as mock_load:
+        with patch("sun_set.views.main_view.choose_file") as mock_choose_file:
+            mock_choose_file.side_effect = ["invalid_name.json", temp_json_file]
+
+            with patch("sun_set.views.main_view.load_project") as mock_load:
                 mock_load.side_effect = [
                     (None, "Ошибка: Файл не найден. Проверьте путь к файлу."),
-                    ([sample_city], None),
+                    (project, None),
                 ]
+
+                with patch("sun_set.views.main_view.ask_retry", return_value=True):
+                    main_window.open_file_dialog()
+
+        assert main_window.file_path == temp_json_file
 
     def test_open_file_updates_ui(self, main_window, qtbot, temp_json_file):
         """Тест обновления UI после открытия файла"""
@@ -229,10 +245,7 @@ class TestMainWindow:
         main_window.table_view.resizeColumnToContents.assert_not_called()
 
     def test_handle_city_update_logic(self, qtbot, main_window, temp_json_file):
-        with patch(
-            "PyQt6.QtWidgets.QFileDialog.getOpenFileName",
-            return_value=(temp_json_file, ""),
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
         mock_sunset_data = MagicMock()
@@ -251,10 +264,7 @@ class TestMainWindow:
         assert city.sunset_data.hash_before_edit == city.get_stable_hash()
 
     def test_handle_city_update_view(self, qtbot, main_window, temp_json_file):
-        with patch(
-            "PyQt6.QtWidgets.QFileDialog.getOpenFileName",
-            return_value=(temp_json_file, ""),
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
         city = main_window.model.cities[0]
@@ -275,10 +285,7 @@ class TestMainWindow:
     def test_on_city_data_changed_updates_hash_and_ui(
         self, qtbot, main_window, temp_json_file
     ):
-        with patch(
-            "PyQt6.QtWidgets.QFileDialog.getOpenFileName",
-            return_value=(temp_json_file, ""),
-        ):
+        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
         city = main_window.model.cities[0]
