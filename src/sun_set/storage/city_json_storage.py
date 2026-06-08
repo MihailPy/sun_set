@@ -5,7 +5,44 @@ from pathlib import Path
 from dacite import Config, DaciteError, from_dict
 
 from sun_set.models.city import City
+from sun_set.models.project_data import ProjectData
 from sun_set.storage.json_storage import read_json, write_json
+
+
+def save_project_to_json(
+    project: ProjectData,
+    filename: str,
+) -> None:
+    data_to_save = asdict(
+        project,
+        dict_factory=custom_asdict_factory,
+    )
+
+    write_json(Path(filename), data_to_save)
+
+
+def load_project_from_json(
+    file_path: str,
+) -> tuple[ProjectData | None, str | None]:
+    try:
+        data = read_json(Path(file_path))
+
+        config = Config(cast=[Enum])
+
+        project = from_dict(
+            data_class=ProjectData,
+            data=data,
+            config=config,
+        )
+
+        return project, None
+
+    except FileNotFoundError:
+        return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
+    except DaciteError as error:
+        return None, f"Ошибка в структуре данных файла: {error}"
+    except Exception as error:
+        return None, f"Ошибка при чтении JSON-файла: {error}"
 
 
 def custom_asdict_factory(data):
