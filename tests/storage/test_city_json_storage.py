@@ -57,9 +57,9 @@ def test_load_old_city_list_format(tmp_path):
                 "timezone": "Europe/Amsterdam",
                 "elevation": 0,
                 "sunset_data": {
-                    "year": 2033,
+                    "year": 2025,
                     "source": 1,
-                    "hash_before_edit": "79983d577c9c688558f92e38e6e60d98cbd4419df4a4d93db293d027c7ad8963",
+                    "hash_before_edit": null,
                     "months": null
                 }
             }
