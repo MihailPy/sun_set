@@ -1,12 +1,12 @@
 # dataclass-модели настроек
 
-import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from dacite import Config, from_dict
 
 from sun_set.image_export.errors import ExportSettingsError
+from sun_set.storage.json_storage import read_json, write_json
 
 
 @dataclass
@@ -46,8 +46,7 @@ class ExportImageSettings:
 
 
 def load_export_settings(path: Path) -> ExportImageSettings:
-    with path.open("r", encoding="utf-8") as file:
-        data = json.load(file)
+    data = read_json(path)
 
     settings = from_dict(
         data_class=ExportImageSettings,
@@ -61,21 +60,14 @@ def load_export_settings(path: Path) -> ExportImageSettings:
             },
         ),
     )
+
     validate_export_settings(settings)
     return settings
 
 
 def save_export_settings(settings: ExportImageSettings, path: Path) -> None:
     validate_export_settings(settings)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    with path.open("w", encoding="utf-8") as file:
-        json.dump(
-            asdict(settings),
-            file,
-            ensure_ascii=False,
-            indent=2,
-        )
+    write_json(path, asdict(settings))
 
 
 def validate_export_settings(settings: ExportImageSettings) -> None:

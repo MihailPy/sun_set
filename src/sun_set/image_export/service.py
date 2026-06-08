@@ -103,3 +103,55 @@ def build_city_image_preview_from_settings(
         settings=settings,
         text_blocks=text_blocks,
     )
+
+
+def build_export_report(results: list[ExportResult]) -> str:
+    success_count = sum(result.success for result in results)
+    error_count = len(results) - success_count
+
+    report_lines = [
+        f"Готово: {success_count}",
+        f"Ошибки: {error_count}",
+        "",
+    ]
+
+    for result in results:
+        if result.success:
+            report_lines.append(f"OK: {result.city_name} -> {result.output_path}")
+        else:
+            report_lines.append(f"ERROR: {result.city_name} -> {result.error}")
+
+    return "\n".join(report_lines)
+
+
+def build_export_summary_message(results: list[ExportResult]) -> str:
+    success_count = sum(result.success for result in results)
+    error_count = len(results) - success_count
+
+    message = f"Готово: {success_count}\nОшибки: {error_count}"
+
+    failed_results = [result for result in results if not result.success]
+
+    if failed_results:
+        errors_text = "\n".join(
+            f"- {result.city_name}: {result.error}" for result in failed_results[:10]
+        )
+
+        message += f"\n\nОшибки:\n{errors_text}"
+
+        if len(failed_results) > 10:
+            message += f"\n...и ещё {len(failed_results) - 10}"
+
+    return message
+
+
+def save_export_report(
+    results: list[ExportResult],
+    output_dir: Path,
+) -> Path:
+    report_path = output_dir / "image_export_report.txt"
+    report_path.write_text(
+        build_export_report(results),
+        encoding="utf-8",
+    )
+    return report_path

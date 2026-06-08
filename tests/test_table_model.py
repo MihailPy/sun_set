@@ -12,6 +12,7 @@ from sun_set.models.table_model import (
     CityTableModel,
     StatusActionDelegate,
 )
+from sun_set.services.city_service import update_cities_sunset
 
 
 @pytest.fixture
@@ -447,20 +448,17 @@ class TestCityTableModel:
         assert len(table_model.cities) == initial_count - 1
         assert len(table_model.checked_states) == initial_count - 1
 
-    @patch("sun_set.models.table_model.get_city_sunset")
-    def test_update_checked_cities(self, mock_get_sunset, table_model, sample_city):
-        """Тест обновления отмеченных городов"""
+    @patch("sun_set.services.city_service.get_city_sunset")
+    def test_update_cities_sunset(self, mock_get_sunset, sample_city):
+        """Тест обновления списка городов"""
         mock_sunset_data = Mock(spec=YearData)
         mock_get_sunset.return_value = mock_sunset_data
 
-        # Отмечаем первый город
-        table_model.checked_states[0] = True
+        update_cities_sunset([sample_city], 2024, 1, 2)
 
-        updated_indices = table_model.update_checked_cities(2024, 1, 2)
-
-        assert updated_indices == [0]
         mock_get_sunset.assert_called_once_with(sample_city, 2024, 1, 2)
-        assert table_model.cities[0].sunset_data == mock_sunset_data
+        assert sample_city.sunset_data == mock_sunset_data
+        assert sample_city.sunset_data.hash_before_edit == sample_city.get_stable_hash()
 
     def test_data_changed_signal(self, table_model):
         """Тест сигнала об изменении данных"""
