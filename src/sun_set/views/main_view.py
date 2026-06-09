@@ -786,13 +786,35 @@ class MainWindow(QMainWindow):
 
     def get_export_settings_path(self) -> Path | None:
         if self.last_image_export_settings_path:
-            return Path(self.last_image_export_settings_path)
+            settings_path = Path(self.last_image_export_settings_path)
+
+            if settings_path.exists():
+                return settings_path
+
+            show_warning(
+                self,
+                "Настройки экспорта",
+                "Сохранённый файл настроек экспорта не найден. Выберите файл заново.",
+            )
+            self.last_image_export_settings_path = ""
+            self.update_export_settings_label()
 
         return self.choose_export_settings_file()
 
     def get_export_output_dir(self) -> Path | None:
         if self.last_image_export_output_dir:
-            return Path(self.last_image_export_output_dir)
+            output_dir = Path(self.last_image_export_output_dir)
+
+            if output_dir.exists():
+                return output_dir
+
+            show_warning(
+                self,
+                "Экспорт изображений",
+                "Сохранённая папка экспорта не найдена. Выберите папку заново.",
+            )
+            self.last_image_export_output_dir = ""
+            self.update_export_output_dir_label()
 
         return self.choose_image_export_output_dir()
 
