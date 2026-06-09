@@ -731,12 +731,20 @@ class MainWindow(QMainWindow):
             weekday1=self.combo_weekday1.currentIndex(),
             weekday2=self.combo_weekday2.currentIndex(),
             cities=self.cities,
+            export_settings_path=self.last_image_export_settings_path or None,
+            export_output_dir=self.last_image_export_output_dir or None,
         )
 
     def apply_project_data(self, project: ProjectData) -> None:
         self.year_spinbox.setValue(project.year)
         self.combo_weekday1.setCurrentIndex(project.weekday1)
         self.combo_weekday2.setCurrentIndex(project.weekday2)
+
+        self.last_image_export_settings_path = project.export_settings_path or ""
+        self.last_image_export_output_dir = project.export_output_dir or ""
+
+        self.update_export_settings_label()
+        self.update_export_output_dir_label()
 
         self.load_cities_into_table(project.cities)
 

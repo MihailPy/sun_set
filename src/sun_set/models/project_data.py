@@ -9,3 +9,5 @@ class ProjectData:
     weekday1: int
     weekday2: int
     cities: list[City]
+    export_settings_path: str | None = None
+    export_output_dir: str | None = None
