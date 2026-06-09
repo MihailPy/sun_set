@@ -1,9 +1,11 @@
 from sun_set.models.city import City
+from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
 from sun_set.storage.city_json_storage import (
     load_cities_from_json,
     load_project_from_json,
     save_cities_to_json,
+    save_project_to_json,
 )
 
 
@@ -73,3 +75,24 @@ def test_load_old_city_list_format(tmp_path):
     assert error is None
     assert project is not None
     assert len(project.cities) == 1
+
+
+def test_save_and_load_project_export_paths(tmp_path):
+    project = ProjectData(
+        year=2026,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="/tmp/export_settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    path = tmp_path / "project.json"
+
+    save_project_to_json(project, str(path))
+    loaded_project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert loaded_project is not None
+    assert loaded_project.export_settings_path == "/tmp/export_settings.json"
+    assert loaded_project.export_output_dir == "/tmp/export"
