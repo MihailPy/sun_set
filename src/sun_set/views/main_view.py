@@ -202,6 +202,18 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.setEnabled(False)
 
     def _setup_export_buttons(self, layout: QHBoxLayout) -> None:
+        self.btn_change_export_settings = QPushButton("Выбрать настройки", self)
+        self.btn_change_export_dir = QPushButton("Выбрать папку", self)
+
+        self.btn_change_export_settings.clicked.connect(
+            self.select_export_settings_file
+        )
+
+        self.btn_change_export_dir.clicked.connect(self.select_export_output_dir)
+
+        layout.addWidget(self.btn_change_export_settings)
+        layout.addWidget(self.btn_change_export_dir)
+
         self.preview_image_button = QPushButton("Предпросмотр", self)
         self.preview_image_button.setToolTip(
             "Предпросмотр перед сохранением изображения"
@@ -779,3 +791,9 @@ class MainWindow(QMainWindow):
             return Path(self.last_image_export_output_dir)
 
         return self.choose_image_export_output_dir()
+
+    def select_export_settings_file(self) -> None:
+        self.choose_export_settings_file()
+
+    def select_export_output_dir(self) -> None:
+        self.choose_image_export_output_dir()
