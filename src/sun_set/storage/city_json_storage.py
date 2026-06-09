@@ -33,6 +33,7 @@ def load_project_from_json(
         if isinstance(data, list):
             return (
                 ProjectData(
+                    version=1,
                     year=datetime.now().year,
                     weekday1=5,
                     weekday2=6,
