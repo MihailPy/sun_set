@@ -138,12 +138,14 @@ class MainWindow(QMainWindow):
         export_hint.setWordWrap(True)
 
         self.export_settings_label = QLabel("Файл настроек: не выбран")
+        self.export_output_dir_label = QLabel("Папка экспорта: не выбрана")
 
         export_buttons_layout = QHBoxLayout()
         self._setup_export_buttons(export_buttons_layout)
 
         export_actions_layout.addWidget(export_hint)
         export_actions_layout.addWidget(self.export_settings_label)
+        export_actions_layout.addWidget(self.export_output_dir_label)
         export_actions_layout.addLayout(export_buttons_layout)
 
         export_actions_group.setLayout(export_actions_layout)
@@ -746,3 +748,12 @@ class MainWindow(QMainWindow):
         file_name = Path(self.last_image_export_settings_path).name
 
         self.export_settings_label.setText(f"Файл настроек: {file_name}")
+
+    def update_export_output_dir_label(self) -> None:
+        if not self.last_image_export_output_dir:
+            self.export_output_dir_label.setText("Папка экспорта: не выбрана")
+            return
+
+        self.export_output_dir_label.setText(
+            f"Папка экспорта: {Path(self.last_image_export_output_dir).name}"
+        )
