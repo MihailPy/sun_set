@@ -333,3 +333,22 @@ class TestMainWindow:
         # 4. Проверяем сохранение
         with patch("builtins.open", mock_open()):
             main_window.save_file()
+
+    def test_apply_project_data_restores_export_paths(self, main_window):
+        project = ProjectData(
+            year=2026,
+            weekday1=4,
+            weekday2=5,
+            cities=[],
+            export_settings_path="/tmp/export_settings.json",
+            export_output_dir="/tmp/export",
+        )
+
+        main_window.apply_project_data(project)
+
+        assert (
+            main_window.last_image_export_settings_path == "/tmp/export_settings.json"
+        )
+        assert main_window.last_image_export_output_dir == "/tmp/export"
+        assert "export_settings.json" in main_window.export_settings_label.text()
+        assert "export" in main_window.export_output_dir_label.text()
