@@ -137,10 +137,13 @@ class MainWindow(QMainWindow):
         export_hint = QLabel("Использует JSON-настройки экспорта и выбранные города")
         export_hint.setWordWrap(True)
 
+        self.export_settings_label = QLabel("Файл настроек: не выбран")
+
         export_buttons_layout = QHBoxLayout()
         self._setup_export_buttons(export_buttons_layout)
 
         export_actions_layout.addWidget(export_hint)
+        export_actions_layout.addWidget(self.export_settings_label)
         export_actions_layout.addLayout(export_buttons_layout)
 
         export_actions_group.setLayout(export_actions_layout)
@@ -686,6 +689,8 @@ class MainWindow(QMainWindow):
             return None
 
         self.last_image_export_settings_path = settings_file
+        self.update_export_settings_label()
+
         return Path(settings_file)
 
     def choose_image_export_output_dir(self) -> Path | None:
@@ -732,3 +737,12 @@ class MainWindow(QMainWindow):
         self.combo_weekday2.setCurrentIndex(project.weekday2)
 
         self.load_cities_into_table(project.cities)
+
+    def update_export_settings_label(self) -> None:
+        if not self.last_image_export_settings_path:
+            self.export_settings_label.setText("Файл настроек: не выбран")
+            return
+
+        file_name = Path(self.last_image_export_settings_path).name
+
+        self.export_settings_label.setText(f"Файл настроек: {file_name}")
