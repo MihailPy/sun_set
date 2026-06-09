@@ -765,20 +765,24 @@ class MainWindow(QMainWindow):
     def update_export_settings_label(self) -> None:
         if not self.last_image_export_settings_path:
             self.export_settings_label.setText("Файл настроек: не выбран")
+            self.export_settings_label.setToolTip("")
             return
 
-        file_name = Path(self.last_image_export_settings_path).name
+        settings_path = Path(self.last_image_export_settings_path)
 
-        self.export_settings_label.setText(f"Файл настроек: {file_name}")
+        self.export_settings_label.setText(f"Файл настроек: {settings_path.name}")
+        self.export_settings_label.setToolTip(str(settings_path))
 
     def update_export_output_dir_label(self) -> None:
         if not self.last_image_export_output_dir:
             self.export_output_dir_label.setText("Папка экспорта: не выбрана")
+            self.export_output_dir_label.setToolTip("")
             return
 
-        self.export_output_dir_label.setText(
-            f"Папка экспорта: {Path(self.last_image_export_output_dir).name}"
-        )
+        output_dir = Path(self.last_image_export_output_dir)
+
+        self.export_output_dir_label.setText(f"Папка экспорта: {output_dir.name}")
+        self.export_output_dir_label.setToolTip(str(output_dir))
 
     def get_export_settings_path(self) -> Path | None:
         if self.last_image_export_settings_path:
