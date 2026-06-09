@@ -420,11 +420,11 @@ class MainWindow(QMainWindow):
             self.show_no_cities_warning()
             return
 
-        settings_path = self.choose_export_settings_file()
+        settings_path = self.get_export_settings_path()
         if settings_path is None:
             return
 
-        output_dir = self.choose_image_export_output_dir()
+        output_dir = self.get_export_output_dir()
         if output_dir is None:
             return
 
@@ -448,7 +448,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        settings_path = self.choose_export_settings_file()
+        settings_path = self.get_export_settings_path()
         if settings_path is None:
             return
 
@@ -468,7 +468,7 @@ class MainWindow(QMainWindow):
         self.show_image_preview(image)
 
     def edit_image_export_settings(self) -> None:
-        settings_path = self.choose_export_settings_file()
+        settings_path = self.get_export_settings_path()
         if settings_path is None:
             return
 
@@ -706,6 +706,8 @@ class MainWindow(QMainWindow):
             return None
 
         self.last_image_export_output_dir = output_dir
+        self.update_export_output_dir_label()
+
         return Path(output_dir)
 
     def show_image_export_result(
@@ -765,3 +767,15 @@ class MainWindow(QMainWindow):
         self.export_output_dir_label.setText(
             f"Папка экспорта: {Path(self.last_image_export_output_dir).name}"
         )
+
+    def get_export_settings_path(self) -> Path | None:
+        if self.last_image_export_settings_path:
+            return Path(self.last_image_export_settings_path)
+
+        return self.choose_export_settings_file()
+
+    def get_export_output_dir(self) -> Path | None:
+        if self.last_image_export_output_dir:
+            return Path(self.last_image_export_output_dir)
+
+        return self.choose_image_export_output_dir()
