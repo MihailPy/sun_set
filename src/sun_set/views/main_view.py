@@ -133,14 +133,13 @@ class MainWindow(QMainWindow):
         city_actions_group = self._create_city_actions_group()
         export_actions_group = self._create_export_actions_group()
 
-        actions_layout.addWidget(date_group)
+        actions_layout.addWidget(date_group, 0, Qt.AlignmentFlag.AlignTop)
         actions_layout.addSpacing(12)
-        actions_layout.addWidget(city_actions_group)
+        actions_layout.addWidget(city_actions_group, 0, Qt.AlignmentFlag.AlignTop)
         actions_layout.addSpacing(12)
-        actions_layout.addWidget(export_actions_group)
+        actions_layout.addWidget(export_actions_group, 0, Qt.AlignmentFlag.AlignTop)
 
         city_main_layout.addLayout(actions_layout)
-        city_main_layout.setAlignment(actions_layout, Qt.AlignmentFlag.AlignTop)
 
         self.initial_prompt_text = QLabel(
             "Выберите файл для загрузки данных городов, или нажмите 'Добавить'"
