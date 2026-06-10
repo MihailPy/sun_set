@@ -82,6 +82,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
         self.main_layout = QVBoxLayout(self.central_widget)
 
+        self.main_layout.setContentsMargins(12, 8, 12, 8)
+        self.main_layout.setSpacing(8)
+
         self.status_bar = QStatusBar(self)
         self.setStatusBar(self.status_bar)
         self.update_status_bar()
@@ -121,8 +124,10 @@ class MainWindow(QMainWindow):
         city_group = QWidget()
 
         city_main_layout = QVBoxLayout()
+        city_main_layout.setSpacing(8)
 
         actions_layout = QHBoxLayout()
+        actions_layout.setSpacing(8)
 
         city_actions_group = QGroupBox("Города")
         city_actions_layout = QHBoxLayout()
@@ -268,6 +273,8 @@ class MainWindow(QMainWindow):
         )
 
         date_group_layout = QHBoxLayout()
+        date_group_layout.setContentsMargins(12, 8, 12, 8)
+        date_group_layout.setSpacing(8)
 
         current_year = datetime.now().year
         self.year_spinbox = QSpinBox()
