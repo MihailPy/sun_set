@@ -857,8 +857,8 @@ class MainWindow(QMainWindow):
             file_name = Path(self.file_path).name
 
         self.project_info_label.setText(
-            f"Текущий проект: {file_name}\n"
-            f"Год: {self.year_spinbox.value()}\n"
+            f"Проект: {file_name} | "
+            f"Год: {self.year_spinbox.value()} | "
             f"Дни расчёта: "
             f"{self.combo_weekday1.currentText()} / "
             f"{self.combo_weekday2.currentText()}"
