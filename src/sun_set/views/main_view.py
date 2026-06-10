@@ -129,33 +129,8 @@ class MainWindow(QMainWindow):
         actions_layout = QHBoxLayout()
         actions_layout.setSpacing(8)
 
-        city_actions_group = QGroupBox("Города")
-        city_actions_layout = QHBoxLayout()
-        self._setup_city_buttons(city_actions_layout)
-        city_actions_group.setLayout(city_actions_layout)
-        city_actions_group.setMaximumHeight(city_actions_group.sizeHint().height())
-
-        export_actions_group = QGroupBox("Изображения")
-
-        export_actions_layout = QVBoxLayout()
-
-        export_hint = QLabel("Использует JSON-настройки экспорта и выбранные города")
-        export_hint.setWordWrap(True)
-
-        self.export_settings_label = QLabel("Файл настроек: не выбран")
-        self.export_output_dir_label = QLabel("Папка экспорта: не выбрана")
-
-        export_buttons_layout = QHBoxLayout()
-        self._setup_export_buttons(export_buttons_layout)
-
-        export_actions_layout.addWidget(export_hint)
-        export_actions_layout.addWidget(self.export_settings_label)
-        export_actions_layout.addWidget(self.export_output_dir_label)
-        export_actions_layout.addLayout(export_buttons_layout)
-
-        export_actions_group.setLayout(export_actions_layout)
-
-        export_actions_group.setMaximumHeight(export_actions_group.sizeHint().height())
+        city_actions_group = self._create_city_actions_group()
+        export_actions_group = self._create_export_actions_group()
 
         actions_layout.addWidget(city_actions_group)
         actions_layout.addSpacing(12)
@@ -180,6 +155,40 @@ class MainWindow(QMainWindow):
 
         city_group.setLayout(city_main_layout)
         self.main_layout.addWidget(city_group)
+
+    def _create_city_actions_group(self) -> QGroupBox:
+        city_actions_group = QGroupBox("Города")
+        city_actions_layout = QHBoxLayout()
+
+        self._setup_city_buttons(city_actions_layout)
+
+        city_actions_group.setLayout(city_actions_layout)
+        city_actions_group.setMaximumHeight(city_actions_group.sizeHint().height())
+
+        return city_actions_group
+
+    def _create_export_actions_group(self) -> QGroupBox:
+        export_actions_group = QGroupBox("Изображения")
+        export_actions_layout = QVBoxLayout()
+
+        export_hint = QLabel("Использует JSON-настройки экспорта и выбранные города")
+        export_hint.setWordWrap(True)
+
+        self.export_settings_label = QLabel("Файл настроек: не выбран")
+        self.export_output_dir_label = QLabel("Папка экспорта: не выбрана")
+
+        export_buttons_layout = QHBoxLayout()
+        self._setup_export_buttons(export_buttons_layout)
+
+        export_actions_layout.addWidget(export_hint)
+        export_actions_layout.addWidget(self.export_settings_label)
+        export_actions_layout.addWidget(self.export_output_dir_label)
+        export_actions_layout.addLayout(export_buttons_layout)
+
+        export_actions_group.setLayout(export_actions_layout)
+        export_actions_group.setMaximumHeight(export_actions_group.sizeHint().height())
+
+        return export_actions_group
 
     def _setup_city_buttons(self, layout: QHBoxLayout) -> None:
         self.btn_add_city = QPushButton("Добавить")
