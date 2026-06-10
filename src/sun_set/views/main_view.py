@@ -90,7 +90,6 @@ class MainWindow(QMainWindow):
         self.update_status_bar()
 
         self._setup_menu()
-        self._setup_date_group()
         self._setup_city_group()
 
         self.update_window_title()
@@ -129,13 +128,16 @@ class MainWindow(QMainWindow):
         actions_layout = QHBoxLayout()
         actions_layout.setSpacing(8)
 
+        date_group = self._create_date_group()
+
         city_actions_group = self._create_city_actions_group()
         export_actions_group = self._create_export_actions_group()
 
+        actions_layout.addWidget(date_group)
+        actions_layout.addSpacing(12)
         actions_layout.addWidget(city_actions_group)
         actions_layout.addSpacing(12)
         actions_layout.addWidget(export_actions_group)
-        actions_layout.addStretch()
 
         city_main_layout.addLayout(actions_layout)
 
@@ -279,7 +281,7 @@ class MainWindow(QMainWindow):
         self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
         self.status_delegate.buttonClicked.connect(self.handle_city_update)
 
-    def _setup_date_group(self) -> None:
+    def _create_date_group(self) -> QGroupBox:
         date_group = QGroupBox("Дни расчёта")
         date_group.setSizePolicy(
             QSizePolicy.Policy.Maximum,
@@ -329,7 +331,7 @@ class MainWindow(QMainWindow):
 
         date_group.setLayout(date_group_layout)
         date_group.setMaximumHeight(date_group.sizeHint().height())
-        self.main_layout.addWidget(date_group)
+        return date_group
 
     def connect_city_model_signals(self, model: CityTableModel) -> None:
         model.dataChanged.connect(self.on_data_changed)
