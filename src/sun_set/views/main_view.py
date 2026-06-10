@@ -701,16 +701,7 @@ class MainWindow(QMainWindow):
             self.setWindowTitle("Sun Set")
             return
 
-        file_name = Path(self.file_path).name
-
-        self.setWindowTitle(
-            f"Sun Set — {file_name} "
-            f"({self.year_spinbox.value()}, "
-            f"{self.combo_weekday1.currentText()} / "
-            f"{self.combo_weekday2.currentText()})"
-        )
-
-        self.update_project_info_label()
+        self.setWindowTitle(f"Sun Set — {Path(self.file_path).name}")
 
     def choose_export_settings_file(self) -> Path | None:
         settings_file = choose_file(
@@ -851,13 +842,7 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "project_info_label"):
             return
 
-        file_name = "не открыт"
-
-        if self.file_path is not None:
-            file_name = Path(self.file_path).name
-
         self.project_info_label.setText(
-            f"Проект: {file_name} | "
             f"Год: {self.year_spinbox.value()} | "
             f"Дни расчёта: "
             f"{self.combo_weekday1.currentText()} / "
