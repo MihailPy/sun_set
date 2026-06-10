@@ -126,6 +126,10 @@ class MainWindow(QMainWindow):
         city_main_layout = QVBoxLayout()
         city_main_layout.setSpacing(8)
 
+        self.project_info_label = QLabel()
+        self.project_info_label.setWordWrap(True)
+        city_main_layout.addWidget(self.project_info_label)
+
         actions_layout = QHBoxLayout()
         actions_layout.setSpacing(8)
 
@@ -175,6 +179,8 @@ class MainWindow(QMainWindow):
 
         city_group.setLayout(city_main_layout)
         self.main_layout.addWidget(city_group)
+
+        self.update_project_info_label()
 
     def _setup_city_buttons(self, layout: QHBoxLayout) -> None:
         self.btn_add_city = QPushButton("Добавить")
@@ -698,6 +704,8 @@ class MainWindow(QMainWindow):
             f"{self.combo_weekday2.currentText()})"
         )
 
+        self.update_project_info_label()
+
     def choose_export_settings_file(self) -> Path | None:
         settings_file = choose_file(
             self,
@@ -767,6 +775,8 @@ class MainWindow(QMainWindow):
         self.update_export_settings_label()
         self.update_export_output_dir_label()
 
+        self.update_project_info_label()
+
         self.load_cities_into_table(project.cities)
 
     def update_export_settings_label(self) -> None:
@@ -830,3 +840,17 @@ class MainWindow(QMainWindow):
 
     def select_export_output_dir(self) -> None:
         self.choose_image_export_output_dir()
+
+    def update_project_info_label(self) -> None:
+        file_name = "не открыт"
+
+        if self.file_path is not None:
+            file_name = Path(self.file_path).name
+
+        self.project_info_label.setText(
+            f"Текущий проект: {file_name}\n"
+            f"Год: {self.year_spinbox.value()}\n"
+            f"Дни расчёта: "
+            f"{self.combo_weekday1.currentText()} / "
+            f"{self.combo_weekday2.currentText()}"
+        )
