@@ -167,11 +167,16 @@ class MainWindow(QMainWindow):
         self.initial_prompt_text = QLabel(
             "Выберите файл для загрузки данных городов, или нажмите 'Добавить'"
         )
+
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.initial_prompt_text.setMaximumHeight(
+            self.initial_prompt_text.sizeHint().height()
+        )
         city_main_layout.addWidget(self.initial_prompt_text)
 
         self._setup_table()
         city_main_layout.addWidget(self.table_view)
+        city_main_layout.addStretch()
 
         city_group.setLayout(city_main_layout)
         self.main_layout.addWidget(city_group)
