@@ -318,6 +318,9 @@ class MainWindow(QMainWindow):
         self.year_spinbox.valueChanged.connect(self.update_window_title)
         self.combo_weekday1.currentIndexChanged.connect(self.update_window_title)
         self.combo_weekday2.currentIndexChanged.connect(self.update_window_title)
+        self.year_spinbox.valueChanged.connect(self.update_project_info_label)
+        self.combo_weekday1.currentIndexChanged.connect(self.update_project_info_label)
+        self.combo_weekday2.currentIndexChanged.connect(self.update_project_info_label)
 
         date_group.setLayout(date_group_layout)
         date_group.setMaximumHeight(date_group.sizeHint().height())
@@ -842,6 +845,9 @@ class MainWindow(QMainWindow):
         self.choose_image_export_output_dir()
 
     def update_project_info_label(self) -> None:
+        if not hasattr(self, "project_info_label"):
+            return
+
         file_name = "не открыт"
 
         if self.file_path is not None:
