@@ -126,10 +126,6 @@ class MainWindow(QMainWindow):
         city_main_layout = QVBoxLayout()
         city_main_layout.setSpacing(8)
 
-        self.project_info_label = QLabel()
-        self.project_info_label.setWordWrap(True)
-        city_main_layout.addWidget(self.project_info_label)
-
         actions_layout = QHBoxLayout()
         actions_layout.setSpacing(8)
 
@@ -179,8 +175,6 @@ class MainWindow(QMainWindow):
 
         city_group.setLayout(city_main_layout)
         self.main_layout.addWidget(city_group)
-
-        self.update_project_info_label()
 
     def _setup_city_buttons(self, layout: QHBoxLayout) -> None:
         self.btn_add_city = QPushButton("Добавить")
@@ -318,9 +312,6 @@ class MainWindow(QMainWindow):
         self.year_spinbox.valueChanged.connect(self.update_window_title)
         self.combo_weekday1.currentIndexChanged.connect(self.update_window_title)
         self.combo_weekday2.currentIndexChanged.connect(self.update_window_title)
-        self.year_spinbox.valueChanged.connect(self.update_project_info_label)
-        self.combo_weekday1.currentIndexChanged.connect(self.update_project_info_label)
-        self.combo_weekday2.currentIndexChanged.connect(self.update_project_info_label)
 
         date_group.setLayout(date_group_layout)
         date_group.setMaximumHeight(date_group.sizeHint().height())
@@ -553,7 +544,6 @@ class MainWindow(QMainWindow):
         self.update_window_title()
         self.update_action_buttons_state()
         self.update_status_bar()
-        self.update_project_info_label()
 
     def save_file(self) -> None:
         if self.file_path is None:
@@ -563,7 +553,6 @@ class MainWindow(QMainWindow):
         project = self.build_current_project_data()
         save_project(project, self.file_path)
         self.update_status_bar()
-        self.update_project_info_label()
 
     def save_file_as(self) -> None:
         file_path = choose_save_file(
@@ -579,7 +568,6 @@ class MainWindow(QMainWindow):
         self.update_window_title()
         self.update_status_bar()
         self.update_action_buttons_state()
-        self.update_project_info_label()
 
     def add_city_in_table(self) -> None:
         new_city = create_default_city(self.year_spinbox.value())
@@ -772,8 +760,6 @@ class MainWindow(QMainWindow):
         self.update_export_settings_label()
         self.update_export_output_dir_label()
 
-        self.update_project_info_label()
-
         self.load_cities_into_table(project.cities)
 
     def update_export_settings_label(self) -> None:
@@ -837,14 +823,3 @@ class MainWindow(QMainWindow):
 
     def select_export_output_dir(self) -> None:
         self.choose_image_export_output_dir()
-
-    def update_project_info_label(self) -> None:
-        if not hasattr(self, "project_info_label"):
-            return
-
-        self.project_info_label.setText(
-            f"Год: {self.year_spinbox.value()} | "
-            f"Дни расчёта: "
-            f"{self.combo_weekday1.currentText()} / "
-            f"{self.combo_weekday2.currentText()}"
-        )
