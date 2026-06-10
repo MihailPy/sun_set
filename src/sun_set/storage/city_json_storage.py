@@ -5,6 +5,7 @@ from pathlib import Path
 
 from dacite import Config, DaciteError, from_dict
 
+from sun_set.constants.project_format import PROJECT_FORMAT_VERSION
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.storage.json_storage import read_json, write_json
@@ -33,7 +34,7 @@ def load_project_from_json(
         if isinstance(data, list):
             return (
                 ProjectData(
-                    version=1,
+                    version=PROJECT_FORMAT_VERSION,
                     year=datetime.now().year,
                     weekday1=5,
                     weekday2=6,
