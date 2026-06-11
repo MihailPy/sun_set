@@ -658,30 +658,48 @@ class MainWindow(QMainWindow):
         if self.model is not None:
             has_selected_cities = bool(self.model.get_selected_cities())
 
+        has_export_settings = bool(self.last_image_export_settings_path)
+        has_export_output_dir = bool(self.last_image_export_output_dir)
+
+        self.btn_del_city.setEnabled(has_selected_cities)
+        self.btn_get_sunset_info.setEnabled(has_selected_cities)
+
+        self.preview_image_button.setEnabled(
+            has_selected_cities and has_export_settings
+        )
+        self.btn_export_image.setEnabled(
+            has_selected_cities and has_export_settings and has_export_output_dir
+        )
+
+        self.btn_save_file_main.setEnabled(bool(self.cities))
+
         if has_selected_cities:
             self.btn_del_city.setToolTip("Удалить выбранные города")
             self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
-            self.preview_image_button.setToolTip(
-                "Предпросмотр перед сохранением изображения"
-            )
-            self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
         else:
             tooltip = "Выберите один или несколько городов в таблице"
             self.btn_del_city.setToolTip(tooltip)
             self.btn_get_sunset_info.setToolTip(tooltip)
-            self.preview_image_button.setToolTip(tooltip)
-            self.btn_export_image.setToolTip(tooltip)
 
-        for button in (
-            self.btn_del_city,
-            self.btn_get_sunset_info,
-            self.preview_image_button,
-            self.btn_export_image,
-        ):
-            button.setEnabled(has_selected_cities)
+        if not has_selected_cities:
+            export_tooltip = "Выберите один или несколько городов в таблице"
+        elif not has_export_settings:
+            export_tooltip = "Выберите файл настроек экспорта"
+        elif not has_export_output_dir:
+            export_tooltip = "Выберите папку экспорта"
+        else:
+            export_tooltip = ""
 
-        has_cities = bool(self.cities)
-        self.btn_save_file_main.setEnabled(has_cities)
+        self.preview_image_button.setToolTip(
+            "Предпросмотр перед сохранением изображения"
+            if has_selected_cities and has_export_settings
+            else export_tooltip
+        )
+        self.btn_export_image.setToolTip(
+            "Экспорт выбранных городов в изображение"
+            if has_selected_cities and has_export_settings and has_export_output_dir
+            else export_tooltip
+        )
 
     def update_status_bar(self) -> None:
         file_name = "Файл не открыт"
@@ -796,6 +814,7 @@ class MainWindow(QMainWindow):
             f"Настройки: {settings_text} | Папка: {output_dir_text}"
         )
         self.export_paths_label.setToolTip("\n".join(tooltip_parts))
+        self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
         if self.last_image_export_settings_path:
