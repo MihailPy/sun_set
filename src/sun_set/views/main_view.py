@@ -166,14 +166,12 @@ class MainWindow(QMainWindow):
         export_actions_group = QGroupBox("Изображения")
         export_actions_layout = QVBoxLayout()
 
-        self.export_settings_label = QLabel("Файл настроек: не выбран")
-        self.export_output_dir_label = QLabel("Папка экспорта: не выбрана")
+        self.export_paths_label = QLabel("Настройки: не выбраны | Папка: не выбрана")
 
         export_buttons_layout = QHBoxLayout()
         self._setup_export_buttons(export_buttons_layout)
 
-        export_actions_layout.addWidget(self.export_settings_label)
-        export_actions_layout.addWidget(self.export_output_dir_label)
+        export_actions_layout.addWidget(self.export_paths_label)
         export_actions_layout.addLayout(export_buttons_layout)
 
         export_actions_group.setLayout(export_actions_layout)
@@ -711,7 +709,7 @@ class MainWindow(QMainWindow):
             return None
 
         self.last_image_export_settings_path = settings_file
-        self.update_export_settings_label()
+        self.update_export_paths_label()
 
         return Path(settings_file)
 
@@ -726,7 +724,7 @@ class MainWindow(QMainWindow):
             return None
 
         self.last_image_export_output_dir = output_dir
-        self.update_export_output_dir_label()
+        self.update_export_paths_label()
 
         return Path(output_dir)
 
@@ -765,32 +763,30 @@ class MainWindow(QMainWindow):
         self.last_image_export_settings_path = project.export_settings_path or ""
         self.last_image_export_output_dir = project.export_output_dir or ""
 
-        self.update_export_settings_label()
-        self.update_export_output_dir_label()
+        self.update_export_paths_label()
 
         self.load_cities_into_table(project.cities)
 
-    def update_export_settings_label(self) -> None:
-        if not self.last_image_export_settings_path:
-            self.export_settings_label.setText("Файл настроек: не выбран")
-            self.export_settings_label.setToolTip("")
-            return
+    def update_export_paths_label(self) -> None:
+        settings_text = "не выбраны"
+        output_dir_text = "не выбрана"
 
-        settings_path = Path(self.last_image_export_settings_path)
+        tooltip_parts = []
 
-        self.export_settings_label.setText(f"Файл настроек: {settings_path.name}")
-        self.export_settings_label.setToolTip(str(settings_path))
+        if self.last_image_export_settings_path:
+            settings_path = Path(self.last_image_export_settings_path)
+            settings_text = settings_path.name
+            tooltip_parts.append(f"Файл настроек: {settings_path}")
 
-    def update_export_output_dir_label(self) -> None:
-        if not self.last_image_export_output_dir:
-            self.export_output_dir_label.setText("Папка экспорта: не выбрана")
-            self.export_output_dir_label.setToolTip("")
-            return
+        if self.last_image_export_output_dir:
+            output_dir = Path(self.last_image_export_output_dir)
+            output_dir_text = output_dir.name
+            tooltip_parts.append(f"Папка экспорта: {output_dir}")
 
-        output_dir = Path(self.last_image_export_output_dir)
-
-        self.export_output_dir_label.setText(f"Папка экспорта: {output_dir.name}")
-        self.export_output_dir_label.setToolTip(str(output_dir))
+        self.export_paths_label.setText(
+            f"Настройки: {settings_text} | Папка: {output_dir_text}"
+        )
+        self.export_paths_label.setToolTip("\n".join(tooltip_parts))
 
     def get_export_settings_path(self) -> Path | None:
         if self.last_image_export_settings_path:
@@ -805,7 +801,7 @@ class MainWindow(QMainWindow):
                 "Сохранённый файл настроек экспорта не найден. Выберите файл заново.",
             )
             self.last_image_export_settings_path = ""
-            self.update_export_settings_label()
+            self.update_export_paths_label()
 
         return self.choose_export_settings_file()
 
@@ -822,7 +818,7 @@ class MainWindow(QMainWindow):
                 "Сохранённая папка экспорта не найдена. Выберите папку заново.",
             )
             self.last_image_export_output_dir = ""
-            self.update_export_output_dir_label()
+            self.update_export_paths_label()
 
         return self.choose_image_export_output_dir()
 
