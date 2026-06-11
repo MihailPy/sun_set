@@ -142,13 +142,11 @@ class MainWindow(QMainWindow):
         city_main_layout.addLayout(actions_layout)
 
         self.initial_prompt_text = QLabel(
-            "Выберите файл для загрузки данных городов, или нажмите 'Добавить'"
+            "Файл с городами не открыт\n\n"
+            "Откройте файл с городами или нажмите «Добавить»"
         )
-
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.initial_prompt_text.setMaximumHeight(
-            self.initial_prompt_text.sizeHint().height()
-        )
+        self.initial_prompt_text.setWordWrap(True)
         city_main_layout.addWidget(self.initial_prompt_text)
 
         self._setup_table()
