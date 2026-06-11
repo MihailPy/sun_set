@@ -159,6 +159,7 @@ class MainWindow(QMainWindow):
 
         city_actions_group.setLayout(city_actions_layout)
         city_actions_group.setMaximumHeight(city_actions_group.sizeHint().height())
+        city_actions_group.setMaximumWidth(city_actions_group.sizeHint().width())
 
         return city_actions_group
 
@@ -176,7 +177,7 @@ class MainWindow(QMainWindow):
 
         export_actions_group.setLayout(export_actions_layout)
         export_actions_group.setMaximumHeight(export_actions_group.sizeHint().height())
-        export_actions_group.setMaximumWidth(760)
+        export_actions_group.setMaximumWidth(export_actions_group.sizeHint().width())
 
         return export_actions_group
 
@@ -329,7 +330,6 @@ class MainWindow(QMainWindow):
         date_group.setLayout(date_group_layout)
         date_group.setMaximumHeight(date_group.sizeHint().height())
         date_group.setMaximumWidth(date_group.sizeHint().width())
-        date_group.setMaximumWidth(520)
         return date_group
 
     def connect_city_model_signals(self, model: CityTableModel) -> None:
