@@ -333,6 +333,8 @@ class MainWindow(QMainWindow):
 
         date_group.setLayout(date_group_layout)
         date_group.setMaximumHeight(date_group.sizeHint().height())
+        date_group.setMaximumWidth(date_group.sizeHint().width())
+        date_group.setMaximumWidth(520)
         return date_group
 
     def connect_city_model_signals(self, model: CityTableModel) -> None:
