@@ -268,9 +268,9 @@ class MainWindow(QMainWindow):
 
         header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
         self.table_view.setHorizontalHeader(header)
-        header.setSectionResizeMode(
-            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
-        )
+        header.setStretchLastSection(True)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(STATUS_COLUMN, QHeaderView.ResizeMode.Stretch)
 
         self.table_view.hide()
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
