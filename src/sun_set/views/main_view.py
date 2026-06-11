@@ -184,29 +184,34 @@ class MainWindow(QMainWindow):
         self.btn_add_city = QPushButton("Добавить")
         self.btn_add_city.setToolTip("Добавить город в таблицу")
         self.btn_add_city.clicked.connect(self.add_city_in_table)
+        self.setup_action_button(self.btn_add_city)
         layout.addWidget(self.btn_add_city)
 
         self.btn_open_file = QPushButton("Открыть файл", self)
         self.btn_open_file.setToolTip("Открыть JSON-файл с городами")
         self.btn_open_file.clicked.connect(self.open_file_dialog)
+        self.setup_action_button(self.btn_open_file)
         layout.addWidget(self.btn_open_file)
 
         self.btn_save_file_main = QPushButton("Сохранить", self)
         self.btn_save_file_main.setToolTip("Сохранить текущий JSON-файл с городами")
         self.btn_save_file_main.clicked.connect(self.save_file)
+        self.setup_action_button(self.btn_save_file_main)
         layout.addWidget(self.btn_save_file_main)
-        self.btn_save_file_main.setEnabled(False)
 
         self.btn_del_city = QPushButton("Удалить")
         self.btn_del_city.setToolTip("Удалить выбранные города")
         self.btn_del_city.clicked.connect(self.delete_selected_cities)
+        self.setup_action_button(self.btn_del_city)
         layout.addWidget(self.btn_del_city)
 
         self.btn_get_sunset_info = QPushButton("Обновить", self)
         self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
         self.btn_get_sunset_info.clicked.connect(self.initiate_sunset_fetch)
+        self.setup_action_button(self.btn_get_sunset_info)
         layout.addWidget(self.btn_get_sunset_info)
 
+        self.btn_save_file_main.setEnabled(False)
         self.btn_del_city.setEnabled(False)
         self.btn_get_sunset_info.setEnabled(False)
 
@@ -217,8 +222,9 @@ class MainWindow(QMainWindow):
         self.btn_change_export_settings.clicked.connect(
             self.select_export_settings_file
         )
-
         self.btn_change_export_dir.clicked.connect(self.select_export_output_dir)
+        self.setup_action_button(self.btn_change_export_settings)
+        self.setup_action_button(self.btn_change_export_dir)
 
         layout.addWidget(self.btn_change_export_settings)
         layout.addWidget(self.btn_change_export_dir)
@@ -228,11 +234,13 @@ class MainWindow(QMainWindow):
             "Предпросмотр перед сохранением изображения"
         )
         self.preview_image_button.clicked.connect(self.preview_selected_city_image)
+        self.setup_action_button(self.preview_image_button)
         layout.addWidget(self.preview_image_button)
 
         self.btn_export_image = QPushButton("Экспорт", self)
         self.btn_export_image.setToolTip("Экспорт выбранных городов в изображение")
         self.btn_export_image.clicked.connect(self.export_all_selected_city_image)
+        self.setup_action_button(self.btn_export_image)
         layout.addWidget(self.btn_export_image)
 
         self.image_export_settings_button = QPushButton("Настройки", self)
@@ -248,6 +256,7 @@ class MainWindow(QMainWindow):
         image_export_settings_menu.addAction(edit_settings_action)
 
         self.image_export_settings_button.setMenu(image_export_settings_menu)
+        self.setup_action_button(self.image_export_settings_button)
         layout.addWidget(self.image_export_settings_button)
 
         self.preview_image_button.setEnabled(False)
@@ -827,3 +836,7 @@ class MainWindow(QMainWindow):
 
     def select_export_output_dir(self) -> None:
         self.choose_image_export_output_dir()
+
+    def setup_action_button(self, button: QPushButton) -> None:
+        button.setMinimumWidth(120)
+        button.setMaximumWidth(180)
