@@ -125,22 +125,13 @@ class MainWindow(QMainWindow):
         city_main_layout = QVBoxLayout()
         city_main_layout.setSpacing(8)
 
-        actions_layout = QHBoxLayout()
-        actions_layout.setSpacing(8)
-
         date_group = self._create_date_group()
-
         city_actions_group = self._create_city_actions_group()
         export_actions_group = self._create_export_actions_group()
 
-        actions_layout.addWidget(date_group, 0, Qt.AlignmentFlag.AlignTop)
-        actions_layout.addSpacing(12)
-        actions_layout.addWidget(city_actions_group, 1, Qt.AlignmentFlag.AlignTop)
-        actions_layout.addSpacing(12)
-        actions_layout.addWidget(export_actions_group, 1, Qt.AlignmentFlag.AlignTop)
-        actions_layout.addStretch(1)
-
-        city_main_layout.addLayout(actions_layout)
+        city_main_layout.addWidget(date_group)
+        city_main_layout.addWidget(city_actions_group)
+        city_main_layout.addWidget(export_actions_group)
 
         self.initial_prompt_text = QLabel(
             "Файл с городами не открыт\n\n"
