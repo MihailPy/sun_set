@@ -135,9 +135,10 @@ class MainWindow(QMainWindow):
 
         actions_layout.addWidget(date_group, 0, Qt.AlignmentFlag.AlignTop)
         actions_layout.addSpacing(12)
-        actions_layout.addWidget(city_actions_group, 0, Qt.AlignmentFlag.AlignTop)
+        actions_layout.addWidget(city_actions_group, 1, Qt.AlignmentFlag.AlignTop)
         actions_layout.addSpacing(12)
-        actions_layout.addWidget(export_actions_group, 0, Qt.AlignmentFlag.AlignTop)
+        actions_layout.addWidget(export_actions_group, 1, Qt.AlignmentFlag.AlignTop)
+        actions_layout.addStretch(1)
 
         city_main_layout.addLayout(actions_layout)
 
