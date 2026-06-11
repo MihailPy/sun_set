@@ -190,6 +190,7 @@ class MainWindow(QMainWindow):
 
         export_actions_group.setLayout(export_actions_layout)
         export_actions_group.setMaximumHeight(export_actions_group.sizeHint().height())
+        export_actions_group.setMaximumWidth(760)
 
         return export_actions_group
 
