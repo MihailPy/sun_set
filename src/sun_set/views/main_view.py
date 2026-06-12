@@ -155,7 +155,12 @@ class MainWindow(QMainWindow):
         city_actions_group = QGroupBox("Города")
         city_actions_layout = QHBoxLayout()
 
+        self.selected_cities_label = QLabel("Выбрано: 0")
+
         self._setup_city_buttons(city_actions_layout)
+
+        city_actions_layout.addStretch()
+        city_actions_layout.addWidget(self.selected_cities_label)
 
         city_actions_group.setLayout(city_actions_layout)
         city_actions_group.setMaximumHeight(city_actions_group.sizeHint().height())
@@ -712,6 +717,9 @@ class MainWindow(QMainWindow):
         if self.model is not None:
             selected = self.model.get_selected_cities()
             selected_cities = len(selected) if selected else 0
+
+        if hasattr(self, "selected_cities_label"):
+            self.selected_cities_label.setText(f"Выбрано: {selected_cities}")
 
         self.status_bar.showMessage(
             f"{file_name} | Городов: {total_cities} | Выбрано: {selected_cities}"
