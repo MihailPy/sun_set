@@ -471,10 +471,10 @@ class MainWindow(QMainWindow):
         results = export_cities_images(
             cities=cities,
             settings_path=settings_path,
-            output_dir=Path(output_dir),
+            output_dir=output_dir,
         )
 
-        save_export_report(results, Path(output_dir))
+        save_export_report(results, output_dir)
         self.show_image_export_result(results, output_dir)
 
     def preview_selected_city_image(self) -> None:
