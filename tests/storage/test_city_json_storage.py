@@ -7,6 +7,7 @@ from sun_set.storage.city_json_storage import (
     save_cities_to_json,
     save_project_to_json,
 )
+from sun_set.storage.json_storage import write_json
 
 
 def test_save_and_load_cities_json(tmp_path):
@@ -121,3 +122,33 @@ def test_save_and_load_project_json(tmp_path):
     assert loaded_project.cities == []
     assert loaded_project.export_settings_path == "/tmp/export_settings.json"
     assert loaded_project.export_output_dir == "/tmp/export"
+
+
+def test_load_legacy_city_list_as_project(tmp_path):
+    legacy_data = [
+        {
+            "name": "Amsterdam",
+            "region": "North Holland",
+            "lat": 52.37,
+            "lon": 4.89,
+            "timezone": "Europe/Amsterdam",
+            "elevation": 0,
+            "sunset_data": {
+                "year": 2027,
+                "source": Source.CALCULATED.value,
+                "hash_before_edit": None,
+                "months": None,
+            },
+        }
+    ]
+
+    path = tmp_path / "legacy_cities.json"
+    write_json(path, legacy_data)
+
+    project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert project is not None
+    assert project.cities[0].name == "Amsterdam"
+    assert project.weekday1 == 5
+    assert project.weekday2 == 6
