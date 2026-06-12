@@ -1,3 +1,4 @@
+from sun_set.constants.project_defaults import DEFAULT_WEEKDAY_1, DEFAULT_WEEKDAY_2
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
@@ -150,5 +151,5 @@ def test_load_legacy_city_list_as_project(tmp_path):
     assert error is None
     assert project is not None
     assert project.cities[0].name == "Amsterdam"
-    assert project.weekday1 == 5
-    assert project.weekday2 == 6
+    assert project.weekday1 == DEFAULT_WEEKDAY_1
+    assert project.weekday2 == DEFAULT_WEEKDAY_2

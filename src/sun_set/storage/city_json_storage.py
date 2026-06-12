@@ -5,6 +5,7 @@ from pathlib import Path
 
 from dacite import Config, DaciteError, from_dict
 
+from sun_set.constants.project_defaults import DEFAULT_WEEKDAY_1, DEFAULT_WEEKDAY_2
 from sun_set.constants.project_format import PROJECT_FORMAT_VERSION
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
@@ -36,8 +37,8 @@ def load_project_from_json(
                 ProjectData(
                     version=PROJECT_FORMAT_VERSION,
                     year=datetime.now().year,
-                    weekday1=5,
-                    weekday2=6,
+                    weekday1=DEFAULT_WEEKDAY_1,
+                    weekday2=DEFAULT_WEEKDAY_2,
                     cities=[
                         from_dict(
                             data_class=City,

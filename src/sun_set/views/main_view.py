@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from sun_set.constants.project_defaults import DEFAULT_WEEKDAY_1, DEFAULT_WEEKDAY_2
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
     ExportResult,
@@ -321,8 +322,8 @@ class MainWindow(QMainWindow):
             self.combo_weekday1.addItem(name, value)
             self.combo_weekday2.addItem(name, value)
 
-        self.combo_weekday1.setCurrentIndex(4)
-        self.combo_weekday2.setCurrentIndex(5)
+        self.combo_weekday1.setCurrentIndex(DEFAULT_WEEKDAY_1)
+        self.combo_weekday2.setCurrentIndex(DEFAULT_WEEKDAY_2)
 
         date_group_layout.addWidget(QLabel("Дни недели для расчёта:"))
         date_group_layout.addWidget(self.combo_weekday1)
