@@ -135,7 +135,8 @@ class MainWindow(QMainWindow):
 
         self.initial_prompt_text = QLabel(
             "Файл с городами не открыт\n\n"
-            "Откройте файл с городами или нажмите «Добавить»"
+            "Откройте JSON-файл проекта\n"
+            "или нажмите «Добавить», чтобы создать новый список городов"
         )
         self.initial_prompt_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.initial_prompt_text.setWordWrap(True)
