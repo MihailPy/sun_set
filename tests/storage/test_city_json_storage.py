@@ -96,3 +96,28 @@ def test_save_and_load_project_export_paths(tmp_path):
     assert loaded_project is not None
     assert loaded_project.export_settings_path == "/tmp/export_settings.json"
     assert loaded_project.export_output_dir == "/tmp/export"
+
+
+def test_save_and_load_project_json(tmp_path):
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="/tmp/export_settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    path = tmp_path / "project.json"
+
+    save_project_to_json(project, str(path))
+    loaded_project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert loaded_project is not None
+    assert loaded_project.year == 2027
+    assert loaded_project.weekday1 == 4
+    assert loaded_project.weekday2 == 5
+    assert loaded_project.cities == []
+    assert loaded_project.export_settings_path == "/tmp/export_settings.json"
+    assert loaded_project.export_output_dir == "/tmp/export"
