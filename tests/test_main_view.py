@@ -350,5 +350,11 @@ class TestMainWindow:
             main_window.last_image_export_settings_path == "/tmp/export_settings.json"
         )
         assert main_window.last_image_export_output_dir == "/tmp/export"
-        assert "export_settings.json" in main_window.export_settings_label.text()
-        assert "export" in main_window.export_output_dir_label.text()
+
+        export_paths_text = main_window.export_paths_label.text()
+        assert "export_settings.json" in export_paths_text
+        assert "export" in export_paths_text
+
+        export_paths_tooltip = main_window.export_paths_label.toolTip()
+        assert "/tmp/export_settings.json" in export_paths_tooltip
+        assert "/tmp/export" in export_paths_tooltip
