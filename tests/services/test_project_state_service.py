@@ -1,5 +1,6 @@
 from sun_set.models.project_data import ProjectData
 from sun_set.services.project_state_service import (
+    build_export_action_tooltip,
     build_export_paths_text,
     build_export_paths_tooltip,
     build_project_data,
@@ -130,4 +131,42 @@ def test_can_export_images():
         has_selected_cities=True,
         export_settings_path="/tmp/settings.json",
         export_output_dir="",
+    )
+
+
+def test_build_export_action_tooltip():
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=False,
+            export_settings_path="/tmp/settings.json",
+            export_output_dir="/tmp/export",
+        )
+        == "Выберите один или несколько городов в таблице"
+    )
+
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=True,
+            export_settings_path="",
+            export_output_dir="/tmp/export",
+        )
+        == "Выберите файл настроек экспорта"
+    )
+
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=True,
+            export_settings_path="/tmp/settings.json",
+            export_output_dir="",
+        )
+        == "Выберите папку экспорта"
+    )
+
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=True,
+            export_settings_path="/tmp/settings.json",
+            export_output_dir="/tmp/export",
+        )
+        == ""
     )
