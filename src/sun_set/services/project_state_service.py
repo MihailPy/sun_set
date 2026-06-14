@@ -22,3 +22,7 @@ def build_project_data(
 
 def normalize_optional_path(path: str) -> str | None:
     return path or None
+
+
+def restore_optional_path(path: str | None) -> str:
+    return path or ""

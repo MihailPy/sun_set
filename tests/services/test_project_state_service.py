@@ -1,5 +1,9 @@
 from sun_set.models.project_data import ProjectData
-from sun_set.services.project_state_service import build_project_data
+from sun_set.services.project_state_service import (
+    build_project_data,
+    normalize_optional_path,
+    restore_optional_path,
+)
 
 
 def test_build_project_data():
@@ -35,9 +39,11 @@ def test_build_project_data_converts_empty_paths_to_none():
     assert project.export_output_dir is None
 
 
-from sun_set.services.project_state_service import normalize_optional_path
-
-
 def test_normalize_optional_path():
     assert normalize_optional_path("") is None
     assert normalize_optional_path("/tmp/file.json") == "/tmp/file.json"
+
+
+def test_restore_optional_path():
+    assert restore_optional_path(None) == ""
+    assert restore_optional_path("/tmp/export") == "/tmp/export"

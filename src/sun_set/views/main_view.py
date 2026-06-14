@@ -62,7 +62,10 @@ from sun_set.services.dialog_service import (
     show_warning,
 )
 from sun_set.services.project_file_service import load_project, save_project
-from sun_set.services.project_state_service import build_project_data
+from sun_set.services.project_state_service import (
+    build_project_data,
+    restore_optional_path,
+)
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -802,8 +805,12 @@ class MainWindow(QMainWindow):
         self.combo_weekday1.setCurrentIndex(project.weekday1)
         self.combo_weekday2.setCurrentIndex(project.weekday2)
 
-        self.last_image_export_settings_path = project.export_settings_path or ""
-        self.last_image_export_output_dir = project.export_output_dir or ""
+        self.last_image_export_settings_path = restore_optional_path(
+            project.export_settings_path
+        )
+        self.last_image_export_output_dir = restore_optional_path(
+            project.export_output_dir
+        )
 
         self.update_export_paths_label()
 
