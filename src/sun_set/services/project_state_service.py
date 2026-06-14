@@ -59,3 +59,20 @@ def build_export_paths_tooltip(
         tooltip_parts.append(f"Папка экспорта: {export_output_dir}")
 
     return "\n".join(tooltip_parts)
+
+
+def can_preview_image(
+    has_selected_cities: bool,
+    export_settings_path: str,
+) -> bool:
+    return has_selected_cities and bool(export_settings_path)
+
+
+def can_export_images(
+    has_selected_cities: bool,
+    export_settings_path: str,
+    export_output_dir: str,
+) -> bool:
+    return (
+        has_selected_cities and bool(export_settings_path) and bool(export_output_dir)
+    )

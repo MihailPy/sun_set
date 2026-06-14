@@ -66,6 +66,8 @@ from sun_set.services.project_state_service import (
     build_export_paths_text,
     build_export_paths_tooltip,
     build_project_data,
+    can_export_images,
+    can_preview_image,
     restore_optional_path,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
@@ -682,10 +684,14 @@ class MainWindow(QMainWindow):
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
 
         self.preview_image_button.setEnabled(
-            has_selected_cities and has_export_settings
+            can_preview_image(has_selected_cities, self.last_image_export_settings_path)
         )
         self.btn_export_image.setEnabled(
-            has_selected_cities and has_export_settings and has_export_output_dir
+            can_export_images(
+                has_selected_cities,
+                self.last_image_export_settings_path,
+                self.last_image_export_output_dir,
+            )
         )
 
         self.btn_save_file_main.setEnabled(bool(self.cities))
