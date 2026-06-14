@@ -3,6 +3,8 @@ from sun_set.services.project_state_service import (
     build_export_paths_text,
     build_export_paths_tooltip,
     build_project_data,
+    can_export_images,
+    can_preview_image,
     normalize_optional_path,
     restore_optional_path,
 )
@@ -86,3 +88,46 @@ def test_build_export_paths_tooltip_with_paths():
 
     assert "Файл настроек: /tmp/export_settings.json" in tooltip
     assert "Папка экспорта: /tmp/images" in tooltip
+
+
+def test_can_preview_image():
+    assert can_preview_image(
+        has_selected_cities=True,
+        export_settings_path="/tmp/settings.json",
+    )
+
+    assert not can_preview_image(
+        has_selected_cities=False,
+        export_settings_path="/tmp/settings.json",
+    )
+
+    assert not can_preview_image(
+        has_selected_cities=True,
+        export_settings_path="",
+    )
+
+
+def test_can_export_images():
+    assert can_export_images(
+        has_selected_cities=True,
+        export_settings_path="/tmp/settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    assert not can_export_images(
+        has_selected_cities=False,
+        export_settings_path="/tmp/settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    assert not can_export_images(
+        has_selected_cities=True,
+        export_settings_path="",
+        export_output_dir="/tmp/export",
+    )
+
+    assert not can_export_images(
+        has_selected_cities=True,
+        export_settings_path="/tmp/settings.json",
+        export_output_dir="",
+    )
