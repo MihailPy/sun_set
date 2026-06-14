@@ -241,9 +241,13 @@ class TestMainWindow:
             STATUS_COLUMN
         )
 
+    @patch("sun_set.views.main_view.show_warning")
     @patch("sun_set.views.main_view.update_cities_sunset")
     def test_initiate_sunset_fetch_no_updates(
-        self, mock_update_cities_sunset, main_window
+        self,
+        mock_update_cities_sunset,
+        mock_show_warning,
+        main_window,
     ):
         """Тест отсутствия обновления, если города не выбраны"""
         mock_model = MagicMock()
@@ -254,6 +258,11 @@ class TestMainWindow:
 
         main_window.initiate_sunset_fetch()
 
+        mock_show_warning.assert_called_once_with(
+            main_window,
+            "Обновление данных",
+            "Выберите хотя бы один город.",
+        )
         mock_update_cities_sunset.assert_not_called()
         mock_model.clear_status_overrides_for_cities.assert_not_called()
         mock_model.refresh_status_column.assert_not_called()
