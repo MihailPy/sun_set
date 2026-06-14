@@ -15,6 +15,10 @@ def build_project_data(
         weekday1=weekday1,
         weekday2=weekday2,
         cities=cities,
-        export_settings_path=export_settings_path or None,
-        export_output_dir=export_output_dir or None,
+        export_settings_path=normalize_optional_path(export_settings_path),
+        export_output_dir=normalize_optional_path(export_output_dir),
     )
+
+
+def normalize_optional_path(path: str) -> str | None:
+    return path or None

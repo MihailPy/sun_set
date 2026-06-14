@@ -33,3 +33,11 @@ def test_build_project_data_converts_empty_paths_to_none():
 
     assert project.export_settings_path is None
     assert project.export_output_dir is None
+
+
+from sun_set.services.project_state_service import normalize_optional_path
+
+
+def test_normalize_optional_path():
+    assert normalize_optional_path("") is None
+    assert normalize_optional_path("/tmp/file.json") == "/tmp/file.json"
