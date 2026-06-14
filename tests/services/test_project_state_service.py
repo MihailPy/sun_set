@@ -1,5 +1,7 @@
 from sun_set.models.project_data import ProjectData
 from sun_set.services.project_state_service import (
+    build_export_paths_text,
+    build_export_paths_tooltip,
     build_project_data,
     normalize_optional_path,
     restore_optional_path,
@@ -47,3 +49,40 @@ def test_normalize_optional_path():
 def test_restore_optional_path():
     assert restore_optional_path(None) == ""
     assert restore_optional_path("/tmp/export") == "/tmp/export"
+
+
+def test_build_export_paths_text_without_paths():
+    text = build_export_paths_text(
+        export_settings_path="",
+        export_output_dir="",
+    )
+
+    assert text == "Настройки: не выбраны | Папка: не выбрана"
+
+
+def test_build_export_paths_text_with_paths():
+    text = build_export_paths_text(
+        export_settings_path="/tmp/export_settings.json",
+        export_output_dir="/tmp/images",
+    )
+
+    assert text == "Настройки: export_settings.json | Папка: images"
+
+
+def test_build_export_paths_tooltip_without_paths():
+    tooltip = build_export_paths_tooltip(
+        export_settings_path="",
+        export_output_dir="",
+    )
+
+    assert tooltip == ""
+
+
+def test_build_export_paths_tooltip_with_paths():
+    tooltip = build_export_paths_tooltip(
+        export_settings_path="/tmp/export_settings.json",
+        export_output_dir="/tmp/images",
+    )
+
+    assert "Файл настроек: /tmp/export_settings.json" in tooltip
+    assert "Папка экспорта: /tmp/images" in tooltip
