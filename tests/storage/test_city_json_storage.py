@@ -1,4 +1,8 @@
-from sun_set.constants.project_defaults import DEFAULT_WEEKDAY_1, DEFAULT_WEEKDAY_2
+from sun_set.constants.project_defaults import (
+    DEFAULT_WEEKDAY_1,
+    DEFAULT_WEEKDAY_2,
+    get_default_project_year,
+)
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
@@ -117,9 +121,9 @@ def test_save_and_load_project_json(tmp_path):
 
     assert error is None
     assert loaded_project is not None
-    assert loaded_project.year == 2027
-    assert loaded_project.weekday1 == 4
-    assert loaded_project.weekday2 == 5
+    assert loaded_project.year == get_default_project_year()
+    assert loaded_project.weekday1 == DEFAULT_WEEKDAY_1
+    assert loaded_project.weekday2 == DEFAULT_WEEKDAY_2
     assert loaded_project.cities == []
     assert loaded_project.export_settings_path == "/tmp/export_settings.json"
     assert loaded_project.export_output_dir == "/tmp/export"
