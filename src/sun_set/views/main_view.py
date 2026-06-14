@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 from PIL import Image
@@ -22,6 +21,11 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from sun_set.constants.project_defaults import (
+    DEFAULT_WEEKDAY_1,
+    DEFAULT_WEEKDAY_2,
+    get_default_project_year,
+)
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
     ExportResult,
@@ -296,10 +300,11 @@ class MainWindow(QMainWindow):
         date_group_layout.setContentsMargins(12, 8, 12, 8)
         date_group_layout.setSpacing(8)
 
-        current_year = datetime.now().year
+        default_year = get_default_project_year()
+
         self.year_spinbox = QSpinBox()
-        self.year_spinbox.setRange(current_year - 50, current_year + 50)
-        self.year_spinbox.setValue(current_year + 1)
+        self.year_spinbox.setRange(default_year - 51, default_year + 49)
+        self.year_spinbox.setValue(default_year)
 
         date_group_layout.addWidget(QLabel("Год:"))
         date_group_layout.addWidget(self.year_spinbox)
@@ -321,8 +326,8 @@ class MainWindow(QMainWindow):
             self.combo_weekday1.addItem(name, value)
             self.combo_weekday2.addItem(name, value)
 
-        self.combo_weekday1.setCurrentIndex(4)
-        self.combo_weekday2.setCurrentIndex(5)
+        self.combo_weekday1.setCurrentIndex(DEFAULT_WEEKDAY_1)
+        self.combo_weekday2.setCurrentIndex(DEFAULT_WEEKDAY_2)
 
         date_group_layout.addWidget(QLabel("Дни недели для расчёта:"))
         date_group_layout.addWidget(self.combo_weekday1)
@@ -471,10 +476,10 @@ class MainWindow(QMainWindow):
         results = export_cities_images(
             cities=cities,
             settings_path=settings_path,
-            output_dir=Path(output_dir),
+            output_dir=output_dir,
         )
 
-        save_export_report(results, Path(output_dir))
+        save_export_report(results, output_dir)
         self.show_image_export_result(results, output_dir)
 
     def preview_selected_city_image(self) -> None:

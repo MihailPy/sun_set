@@ -1,3 +1,8 @@
+from sun_set.constants.project_defaults import (
+    DEFAULT_WEEKDAY_1,
+    DEFAULT_WEEKDAY_2,
+    get_default_project_year,
+)
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
@@ -7,6 +12,7 @@ from sun_set.storage.city_json_storage import (
     save_cities_to_json,
     save_project_to_json,
 )
+from sun_set.storage.json_storage import write_json
 
 
 def test_save_and_load_cities_json(tmp_path):
@@ -96,3 +102,58 @@ def test_save_and_load_project_export_paths(tmp_path):
     assert loaded_project is not None
     assert loaded_project.export_settings_path == "/tmp/export_settings.json"
     assert loaded_project.export_output_dir == "/tmp/export"
+
+
+def test_save_and_load_project_json(tmp_path):
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="/tmp/export_settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    path = tmp_path / "project.json"
+
+    save_project_to_json(project, str(path))
+    loaded_project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert loaded_project is not None
+    assert loaded_project.year == get_default_project_year()
+    assert loaded_project.weekday1 == DEFAULT_WEEKDAY_1
+    assert loaded_project.weekday2 == DEFAULT_WEEKDAY_2
+    assert loaded_project.cities == []
+    assert loaded_project.export_settings_path == "/tmp/export_settings.json"
+    assert loaded_project.export_output_dir == "/tmp/export"
+
+
+def test_load_legacy_city_list_as_project(tmp_path):
+    legacy_data = [
+        {
+            "name": "Amsterdam",
+            "region": "North Holland",
+            "lat": 52.37,
+            "lon": 4.89,
+            "timezone": "Europe/Amsterdam",
+            "elevation": 0,
+            "sunset_data": {
+                "year": 2027,
+                "source": Source.CALCULATED.value,
+                "hash_before_edit": None,
+                "months": None,
+            },
+        }
+    ]
+
+    path = tmp_path / "legacy_cities.json"
+    write_json(path, legacy_data)
+
+    project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert project is not None
+    assert project.cities[0].name == "Amsterdam"
+    assert project.weekday1 == DEFAULT_WEEKDAY_1
+    assert project.weekday2 == DEFAULT_WEEKDAY_2
