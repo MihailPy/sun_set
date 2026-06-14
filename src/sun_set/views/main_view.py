@@ -63,6 +63,7 @@ from sun_set.services.dialog_service import (
 )
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
+    build_export_action_tooltip,
     build_export_paths_text,
     build_export_paths_tooltip,
     build_project_data,
@@ -704,14 +705,11 @@ class MainWindow(QMainWindow):
             self.btn_del_city.setToolTip(tooltip)
             self.btn_get_sunset_info.setToolTip(tooltip)
 
-        if not has_selected_cities:
-            export_tooltip = "Выберите один или несколько городов в таблице"
-        elif not has_export_settings:
-            export_tooltip = "Выберите файл настроек экспорта"
-        elif not has_export_output_dir:
-            export_tooltip = "Выберите папку экспорта"
-        else:
-            export_tooltip = ""
+        export_tooltip = build_export_action_tooltip(
+            has_selected_cities,
+            self.last_image_export_settings_path,
+            self.last_image_export_output_dir,
+        )
 
         self.preview_image_button.setToolTip(
             "Предпросмотр перед сохранением изображения"

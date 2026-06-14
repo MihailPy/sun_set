@@ -76,3 +76,20 @@ def can_export_images(
     return (
         has_selected_cities and bool(export_settings_path) and bool(export_output_dir)
     )
+
+
+def build_export_action_tooltip(
+    has_selected_cities: bool,
+    export_settings_path: str,
+    export_output_dir: str,
+) -> str:
+    if not has_selected_cities:
+        return "Выберите один или несколько городов в таблице"
+
+    if not export_settings_path:
+        return "Выберите файл настроек экспорта"
+
+    if not export_output_dir:
+        return "Выберите папку экспорта"
+
+    return ""
