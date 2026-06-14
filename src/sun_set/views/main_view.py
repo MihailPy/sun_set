@@ -62,6 +62,7 @@ from sun_set.services.dialog_service import (
     show_warning,
 )
 from sun_set.services.project_file_service import load_project, save_project
+from sun_set.services.project_state_service import build_project_data
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -787,13 +788,13 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def build_current_project_data(self) -> ProjectData:
-        return ProjectData(
+        return build_project_data(
             year=self.year_spinbox.value(),
             weekday1=self.combo_weekday1.currentIndex(),
             weekday2=self.combo_weekday2.currentIndex(),
             cities=self.cities,
-            export_settings_path=self.last_image_export_settings_path or None,
-            export_output_dir=self.last_image_export_output_dir or None,
+            export_settings_path=self.last_image_export_settings_path,
+            export_output_dir=self.last_image_export_output_dir,
         )
 
     def apply_project_data(self, project: ProjectData) -> None:
