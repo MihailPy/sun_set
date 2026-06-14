@@ -63,6 +63,8 @@ from sun_set.services.dialog_service import (
 )
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
+    build_export_paths_text,
+    build_export_paths_tooltip,
     build_project_data,
     restore_optional_path,
 )
@@ -817,25 +819,18 @@ class MainWindow(QMainWindow):
         self.load_cities_into_table(project.cities)
 
     def update_export_paths_label(self) -> None:
-        settings_text = "не выбраны"
-        output_dir_text = "не выбрана"
-
-        tooltip_parts = []
-
-        if self.last_image_export_settings_path:
-            settings_path = Path(self.last_image_export_settings_path)
-            settings_text = settings_path.name
-            tooltip_parts.append(f"Файл настроек: {settings_path}")
-
-        if self.last_image_export_output_dir:
-            output_dir = Path(self.last_image_export_output_dir)
-            output_dir_text = output_dir.name
-            tooltip_parts.append(f"Папка экспорта: {output_dir}")
-
         self.export_paths_label.setText(
-            f"Настройки: {settings_text} | Папка: {output_dir_text}"
+            build_export_paths_text(
+                self.last_image_export_settings_path,
+                self.last_image_export_output_dir,
+            )
         )
-        self.export_paths_label.setToolTip("\n".join(tooltip_parts))
+        self.export_paths_label.setToolTip(
+            build_export_paths_tooltip(
+                self.last_image_export_settings_path,
+                self.last_image_export_output_dir,
+            )
+        )
         self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
