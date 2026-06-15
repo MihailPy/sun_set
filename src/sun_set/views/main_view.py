@@ -720,7 +720,6 @@ class MainWindow(QMainWindow):
 
     def update_status_bar(self) -> None:
         self.update_selected_cities_label()
-
         self.status_bar.showMessage(self.build_status_bar_text())
 
     def update_window_title(self) -> None:
@@ -789,19 +788,8 @@ class MainWindow(QMainWindow):
         )
 
     def apply_project_data(self, project: ProjectData) -> None:
-        self.year_spinbox.setValue(project.year)
-        self.combo_weekday1.setCurrentIndex(project.weekday1)
-        self.combo_weekday2.setCurrentIndex(project.weekday2)
-
-        self.last_image_export_settings_path = restore_optional_path(
-            project.export_settings_path
-        )
-        self.last_image_export_output_dir = restore_optional_path(
-            project.export_output_dir
-        )
-
-        self.update_export_paths_label()
-
+        self.apply_project_settings(project)
+        self.apply_export_paths(project)
         self.load_cities_into_table(project.cities)
 
     def update_export_paths_label(self) -> None:
@@ -896,3 +884,18 @@ class MainWindow(QMainWindow):
         self.selected_cities_label.setText(
             f"Выбрано: {self.get_selected_cities_count()}"
         )
+
+    def apply_project_settings(self, project: ProjectData) -> None:
+        self.year_spinbox.setValue(project.year)
+        self.combo_weekday1.setCurrentIndex(project.weekday1)
+        self.combo_weekday2.setCurrentIndex(project.weekday2)
+
+    def apply_export_paths(self, project: ProjectData) -> None:
+        self.last_image_export_settings_path = restore_optional_path(
+            project.export_settings_path
+        )
+        self.last_image_export_output_dir = restore_optional_path(
+            project.export_output_dir
+        )
+
+        self.update_export_paths_label()
