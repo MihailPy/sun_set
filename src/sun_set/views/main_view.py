@@ -673,10 +673,8 @@ class MainWindow(QMainWindow):
         return cities
 
     def update_action_buttons_state(self) -> None:
-        has_selected_cities = False
-
-        if self.model is not None:
-            has_selected_cities = bool(self.model.get_selected_cities())
+        selected_cities_count = self.get_selected_cities_count()
+        has_selected_cities = selected_cities_count > 0
 
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
@@ -727,11 +725,7 @@ class MainWindow(QMainWindow):
             file_name = f"Файл: {Path(self.file_path).name}"
 
         total_cities = len(self.cities)
-        selected_cities = 0
-
-        if self.model is not None:
-            selected = self.model.get_selected_cities()
-            selected_cities = len(selected) if selected else 0
+        selected_cities = self.get_selected_cities_count()
 
         if hasattr(self, "selected_cities_label"):
             self.selected_cities_label.setText(f"Выбрано: {selected_cities}")
@@ -879,3 +873,10 @@ class MainWindow(QMainWindow):
     def setup_action_button(self, button: QPushButton) -> None:
         button.setMinimumWidth(120)
         button.setMaximumWidth(180)
+
+    def get_selected_cities_count(self) -> int:
+        if self.model is None:
+            return 0
+
+        selected = self.model.get_selected_cities()
+        return len(selected) if selected else 0
