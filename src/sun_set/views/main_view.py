@@ -69,7 +69,7 @@ from sun_set.services.project_state_service import (
     build_project_data,
     can_export_images,
     can_preview_image,
-    restore_optional_path,
+    get_export_paths_from_project,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
@@ -891,11 +891,9 @@ class MainWindow(QMainWindow):
         self.combo_weekday2.setCurrentIndex(project.weekday2)
 
     def apply_export_paths(self, project: ProjectData) -> None:
-        self.last_image_export_settings_path = restore_optional_path(
-            project.export_settings_path
-        )
-        self.last_image_export_output_dir = restore_optional_path(
-            project.export_output_dir
-        )
+        (
+            self.last_image_export_settings_path,
+            self.last_image_export_output_dir,
+        ) = get_export_paths_from_project(project)
 
         self.update_export_paths_label()

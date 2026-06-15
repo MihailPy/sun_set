@@ -93,3 +93,10 @@ def build_export_action_tooltip(
         return "Выберите папку экспорта"
 
     return ""
+
+
+def get_export_paths_from_project(project: ProjectData) -> tuple[str, str]:
+    return (
+        restore_optional_path(project.export_settings_path),
+        restore_optional_path(project.export_output_dir),
+    )
