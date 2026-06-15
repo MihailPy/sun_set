@@ -677,7 +677,7 @@ class MainWindow(QMainWindow):
 
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
-        self.btn_save_file_main.setEnabled(bool(self.cities))
+        self.btn_save_file_main.setEnabled(self.has_cities())
 
         self.preview_image_button.setEnabled(
             can_preview_image(
@@ -882,3 +882,6 @@ class MainWindow(QMainWindow):
 
     def has_selected_cities(self) -> bool:
         return self.get_selected_cities_count() > 0
+
+    def has_cities(self) -> bool:
+        return bool(self.cities)
