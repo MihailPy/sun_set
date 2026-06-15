@@ -678,14 +678,15 @@ class MainWindow(QMainWindow):
         if self.model is not None:
             has_selected_cities = bool(self.model.get_selected_cities())
 
-        has_export_settings = bool(self.last_image_export_settings_path)
-        has_export_output_dir = bool(self.last_image_export_output_dir)
-
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
+        self.btn_save_file_main.setEnabled(bool(self.cities))
 
         self.preview_image_button.setEnabled(
-            can_preview_image(has_selected_cities, self.last_image_export_settings_path)
+            can_preview_image(
+                has_selected_cities,
+                self.last_image_export_settings_path,
+            )
         )
         self.btn_export_image.setEnabled(
             can_export_images(
@@ -695,15 +696,13 @@ class MainWindow(QMainWindow):
             )
         )
 
-        self.btn_save_file_main.setEnabled(bool(self.cities))
-
         if has_selected_cities:
             self.btn_del_city.setToolTip("Удалить выбранные города")
             self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
         else:
-            tooltip = "Выберите один или несколько городов в таблице"
-            self.btn_del_city.setToolTip(tooltip)
-            self.btn_get_sunset_info.setToolTip(tooltip)
+            city_tooltip = "Выберите один или несколько городов в таблице"
+            self.btn_del_city.setToolTip(city_tooltip)
+            self.btn_get_sunset_info.setToolTip(city_tooltip)
 
         export_tooltip = build_export_action_tooltip(
             has_selected_cities,
@@ -713,12 +712,12 @@ class MainWindow(QMainWindow):
 
         self.preview_image_button.setToolTip(
             "Предпросмотр перед сохранением изображения"
-            if has_selected_cities and has_export_settings
+            if self.preview_image_button.isEnabled()
             else export_tooltip
         )
         self.btn_export_image.setToolTip(
             "Экспорт выбранных городов в изображение"
-            if has_selected_cities and has_export_settings and has_export_output_dir
+            if self.btn_export_image.isEnabled()
             else export_tooltip
         )
 
