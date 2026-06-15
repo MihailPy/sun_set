@@ -719,10 +719,7 @@ class MainWindow(QMainWindow):
         )
 
     def update_status_bar(self) -> None:
-        selected_cities = self.get_selected_cities_count()
-
-        if hasattr(self, "selected_cities_label"):
-            self.selected_cities_label.setText(f"Выбрано: {selected_cities}")
+        self.update_selected_cities_label()
 
         self.status_bar.showMessage(self.build_status_bar_text())
 
@@ -889,5 +886,13 @@ class MainWindow(QMainWindow):
         return (
             f"{self.get_status_file_text()} | "
             f"Городов: {len(self.cities)} | "
+            f"Выбрано: {self.get_selected_cities_count()}"
+        )
+
+    def update_selected_cities_label(self) -> None:
+        if not hasattr(self, "selected_cities_label"):
+            return
+
+        self.selected_cities_label.setText(
             f"Выбрано: {self.get_selected_cities_count()}"
         )
