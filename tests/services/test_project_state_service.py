@@ -6,6 +6,7 @@ from sun_set.services.project_state_service import (
     build_project_data,
     can_export_images,
     can_preview_image,
+    get_export_paths_from_project,
     normalize_optional_path,
     restore_optional_path,
 )
@@ -170,3 +171,35 @@ def test_build_export_action_tooltip():
         )
         == ""
     )
+
+
+def test_get_export_paths_from_project():
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="/tmp/settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    settings_path, output_dir = get_export_paths_from_project(project)
+
+    assert settings_path == "/tmp/settings.json"
+    assert output_dir == "/tmp/export"
+
+
+def test_get_export_paths_from_project_without_paths():
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path=None,
+        export_output_dir=None,
+    )
+
+    settings_path, output_dir = get_export_paths_from_project(project)
+
+    assert settings_path == ""
+    assert output_dir == ""
