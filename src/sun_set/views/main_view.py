@@ -673,8 +673,7 @@ class MainWindow(QMainWindow):
         return cities
 
     def update_action_buttons_state(self) -> None:
-        selected_cities_count = self.get_selected_cities_count()
-        has_selected_cities = selected_cities_count > 0
+        has_selected_cities = self.has_selected_cities()
 
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
@@ -880,3 +879,6 @@ class MainWindow(QMainWindow):
 
         selected = self.model.get_selected_cities()
         return len(selected) if selected else 0
+
+    def has_selected_cities(self) -> bool:
+        return self.get_selected_cities_count() > 0
