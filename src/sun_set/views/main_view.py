@@ -719,17 +719,12 @@ class MainWindow(QMainWindow):
         )
 
     def update_status_bar(self) -> None:
-        file_name = self.get_status_file_text()
-
-        total_cities = len(self.cities)
         selected_cities = self.get_selected_cities_count()
 
         if hasattr(self, "selected_cities_label"):
             self.selected_cities_label.setText(f"Выбрано: {selected_cities}")
 
-        self.status_bar.showMessage(
-            f"{file_name} | Городов: {total_cities} | Выбрано: {selected_cities}"
-        )
+        self.status_bar.showMessage(self.build_status_bar_text())
 
     def update_window_title(self) -> None:
         if self.file_path is None:
@@ -889,3 +884,10 @@ class MainWindow(QMainWindow):
             return "Файл не открыт"
 
         return f"Файл: {Path(self.file_path).name}"
+
+    def build_status_bar_text(self) -> str:
+        return (
+            f"{self.get_status_file_text()} | "
+            f"Городов: {len(self.cities)} | "
+            f"Выбрано: {self.get_selected_cities_count()}"
+        )
