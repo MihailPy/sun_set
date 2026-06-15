@@ -719,9 +719,7 @@ class MainWindow(QMainWindow):
         )
 
     def update_status_bar(self) -> None:
-        file_name = "Файл не открыт"
-        if self.file_path is not None:
-            file_name = f"Файл: {Path(self.file_path).name}"
+        file_name = self.get_status_file_text()
 
         total_cities = len(self.cities)
         selected_cities = self.get_selected_cities_count()
@@ -885,3 +883,9 @@ class MainWindow(QMainWindow):
 
     def has_cities(self) -> bool:
         return bool(self.cities)
+
+    def get_status_file_text(self) -> str:
+        if self.file_path is None:
+            return "Файл не открыт"
+
+        return f"Файл: {Path(self.file_path).name}"
