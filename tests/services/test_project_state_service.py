@@ -104,44 +104,51 @@ def test_build_export_paths_tooltip_with_paths():
 
 def test_can_preview_image():
     assert can_preview_image(
-        has_selected_cities=True,
-        export_settings_path="/tmp/settings.json",
+        has_selected_cities=True, export_paths=ExportPaths("/tmp/settings.json", "")
     )
 
     assert not can_preview_image(
         has_selected_cities=False,
-        export_settings_path="/tmp/settings.json",
+        export_paths=ExportPaths("/tmp/settings.json", ""),
     )
 
     assert not can_preview_image(
         has_selected_cities=True,
-        export_settings_path="",
+        export_paths=ExportPaths("", ""),
     )
 
 
 def test_can_export_images():
     assert can_export_images(
         has_selected_cities=True,
-        export_settings_path="/tmp/settings.json",
-        export_output_dir="/tmp/export",
+        export_paths=ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="/tmp/export",
+        ),
     )
 
     assert not can_export_images(
         has_selected_cities=False,
-        export_settings_path="/tmp/settings.json",
-        export_output_dir="/tmp/export",
+        export_paths=ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="/tmp/export",
+        ),
     )
 
     assert not can_export_images(
         has_selected_cities=True,
-        export_settings_path="",
-        export_output_dir="/tmp/export",
+        export_paths=ExportPaths(
+            settings_path="",
+            output_dir="/tmp/export",
+        ),
     )
 
     assert not can_export_images(
         has_selected_cities=True,
-        export_settings_path="/tmp/settings.json",
-        export_output_dir="",
+        export_paths=ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="",
+        ),
     )
 
 

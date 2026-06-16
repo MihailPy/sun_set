@@ -676,23 +676,17 @@ class MainWindow(QMainWindow):
 
     def update_action_buttons_state(self) -> None:
         has_selected_cities = self.has_selected_cities()
+        export_paths = self.get_current_export_paths()
 
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
         self.btn_save_file_main.setEnabled(self.has_cities())
 
         self.preview_image_button.setEnabled(
-            can_preview_image(
-                has_selected_cities,
-                self.last_image_export_settings_path,
-            )
+            can_preview_image(has_selected_cities, export_paths)
         )
         self.btn_export_image.setEnabled(
-            can_export_images(
-                has_selected_cities,
-                self.last_image_export_settings_path,
-                self.last_image_export_output_dir,
-            )
+            can_export_images(has_selected_cities, export_paths)
         )
 
         if has_selected_cities:

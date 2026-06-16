@@ -71,18 +71,19 @@ def build_export_paths_tooltip(export_paths: ExportPaths) -> str:
 
 def can_preview_image(
     has_selected_cities: bool,
-    export_settings_path: str,
+    export_paths: ExportPaths,
 ) -> bool:
-    return has_selected_cities and bool(export_settings_path)
+    return has_selected_cities and bool(export_paths.settings_path)
 
 
 def can_export_images(
     has_selected_cities: bool,
-    export_settings_path: str,
-    export_output_dir: str,
+    export_paths: ExportPaths,
 ) -> bool:
     return (
-        has_selected_cities and bool(export_settings_path) and bool(export_output_dir)
+        has_selected_cities
+        and bool(export_paths.settings_path)
+        and bool(export_paths.output_dir)
     )
 
 
