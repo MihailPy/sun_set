@@ -156,8 +156,10 @@ def test_build_export_action_tooltip():
     assert (
         build_export_action_tooltip(
             has_selected_cities=False,
-            export_settings_path="/tmp/settings.json",
-            export_output_dir="/tmp/export",
+            export_paths=ExportPaths(
+                settings_path="/tmp/settings.json",
+                output_dir="/tmp/export",
+            ),
         )
         == "Выберите один или несколько городов в таблице"
     )
@@ -165,8 +167,10 @@ def test_build_export_action_tooltip():
     assert (
         build_export_action_tooltip(
             has_selected_cities=True,
-            export_settings_path="",
-            export_output_dir="/tmp/export",
+            export_paths=ExportPaths(
+                settings_path="",
+                output_dir="/tmp/export",
+            ),
         )
         == "Выберите файл настроек экспорта"
     )
@@ -174,8 +178,10 @@ def test_build_export_action_tooltip():
     assert (
         build_export_action_tooltip(
             has_selected_cities=True,
-            export_settings_path="/tmp/settings.json",
-            export_output_dir="",
+            export_paths=ExportPaths(
+                settings_path="/tmp/settings.json",
+                output_dir="",
+            ),
         )
         == "Выберите папку экспорта"
     )
@@ -183,8 +189,10 @@ def test_build_export_action_tooltip():
     assert (
         build_export_action_tooltip(
             has_selected_cities=True,
-            export_settings_path="/tmp/settings.json",
-            export_output_dir="/tmp/export",
+            export_paths=ExportPaths(
+                settings_path="/tmp/settings.json",
+                output_dir="/tmp/export",
+            ),
         )
         == ""
     )
