@@ -699,10 +699,7 @@ class MainWindow(QMainWindow):
 
         export_tooltip = build_export_action_tooltip(
             has_selected_cities,
-            ExportPaths(
-                self.last_image_export_settings_path,
-                self.last_image_export_output_dir,
-            ),
+            export_paths,
         )
 
         self.preview_image_button.setToolTip(
