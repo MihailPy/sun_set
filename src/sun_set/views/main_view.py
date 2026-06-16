@@ -797,18 +797,10 @@ class MainWindow(QMainWindow):
         self.load_cities_into_table(project.cities)
 
     def update_export_paths_label(self) -> None:
-        self.export_paths_label.setText(
-            build_export_paths_text(
-                self.last_image_export_settings_path,
-                self.last_image_export_output_dir,
-            )
-        )
-        self.export_paths_label.setToolTip(
-            build_export_paths_tooltip(
-                self.last_image_export_settings_path,
-                self.last_image_export_output_dir,
-            )
-        )
+        export_paths = self.get_current_export_paths()
+
+        self.export_paths_label.setText(build_export_paths_text(export_paths))
+        self.export_paths_label.setToolTip(build_export_paths_tooltip(export_paths))
         self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
