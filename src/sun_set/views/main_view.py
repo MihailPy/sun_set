@@ -894,9 +894,9 @@ class MainWindow(QMainWindow):
         self.combo_weekday2.setCurrentIndex(settings.weekday2)
 
     def apply_export_paths(self, project: ProjectData) -> None:
-        (
-            self.last_image_export_settings_path,
-            self.last_image_export_output_dir,
-        ) = get_export_paths_from_project(project)
+        export_paths = get_export_paths_from_project(project)
+
+        self.last_image_export_settings_path = export_paths.settings_path
+        self.last_image_export_output_dir = export_paths.output_dir
 
         self.update_export_paths_label()

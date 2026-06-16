@@ -184,10 +184,10 @@ def test_get_export_paths_from_project():
         export_output_dir="/tmp/export",
     )
 
-    settings_path, output_dir = get_export_paths_from_project(project)
+    export_paths = get_export_paths_from_project(project)
 
-    assert settings_path == "/tmp/settings.json"
-    assert output_dir == "/tmp/export"
+    assert export_paths.settings_path == "/tmp/settings.json"
+    assert export_paths.output_dir == "/tmp/export"
 
 
 def test_get_export_paths_from_project_without_paths():
@@ -200,10 +200,10 @@ def test_get_export_paths_from_project_without_paths():
         export_output_dir=None,
     )
 
-    settings_path, output_dir = get_export_paths_from_project(project)
+    export_paths = get_export_paths_from_project(project)
 
-    assert settings_path == ""
-    assert output_dir == ""
+    assert export_paths.settings_path == ""
+    assert export_paths.output_dir == ""
 
 
 def test_get_project_settings():
