@@ -884,13 +884,16 @@ class MainWindow(QMainWindow):
     def apply_export_paths(self, project: ProjectData) -> None:
         export_paths = get_export_paths_from_project(project)
 
-        self.last_image_export_settings_path = export_paths.settings_path
-        self.last_image_export_output_dir = export_paths.output_dir
-
-        self.update_export_paths_label()
+        self.set_current_export_paths(export_paths)
 
     def get_current_export_paths(self) -> ExportPaths:
         return ExportPaths(
             settings_path=self.last_image_export_settings_path,
             output_dir=self.last_image_export_output_dir,
         )
+
+    def set_current_export_paths(self, export_paths: ExportPaths) -> None:
+        self.last_image_export_settings_path = export_paths.settings_path
+        self.last_image_export_output_dir = export_paths.output_dir
+
+        self.update_export_paths_label()
