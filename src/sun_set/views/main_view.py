@@ -70,6 +70,7 @@ from sun_set.services.project_state_service import (
     can_export_images,
     can_preview_image,
     get_export_paths_from_project,
+    get_project_settings,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
@@ -886,9 +887,11 @@ class MainWindow(QMainWindow):
         )
 
     def apply_project_settings(self, project: ProjectData) -> None:
-        self.year_spinbox.setValue(project.year)
-        self.combo_weekday1.setCurrentIndex(project.weekday1)
-        self.combo_weekday2.setCurrentIndex(project.weekday2)
+        settings = get_project_settings(project)
+
+        self.year_spinbox.setValue(settings.year)
+        self.combo_weekday1.setCurrentIndex(settings.weekday1)
+        self.combo_weekday2.setCurrentIndex(settings.weekday2)
 
     def apply_export_paths(self, project: ProjectData) -> None:
         (

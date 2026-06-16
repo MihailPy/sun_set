@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from sun_set.models.city import City
@@ -99,4 +100,19 @@ def get_export_paths_from_project(project: ProjectData) -> tuple[str, str]:
     return (
         restore_optional_path(project.export_settings_path),
         restore_optional_path(project.export_output_dir),
+    )
+
+
+@dataclass(frozen=True)
+class ProjectSettings:
+    year: int
+    weekday1: int
+    weekday2: int
+
+
+def get_project_settings(project: ProjectData) -> ProjectSettings:
+    return ProjectSettings(
+        year=project.year,
+        weekday1=project.weekday1,
+        weekday2=project.weekday2,
     )

@@ -7,6 +7,7 @@ from sun_set.services.project_state_service import (
     can_export_images,
     can_preview_image,
     get_export_paths_from_project,
+    get_project_settings,
     normalize_optional_path,
     restore_optional_path,
 )
@@ -203,3 +204,18 @@ def test_get_export_paths_from_project_without_paths():
 
     assert settings_path == ""
     assert output_dir == ""
+
+
+def test_get_project_settings():
+    project = ProjectData(
+        year=2030,
+        weekday1=1,
+        weekday2=6,
+        cities=[],
+    )
+
+    settings = get_project_settings(project)
+
+    assert settings.year == 2030
+    assert settings.weekday1 == 1
+    assert settings.weekday2 == 6
