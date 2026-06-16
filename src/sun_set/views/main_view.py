@@ -63,6 +63,7 @@ from sun_set.services.dialog_service import (
 )
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
+    ExportPaths,
     build_export_action_tooltip,
     build_export_paths_text,
     build_export_paths_tooltip,
@@ -779,13 +780,15 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def build_current_project_data(self) -> ProjectData:
+        export_paths = self.get_current_export_paths()
+
         return build_project_data(
             year=self.year_spinbox.value(),
             weekday1=self.combo_weekday1.currentIndex(),
             weekday2=self.combo_weekday2.currentIndex(),
             cities=self.cities,
-            export_settings_path=self.last_image_export_settings_path,
-            export_output_dir=self.last_image_export_output_dir,
+            export_settings_path=export_paths.settings_path,
+            export_output_dir=export_paths.output_dir,
         )
 
     def apply_project_data(self, project: ProjectData) -> None:
@@ -900,3 +903,9 @@ class MainWindow(QMainWindow):
         self.last_image_export_output_dir = export_paths.output_dir
 
         self.update_export_paths_label()
+
+    def get_current_export_paths(self) -> ExportPaths:
+        return ExportPaths(
+            settings_path=self.last_image_export_settings_path,
+            output_dir=self.last_image_export_output_dir,
+        )
