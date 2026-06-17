@@ -116,3 +116,35 @@ def get_project_settings(project: ProjectData) -> ProjectSettings:
         weekday1=project.weekday1,
         weekday2=project.weekday2,
     )
+
+
+@dataclass
+class ExportPathState:
+    paths: ExportPaths
+
+    @classmethod
+    def empty(cls) -> "ExportPathState":
+        return cls(
+            paths=ExportPaths(
+                settings_path="",
+                output_dir="",
+            )
+        )
+
+    def set_settings_path(self, settings_path: str) -> None:
+        self.paths = ExportPaths(
+            settings_path=settings_path,
+            output_dir=self.paths.output_dir,
+        )
+
+    def set_output_dir(self, output_dir: str) -> None:
+        self.paths = ExportPaths(
+            settings_path=self.paths.settings_path,
+            output_dir=output_dir,
+        )
+
+    def clear_settings_path(self) -> None:
+        self.set_settings_path("")
+
+    def clear_output_dir(self) -> None:
+        self.set_output_dir("")
