@@ -87,8 +87,8 @@ class MainWindow(QMainWindow):
         self.resize(800, 400)
 
         self.file_path: str | None = None
-        self.last_image_export_settings_path: str = ""
-        self.last_image_export_output_dir: str = ""
+        self.current_export_settings_path: str = ""
+        self.current_export_output_dir: str = ""
 
         self.cities: list[City] = []
         self.model: CityTableModel | None = None
@@ -729,7 +729,7 @@ class MainWindow(QMainWindow):
             self,
             "Выберите JSON-файл настроек экспорта",
             "JSON Files (*.json)",
-            self.last_image_export_settings_path,
+            self.current_export_settings_path,
         )
 
         if not settings_file:
@@ -738,7 +738,7 @@ class MainWindow(QMainWindow):
         self.set_current_export_paths(
             ExportPaths(
                 settings_path=settings_file,
-                output_dir=self.last_image_export_output_dir,
+                output_dir=self.current_export_output_dir,
             )
         )
 
@@ -748,7 +748,7 @@ class MainWindow(QMainWindow):
         output_dir = choose_directory(
             self,
             "Выберите папку, куда сохранить изображения",
-            self.last_image_export_output_dir,
+            self.current_export_output_dir,
         )
 
         if not output_dir:
@@ -756,7 +756,7 @@ class MainWindow(QMainWindow):
 
         self.set_current_export_paths(
             ExportPaths(
-                settings_path=self.last_image_export_settings_path,
+                settings_path=self.current_export_settings_path,
                 output_dir=output_dir,
             )
         )
@@ -805,8 +805,8 @@ class MainWindow(QMainWindow):
         self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
-        if self.last_image_export_settings_path:
-            settings_path = Path(self.last_image_export_settings_path)
+        if self.current_export_settings_path:
+            settings_path = Path(self.current_export_settings_path)
 
             if settings_path.exists():
                 return settings_path
@@ -819,15 +819,15 @@ class MainWindow(QMainWindow):
             self.set_current_export_paths(
                 ExportPaths(
                     settings_path="",
-                    output_dir=self.last_image_export_output_dir,
+                    output_dir=self.current_export_output_dir,
                 )
             )
 
         return self.choose_export_settings_file()
 
     def get_export_output_dir(self) -> Path | None:
-        if self.last_image_export_output_dir:
-            output_dir = Path(self.last_image_export_output_dir)
+        if self.current_export_output_dir:
+            output_dir = Path(self.current_export_output_dir)
 
             if output_dir.exists():
                 return output_dir
@@ -839,7 +839,7 @@ class MainWindow(QMainWindow):
             )
             self.set_current_export_paths(
                 ExportPaths(
-                    settings_path=self.last_image_export_settings_path,
+                    settings_path=self.current_export_settings_path,
                     output_dir="",
                 )
             )
@@ -904,12 +904,12 @@ class MainWindow(QMainWindow):
 
     def get_current_export_paths(self) -> ExportPaths:
         return ExportPaths(
-            settings_path=self.last_image_export_settings_path,
-            output_dir=self.last_image_export_output_dir,
+            settings_path=self.current_export_settings_path,
+            output_dir=self.current_export_output_dir,
         )
 
     def set_current_export_paths(self, export_paths: ExportPaths) -> None:
-        self.last_image_export_settings_path = export_paths.settings_path
-        self.last_image_export_output_dir = export_paths.output_dir
+        self.current_export_settings_path = export_paths.settings_path
+        self.current_export_output_dir = export_paths.output_dir
 
         self.update_export_paths_label()
