@@ -1,6 +1,7 @@
 from sun_set.models.project_data import ProjectData
 from sun_set.services.project_state_service import (
     ExportPaths,
+    ExportPathState,
     build_export_action_tooltip,
     build_export_paths_text,
     build_export_paths_tooltip,
@@ -243,3 +244,40 @@ def test_get_project_settings():
     assert settings.year == 2030
     assert settings.weekday1 == 1
     assert settings.weekday2 == 6
+
+
+def test_export_path_state_empty():
+    state = ExportPathState.empty()
+
+    assert state.paths.settings_path == ""
+    assert state.paths.output_dir == ""
+
+
+def test_export_path_state_set_settings_path():
+    state = ExportPathState.empty()
+
+    state.set_settings_path("/tmp/settings.json")
+
+    assert state.paths.settings_path == "/tmp/settings.json"
+    assert state.paths.output_dir == ""
+
+
+def test_export_path_state_set_output_dir():
+    state = ExportPathState.empty()
+
+    state.set_output_dir("/tmp/export")
+
+    assert state.paths.settings_path == ""
+    assert state.paths.output_dir == "/tmp/export"
+
+
+def test_export_path_state_clear_paths():
+    state = ExportPathState.empty()
+    state.set_settings_path("/tmp/settings.json")
+    state.set_output_dir("/tmp/export")
+
+    state.clear_settings_path()
+    state.clear_output_dir()
+
+    assert state.paths.settings_path == ""
+    assert state.paths.output_dir == ""
