@@ -729,7 +729,7 @@ class MainWindow(QMainWindow):
             self,
             "Выберите JSON-файл настроек экспорта",
             "JSON Files (*.json)",
-            self.current_export_settings_path,
+            self.get_current_export_paths().settings_path,
         )
 
         if not settings_file:
@@ -738,7 +738,7 @@ class MainWindow(QMainWindow):
         self.set_current_export_paths(
             ExportPaths(
                 settings_path=settings_file,
-                output_dir=self.current_export_output_dir,
+                output_dir=self.get_current_export_paths().output_dir,
             )
         )
 
@@ -748,7 +748,7 @@ class MainWindow(QMainWindow):
         output_dir = choose_directory(
             self,
             "Выберите папку, куда сохранить изображения",
-            self.current_export_output_dir,
+            self.get_current_export_paths().output_dir,
         )
 
         if not output_dir:
@@ -756,7 +756,7 @@ class MainWindow(QMainWindow):
 
         self.set_current_export_paths(
             ExportPaths(
-                settings_path=self.current_export_settings_path,
+                settings_path=self.get_current_export_paths().settings_path,
                 output_dir=output_dir,
             )
         )
@@ -805,8 +805,8 @@ class MainWindow(QMainWindow):
         self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
-        if self.current_export_settings_path:
-            settings_path = Path(self.current_export_settings_path)
+        if self.get_current_export_paths().settings_path:
+            settings_path = Path(self.get_current_export_paths().settings_path)
 
             if settings_path.exists():
                 return settings_path
@@ -818,16 +818,16 @@ class MainWindow(QMainWindow):
             )
             self.set_current_export_paths(
                 ExportPaths(
-                    settings_path="",
-                    output_dir=self.current_export_output_dir,
+                    settings_path=str(settings_path),
+                    output_dir=self.get_current_export_paths().output_dir,
                 )
             )
 
         return self.choose_export_settings_file()
 
     def get_export_output_dir(self) -> Path | None:
-        if self.current_export_output_dir:
-            output_dir = Path(self.current_export_output_dir)
+        if self.get_current_export_paths().output_dir:
+            output_dir = Path(self.get_current_export_paths().output_dir)
 
             if output_dir.exists():
                 return output_dir
@@ -839,8 +839,8 @@ class MainWindow(QMainWindow):
             )
             self.set_current_export_paths(
                 ExportPaths(
-                    settings_path=self.current_export_settings_path,
-                    output_dir="",
+                    settings_path=self.get_current_export_paths().settings_path,
+                    output_dir=str(output_dir),
                 )
             )
 
