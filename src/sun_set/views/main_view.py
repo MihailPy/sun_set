@@ -64,6 +64,7 @@ from sun_set.services.dialog_service import (
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
     ExportPaths,
+    ExportPathState,
     build_export_action_tooltip,
     build_export_paths_text,
     build_export_paths_tooltip,
@@ -87,8 +88,7 @@ class MainWindow(QMainWindow):
         self.resize(800, 400)
 
         self.file_path: str | None = None
-        self.current_export_settings_path: str = ""
-        self.current_export_output_dir: str = ""
+        self.export_path_state = ExportPathState.empty()
 
         self.cities: list[City] = []
         self.model: CityTableModel | None = None
@@ -903,13 +903,8 @@ class MainWindow(QMainWindow):
         self.set_current_export_paths(export_paths)
 
     def get_current_export_paths(self) -> ExportPaths:
-        return ExportPaths(
-            settings_path=self.current_export_settings_path,
-            output_dir=self.current_export_output_dir,
-        )
+        return self.export_path_state.paths
 
     def set_current_export_paths(self, export_paths: ExportPaths) -> None:
-        self.current_export_settings_path = export_paths.settings_path
-        self.current_export_output_dir = export_paths.output_dir
-
+        self.export_path_state.paths = export_paths
         self.update_export_paths_label()
