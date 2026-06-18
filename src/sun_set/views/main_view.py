@@ -799,11 +799,11 @@ class MainWindow(QMainWindow):
         self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
-        if self.get_current_export_paths().settings_path:
-            settings_path = Path(self.get_current_export_paths().settings_path)
+        export_paths = self.get_current_export_paths()
 
-            if export_settings_path_exists(self.get_current_export_paths()):
-                return settings_path
+        if export_paths.settings_path:
+            if export_settings_path_exists(export_paths):
+                return Path(export_paths.settings_path)
 
             show_warning(
                 self,
