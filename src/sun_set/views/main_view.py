@@ -808,12 +808,8 @@ class MainWindow(QMainWindow):
                 "Настройки экспорта",
                 "Сохранённый файл настроек экспорта не найден. Выберите файл заново.",
             )
-            self.set_current_export_paths(
-                ExportPaths(
-                    settings_path=str(settings_path),
-                    output_dir=self.get_current_export_paths().output_dir,
-                )
-            )
+            self.export_path_state.set_settings_path(str(settings_path))
+            self.update_export_paths_label()
 
         return self.choose_export_settings_file()
 
@@ -829,12 +825,8 @@ class MainWindow(QMainWindow):
                 "Экспорт изображений",
                 "Сохранённая папка экспорта не найдена. Выберите папку заново.",
             )
-            self.set_current_export_paths(
-                ExportPaths(
-                    settings_path=self.get_current_export_paths().settings_path,
-                    output_dir=str(output_dir),
-                )
-            )
+            self.export_path_state.clear_output_dir()
+            self.update_export_paths_label()
 
         return self.choose_image_export_output_dir()
 
