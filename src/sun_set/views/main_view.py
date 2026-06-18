@@ -735,12 +735,8 @@ class MainWindow(QMainWindow):
         if not settings_file:
             return None
 
-        self.set_current_export_paths(
-            ExportPaths(
-                settings_path=settings_file,
-                output_dir=self.get_current_export_paths().output_dir,
-            )
-        )
+        self.export_path_state.set_settings_path(str(settings_file))
+        self.update_export_paths_label()
 
         return Path(settings_file)
 
@@ -754,12 +750,8 @@ class MainWindow(QMainWindow):
         if not output_dir:
             return None
 
-        self.set_current_export_paths(
-            ExportPaths(
-                settings_path=self.get_current_export_paths().settings_path,
-                output_dir=output_dir,
-            )
-        )
+        self.export_path_state.set_output_dir(str(output_dir))
+        self.update_export_paths_label()
 
         return Path(output_dir)
 
