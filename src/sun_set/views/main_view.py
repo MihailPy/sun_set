@@ -816,11 +816,11 @@ class MainWindow(QMainWindow):
         return self.choose_export_settings_file()
 
     def get_export_output_dir(self) -> Path | None:
-        if self.get_current_export_paths().output_dir:
-            output_dir = Path(self.get_current_export_paths().output_dir)
+        export_paths = self.get_current_export_paths()
 
-            if export_output_dir_exists(self.get_current_export_paths()):
-                return output_dir
+        if export_paths.output_dir:
+            if export_output_dir_exists(export_paths):
+                return Path(export_paths.output_dir)
 
             show_warning(
                 self,
