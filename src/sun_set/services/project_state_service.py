@@ -148,3 +148,6 @@ class ExportPathState:
 
     def clear_output_dir(self) -> None:
         self.set_output_dir("")
+
+    def set_paths(self, paths: ExportPaths) -> None:
+        self.paths = paths

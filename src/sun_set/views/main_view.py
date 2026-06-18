@@ -906,5 +906,5 @@ class MainWindow(QMainWindow):
         return self.export_path_state.paths
 
     def set_current_export_paths(self, export_paths: ExportPaths) -> None:
-        self.export_path_state.paths = export_paths
+        self.export_path_state.set_paths(export_paths)
         self.update_export_paths_label()

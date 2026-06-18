@@ -355,8 +355,11 @@ class TestMainWindow:
 
         main_window.apply_project_data(project)
 
-        assert main_window.current_export_settings_path == "/tmp/export_settings.json"
-        assert main_window.current_export_output_dir == "/tmp/export"
+        assert (
+            main_window.get_current_export_paths().settings_path
+            == "/tmp/export_settings.json"
+        )
+        assert main_window.get_current_export_paths().output_dir == "/tmp/export"
 
         export_paths_text = main_window.export_paths_label.text()
         assert "export_settings.json" in export_paths_text
