@@ -281,3 +281,17 @@ def test_export_path_state_clear_paths():
 
     assert state.paths.settings_path == ""
     assert state.paths.output_dir == ""
+
+
+def test_export_path_state_set_paths():
+    state = ExportPathState.empty()
+
+    state.set_paths(
+        ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="/tmp/export",
+        )
+    )
+
+    assert state.paths.settings_path == "/tmp/settings.json"
+    assert state.paths.output_dir == "/tmp/export"
