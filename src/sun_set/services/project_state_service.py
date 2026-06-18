@@ -118,6 +118,16 @@ def get_project_settings(project: ProjectData) -> ProjectSettings:
     )
 
 
+def export_settings_path_exists(export_paths: ExportPaths) -> bool:
+    return (
+        bool(export_paths.settings_path) and Path(export_paths.settings_path).exists()
+    )
+
+
+def export_output_dir_exists(export_paths: ExportPaths) -> bool:
+    return bool(export_paths.output_dir) and Path(export_paths.output_dir).exists()
+
+
 @dataclass
 class ExportPathState:
     paths: ExportPaths

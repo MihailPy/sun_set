@@ -71,6 +71,8 @@ from sun_set.services.project_state_service import (
     build_project_data,
     can_export_images,
     can_preview_image,
+    export_output_dir_exists,
+    export_settings_path_exists,
     get_export_paths_from_project,
     get_project_settings,
 )
@@ -800,7 +802,7 @@ class MainWindow(QMainWindow):
         if self.get_current_export_paths().settings_path:
             settings_path = Path(self.get_current_export_paths().settings_path)
 
-            if settings_path.exists():
+            if export_settings_path_exists(self.get_current_export_paths()):
                 return settings_path
 
             show_warning(
@@ -817,7 +819,7 @@ class MainWindow(QMainWindow):
         if self.get_current_export_paths().output_dir:
             output_dir = Path(self.get_current_export_paths().output_dir)
 
-            if output_dir.exists():
+            if export_output_dir_exists(self.get_current_export_paths()):
                 return output_dir
 
             show_warning(
