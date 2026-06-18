@@ -8,6 +8,8 @@ from sun_set.services.project_state_service import (
     build_project_data,
     can_export_images,
     can_preview_image,
+    export_output_dir_exists,
+    export_settings_path_exists,
     get_export_paths_from_project,
     get_project_settings,
     normalize_optional_path,
@@ -295,3 +297,42 @@ def test_export_path_state_set_paths():
 
     assert state.paths.settings_path == "/tmp/settings.json"
     assert state.paths.output_dir == "/tmp/export"
+
+
+def test_export_settings_path_exists(tmp_path):
+    settings_path = tmp_path / "settings.json"
+    settings_path.write_text("{}", encoding="utf-8")
+
+    export_paths = ExportPaths(
+        settings_path=str(settings_path),
+        output_dir="",
+    )
+
+    assert export_settings_path_exists(export_paths)
+
+
+def test_export_settings_path_exists_returns_false_for_missing_file(tmp_path):
+    export_paths = ExportPaths(
+        settings_path=str(tmp_path / "missing.json"),
+        output_dir="",
+    )
+
+    assert not export_settings_path_exists(export_paths)
+
+
+def test_export_output_dir_exists(tmp_path):
+    export_paths = ExportPaths(
+        settings_path="",
+        output_dir=str(tmp_path),
+    )
+
+    assert export_output_dir_exists(export_paths)
+
+
+def test_export_output_dir_exists_returns_false_for_missing_dir(tmp_path):
+    export_paths = ExportPaths(
+        settings_path="",
+        output_dir=str(tmp_path / "missing"),
+    )
+
+    assert not export_output_dir_exists(export_paths)
