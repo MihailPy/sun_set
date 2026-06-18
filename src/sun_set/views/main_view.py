@@ -808,7 +808,7 @@ class MainWindow(QMainWindow):
                 "Настройки экспорта",
                 "Сохранённый файл настроек экспорта не найден. Выберите файл заново.",
             )
-            self.export_path_state.set_settings_path(str(settings_path))
+            self.export_path_state.clear_settings_path()
             self.update_export_paths_label()
 
         return self.choose_export_settings_file()
