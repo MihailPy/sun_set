@@ -884,11 +884,8 @@ class MainWindow(QMainWindow):
     def apply_export_paths(self, project: ProjectData) -> None:
         export_paths = get_export_paths_from_project(project)
 
-        self.set_current_export_paths(export_paths)
+        self.export_path_state.set_paths(export_paths)
+        self.update_export_paths_label()
 
     def get_current_export_paths(self) -> ExportPaths:
         return self.export_path_state.paths
-
-    def set_current_export_paths(self, export_paths: ExportPaths) -> None:
-        self.export_path_state.set_paths(export_paths)
-        self.update_export_paths_label()
