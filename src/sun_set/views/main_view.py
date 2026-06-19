@@ -35,8 +35,6 @@ from sun_set.image_export.service import (
     ExportResult,
     build_city_image_preview,
     build_export_summary_message,
-    export_cities_images,
-    save_export_report,
 )
 from sun_set.image_export.settings import (
     create_default_export_settings,
@@ -65,6 +63,7 @@ from sun_set.services.dialog_service import (
     show_error,
     show_warning,
 )
+from sun_set.services.image_export_workflow import export_selected_city_images
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
     ExportPaths,
@@ -490,13 +489,12 @@ class MainWindow(QMainWindow):
         if output_dir is None:
             return
 
-        results = export_cities_images(
+        results = export_selected_city_images(
             cities=cities,
             settings_path=settings_path,
             output_dir=output_dir,
         )
 
-        save_export_report(results, output_dir)
         self.show_image_export_result(results, output_dir)
 
     def preview_selected_city_image(self) -> None:
