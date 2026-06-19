@@ -724,11 +724,13 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(self.build_status_bar_text())
 
     def update_window_title(self) -> None:
-        if self.file_path is None:
+        file_name = self.get_current_file_name()
+
+        if file_name is None:
             self.setWindowTitle("Sun Set")
             return
 
-        self.setWindowTitle(f"Sun Set — {Path(self.file_path).name}")
+        self.setWindowTitle(f"Sun Set — {file_name}")
 
     def choose_export_settings_file(self) -> Path | None:
         settings_file = choose_file(
@@ -860,10 +862,12 @@ class MainWindow(QMainWindow):
         return bool(self.cities)
 
     def get_status_file_text(self) -> str:
-        if self.file_path is None:
+        file_name = self.get_current_file_name()
+
+        if file_name is None:
             return "Файл не открыт"
 
-        return f"Файл: {Path(self.file_path).name}"
+        return f"Файл: {file_name}"
 
     def build_status_bar_text(self) -> str:
         return (
@@ -895,3 +899,9 @@ class MainWindow(QMainWindow):
 
     def get_current_export_paths(self) -> ExportPaths:
         return self.export_path_state.paths
+
+    def get_current_file_name(self) -> str | None:
+        if self.file_path is None:
+            return None
+
+        return Path(self.file_path).name
