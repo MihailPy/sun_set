@@ -21,6 +21,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from sun_set.constants.messages import (
+    MISSING_EXPORT_OUTPUT_DIR_MESSAGE,
+    MISSING_EXPORT_SETTINGS_FILE_MESSAGE,
+)
 from sun_set.constants.project_defaults import (
     DEFAULT_WEEKDAY_1,
     DEFAULT_WEEKDAY_2,
@@ -808,7 +812,7 @@ class MainWindow(QMainWindow):
             show_warning(
                 self,
                 "Настройки экспорта",
-                "Сохранённый файл настроек экспорта не найден. Выберите файл заново.",
+                MISSING_EXPORT_SETTINGS_FILE_MESSAGE,
             )
             self.export_path_state.clear_settings_path()
             self.update_export_paths_label()
@@ -825,7 +829,7 @@ class MainWindow(QMainWindow):
             show_warning(
                 self,
                 "Экспорт изображений",
-                "Сохранённая папка экспорта не найдена. Выберите папку заново.",
+                MISSING_EXPORT_OUTPUT_DIR_MESSAGE,
             )
             self.export_path_state.clear_output_dir()
             self.update_export_paths_label()
