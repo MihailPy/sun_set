@@ -1,6 +1,11 @@
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from sun_set.services.image_export_workflow import export_selected_city_images
+from PIL import Image
+
+from sun_set.services.image_export_workflow import (
+    build_selected_city_preview_image,
+    export_selected_city_images,
+)
 
 
 @patch("sun_set.services.image_export_workflow.save_export_report")
@@ -30,3 +35,23 @@ def test_export_selected_city_images(
         output_dir=output_dir,
     )
     mock_save_export_report.assert_called_once_with(results, output_dir)
+
+
+@patch("sun_set.services.image_export_workflow.build_city_image_preview")
+def test_build_selected_city_preview_image(mock_build_city_image_preview, tmp_path):
+    city = Mock()
+    settings_path = tmp_path / "settings.json"
+    image = Mock(spec=Image.Image)
+
+    mock_build_city_image_preview.return_value = image
+
+    result = build_selected_city_preview_image(
+        city=city,
+        settings_path=settings_path,
+    )
+
+    assert result == image
+    mock_build_city_image_preview.assert_called_once_with(
+        city=city,
+        settings_path=settings_path,
+    )
