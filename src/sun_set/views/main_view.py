@@ -33,7 +33,6 @@ from sun_set.constants.project_defaults import (
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
     ExportResult,
-    build_export_summary_message,
 )
 from sun_set.image_export.settings import (
     create_default_export_settings,
@@ -63,6 +62,7 @@ from sun_set.services.dialog_service import (
     show_warning,
 )
 from sun_set.services.image_export_workflow import (
+    build_image_export_result_message,
     build_selected_city_preview_image,
     export_selected_city_images,
 )
@@ -768,7 +768,7 @@ class MainWindow(QMainWindow):
         results: list[ExportResult],
         output_dir: Path,
     ) -> None:
-        message = build_export_summary_message(results)
+        message = build_image_export_result_message(results)
 
         if ask_open_folder_after_export(self, message):
             open_directory(output_dir)

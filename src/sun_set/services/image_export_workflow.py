@@ -5,6 +5,7 @@ from PIL import Image
 from sun_set.image_export.service import (
     ExportResult,
     build_city_image_preview,
+    build_export_summary_message,
     export_cities_images,
     save_export_report,
 )
@@ -35,3 +36,7 @@ def build_selected_city_preview_image(
         city=city,
         settings_path=settings_path,
     )
+
+
+def build_image_export_result_message(results: list[ExportResult]) -> str:
+    return build_export_summary_message(results)
