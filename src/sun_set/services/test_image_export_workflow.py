@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 from PIL import Image
 
 from sun_set.services.image_export_workflow import (
+    build_image_export_result_message,
     build_selected_city_preview_image,
     export_selected_city_images,
 )
@@ -55,3 +56,14 @@ def test_build_selected_city_preview_image(mock_build_city_image_preview, tmp_pa
         city=city,
         settings_path=settings_path,
     )
+
+
+@patch("sun_set.services.image_export_workflow.build_export_summary_message")
+def test_build_image_export_result_message(mock_build_export_summary_message):
+    results = []
+    mock_build_export_summary_message.return_value = "Готово: 0\nОшибки: 0"
+
+    message = build_image_export_result_message(results)
+
+    assert message == "Готово: 0\nОшибки: 0"
+    mock_build_export_summary_message.assert_called_once_with(results)
