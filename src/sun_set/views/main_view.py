@@ -52,19 +52,17 @@ from sun_set.services.city_service import (
     update_city_sunset,
 )
 from sun_set.services.dialog_service import (
-    ask_open_folder_after_export,
     ask_retry,
     choose_directory,
     choose_file,
     choose_save_file,
-    open_directory,
     show_error,
     show_warning,
 )
 from sun_set.services.image_export_workflow import (
-    build_image_export_result_message,
     build_selected_city_preview_image,
     export_selected_city_images,
+    show_image_export_result_dialog,
 )
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
@@ -768,10 +766,11 @@ class MainWindow(QMainWindow):
         results: list[ExportResult],
         output_dir: Path,
     ) -> None:
-        message = build_image_export_result_message(results)
-
-        if ask_open_folder_after_export(self, message):
-            open_directory(output_dir)
+        show_image_export_result_dialog(
+            self,
+            results,
+            output_dir,
+        )
 
     def show_image_preview(self, image: Image.Image) -> None:
         dialog = ImagePreviewDialog(

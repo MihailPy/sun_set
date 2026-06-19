@@ -10,6 +10,10 @@ from sun_set.image_export.service import (
     save_export_report,
 )
 from sun_set.models.city import City
+from sun_set.services.dialog_service import (
+    ask_open_folder_after_export,
+    open_directory,
+)
 
 
 def export_selected_city_images(
@@ -40,3 +44,14 @@ def build_selected_city_preview_image(
 
 def build_image_export_result_message(results: list[ExportResult]) -> str:
     return build_export_summary_message(results)
+
+
+def show_image_export_result_dialog(
+    parent,
+    results: list[ExportResult],
+    output_dir: Path,
+) -> None:
+    message = build_image_export_result_message(results)
+
+    if ask_open_folder_after_export(parent, message):
+        open_directory(output_dir)
