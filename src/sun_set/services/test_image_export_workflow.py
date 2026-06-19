@@ -6,6 +6,7 @@ from sun_set.services.image_export_workflow import (
     build_image_export_result_message,
     build_selected_city_preview_image,
     export_selected_city_images,
+    show_image_export_result_dialog,
 )
 
 
@@ -67,3 +68,46 @@ def test_build_image_export_result_message(mock_build_export_summary_message):
 
     assert message == "Готово: 0\nОшибки: 0"
     mock_build_export_summary_message.assert_called_once_with(results)
+
+
+@patch("sun_set.services.image_export_workflow.open_directory")
+@patch("sun_set.services.image_export_workflow.ask_open_folder_after_export")
+@patch("sun_set.services.image_export_workflow.build_image_export_result_message")
+def test_show_image_export_result_dialog_opens_folder(
+    mock_build_message,
+    mock_ask_open_folder,
+    mock_open_directory,
+    tmp_path,
+):
+    parent = Mock()
+    results = []
+    output_dir = tmp_path
+
+    mock_build_message.return_value = "Готово: 0\nОшибки: 0"
+    mock_ask_open_folder.return_value = True
+
+    show_image_export_result_dialog(parent, results, output_dir)
+
+    mock_ask_open_folder.assert_called_once_with(parent, "Готово: 0\nОшибки: 0")
+    mock_open_directory.assert_called_once_with(output_dir)
+
+
+@patch("sun_set.services.image_export_workflow.open_directory")
+@patch("sun_set.services.image_export_workflow.ask_open_folder_after_export")
+@patch("sun_set.services.image_export_workflow.build_image_export_result_message")
+def test_show_image_export_result_dialog_does_not_open_folder(
+    mock_build_message,
+    mock_ask_open_folder,
+    mock_open_directory,
+    tmp_path,
+):
+    parent = Mock()
+    results = []
+    output_dir = tmp_path
+
+    mock_build_message.return_value = "Готово: 0\nОшибки: 0"
+    mock_ask_open_folder.return_value = False
+
+    show_image_export_result_dialog(parent, results, output_dir)
+
+    mock_open_directory.assert_not_called()
