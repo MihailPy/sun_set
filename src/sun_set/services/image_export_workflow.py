@@ -1,7 +1,10 @@
 from pathlib import Path
 
+from PIL import Image
+
 from sun_set.image_export.service import (
     ExportResult,
+    build_city_image_preview,
     export_cities_images,
     save_export_report,
 )
@@ -22,3 +25,13 @@ def export_selected_city_images(
     save_export_report(results, output_dir)
 
     return results
+
+
+def build_selected_city_preview_image(
+    city: City,
+    settings_path: Path,
+) -> Image.Image:
+    return build_city_image_preview(
+        city=city,
+        settings_path=settings_path,
+    )

@@ -33,7 +33,6 @@ from sun_set.constants.project_defaults import (
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
     ExportResult,
-    build_city_image_preview,
     build_export_summary_message,
 )
 from sun_set.image_export.settings import (
@@ -63,7 +62,10 @@ from sun_set.services.dialog_service import (
     show_error,
     show_warning,
 )
-from sun_set.services.image_export_workflow import export_selected_city_images
+from sun_set.services.image_export_workflow import (
+    build_selected_city_preview_image,
+    export_selected_city_images,
+)
 from sun_set.services.project_file_service import load_project, save_project
 from sun_set.services.project_state_service import (
     ExportPaths,
@@ -513,7 +515,7 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            image = build_city_image_preview(
+            image = build_selected_city_preview_image(
                 city=city,
                 settings_path=settings_path,
             )
