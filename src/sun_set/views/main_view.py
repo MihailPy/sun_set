@@ -57,6 +57,7 @@ from sun_set.services.dialog_service import (
     show_warning,
 )
 from sun_set.services.image_export_workflow import (
+    build_image_export_request,
     build_selected_city_preview_image,
     export_selected_city_images,
     show_image_export_result_dialog,
@@ -485,6 +486,13 @@ class MainWindow(QMainWindow):
         output_dir = self.get_export_output_dir()
         if output_dir is None:
             return
+
+        request = build_image_export_request(
+            cities=cities,
+            settings_path=settings_path,
+            output_dir=output_dir,
+        )
+        print(request)
 
         results = export_selected_city_images(
             cities=cities,

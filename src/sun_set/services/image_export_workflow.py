@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image
@@ -14,6 +15,13 @@ from sun_set.services.dialog_service import (
     ask_open_folder_after_export,
     open_directory,
 )
+
+
+@dataclass(frozen=True)
+class ImageExportRequest:
+    cities: list[City]
+    settings_path: Path
+    output_dir: Path | None = None
 
 
 def export_selected_city_images(
@@ -55,3 +63,15 @@ def show_image_export_result_dialog(
 
     if ask_open_folder_after_export(parent, message):
         open_directory(output_dir)
+
+
+def build_image_export_request(
+    cities: list[City],
+    settings_path: Path,
+    output_dir: Path | None = None,
+) -> ImageExportRequest:
+    return ImageExportRequest(
+        cities=cities,
+        settings_path=settings_path,
+        output_dir=output_dir,
+    )
