@@ -58,6 +58,7 @@ from sun_set.services.dialog_service import (
 )
 from sun_set.services.image_export_workflow import (
     build_image_export_request,
+    build_image_preview_request,
     build_selected_city_preview_image,
     export_selected_city_images,
     show_image_export_result_dialog,
@@ -517,10 +518,12 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            image = build_selected_city_preview_image(
+            request = build_image_preview_request(
                 city=city,
                 settings_path=settings_path,
             )
+
+            image = build_selected_city_preview_image(request)
         except Exception as error:
             show_error(
                 self,

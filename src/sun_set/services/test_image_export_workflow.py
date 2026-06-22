@@ -5,6 +5,7 @@ from PIL import Image
 from sun_set.services.image_export_workflow import (
     ImageExportRequest,
     build_image_export_result_message,
+    build_image_preview_request,
     build_selected_city_preview_image,
     export_selected_city_images,
     show_image_export_result_dialog,
@@ -50,10 +51,12 @@ def test_build_selected_city_preview_image(mock_build_city_image_preview, tmp_pa
 
     mock_build_city_image_preview.return_value = image
 
-    result = build_selected_city_preview_image(
+    request = build_image_preview_request(
         city=city,
         settings_path=settings_path,
     )
+
+    result = build_selected_city_preview_image(request)
 
     assert result == image
     mock_build_city_image_preview.assert_called_once_with(

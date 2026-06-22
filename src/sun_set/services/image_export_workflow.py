@@ -24,6 +24,12 @@ class ImageExportRequest:
     output_dir: Path
 
 
+@dataclass(frozen=True)
+class ImagePreviewRequest:
+    city: City
+    settings_path: Path
+
+
 def export_selected_city_images(
     request: ImageExportRequest,
 ) -> list[ExportResult]:
@@ -39,12 +45,11 @@ def export_selected_city_images(
 
 
 def build_selected_city_preview_image(
-    city: City,
-    settings_path: Path,
+    request: ImagePreviewRequest,
 ) -> Image.Image:
     return build_city_image_preview(
-        city=city,
-        settings_path=settings_path,
+        city=request.city,
+        settings_path=request.settings_path,
     )
 
 
@@ -72,4 +77,14 @@ def build_image_export_request(
         cities=cities,
         settings_path=settings_path,
         output_dir=output_dir,
+    )
+
+
+def build_image_preview_request(
+    city: City,
+    settings_path: Path,
+) -> ImagePreviewRequest:
+    return ImagePreviewRequest(
+        city=city,
+        settings_path=settings_path,
     )
