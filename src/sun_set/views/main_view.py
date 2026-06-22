@@ -31,9 +31,6 @@ from sun_set.constants.project_defaults import (
     get_default_project_year,
 )
 from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
-from sun_set.image_export.service import (
-    ExportResult,
-)
 from sun_set.image_export.settings import (
     create_default_export_settings,
     load_export_settings,
@@ -495,7 +492,11 @@ class MainWindow(QMainWindow):
             output_dir=output_dir,
         )
 
-        self.show_image_export_result(results, output_dir)
+        show_image_export_result_dialog(
+            self,
+            results,
+            output_dir,
+        )
 
     def preview_selected_city_image(self) -> None:
         city = self.get_current_city_or_none()
@@ -760,17 +761,6 @@ class MainWindow(QMainWindow):
         self.update_export_paths_label()
 
         return Path(output_dir)
-
-    def show_image_export_result(
-        self,
-        results: list[ExportResult],
-        output_dir: Path,
-    ) -> None:
-        show_image_export_result_dialog(
-            self,
-            results,
-            output_dir,
-        )
 
     def show_image_preview(self, image: Image.Image) -> None:
         dialog = ImagePreviewDialog(
