@@ -21,21 +21,19 @@ from sun_set.services.dialog_service import (
 class ImageExportRequest:
     cities: list[City]
     settings_path: Path
-    output_dir: Path | None = None
+    output_dir: Path
 
 
 def export_selected_city_images(
-    cities: list[City],
-    settings_path: Path,
-    output_dir: Path,
+    request: ImageExportRequest,
 ) -> list[ExportResult]:
     results = export_cities_images(
-        cities=cities,
-        settings_path=settings_path,
-        output_dir=output_dir,
+        cities=request.cities,
+        settings_path=request.settings_path,
+        output_dir=request.output_dir,
     )
 
-    save_export_report(results, output_dir)
+    save_export_report(results, request.output_dir)
 
     return results
 
@@ -68,7 +66,7 @@ def show_image_export_result_dialog(
 def build_image_export_request(
     cities: list[City],
     settings_path: Path,
-    output_dir: Path | None = None,
+    output_dir: Path,
 ) -> ImageExportRequest:
     return ImageExportRequest(
         cities=cities,

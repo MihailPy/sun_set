@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 from PIL import Image
 
 from sun_set.services.image_export_workflow import (
+    ImageExportRequest,
     build_image_export_result_message,
     build_selected_city_preview_image,
     export_selected_city_images,
@@ -24,17 +25,19 @@ def test_export_selected_city_images(
     results = []
     mock_export_cities_images.return_value = results
 
-    actual_results = export_selected_city_images(
+    request = ImageExportRequest(
         cities=cities,
         settings_path=settings_path,
         output_dir=output_dir,
     )
 
+    actual_results = export_selected_city_images(request)
+
     assert actual_results == results
     mock_export_cities_images.assert_called_once_with(
-        cities=cities,
-        settings_path=settings_path,
-        output_dir=output_dir,
+        cities=request.cities,
+        settings_path=request.settings_path,
+        output_dir=request.output_dir,
     )
     mock_save_export_report.assert_called_once_with(results, output_dir)
 

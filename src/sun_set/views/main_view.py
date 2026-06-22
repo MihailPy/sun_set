@@ -492,13 +492,8 @@ class MainWindow(QMainWindow):
             settings_path=settings_path,
             output_dir=output_dir,
         )
-        print(request)
 
-        results = export_selected_city_images(
-            cities=cities,
-            settings_path=settings_path,
-            output_dir=output_dir,
-        )
+        results = export_selected_city_images(request)
 
         show_image_export_result_dialog(
             self,
