@@ -517,12 +517,12 @@ class MainWindow(QMainWindow):
         if settings_path is None:
             return
 
-        try:
-            request = build_image_preview_request(
-                city=city,
-                settings_path=settings_path,
-            )
+        request = build_image_preview_request(
+            city=city,
+            settings_path=settings_path,
+        )
 
+        try:
             image = build_selected_city_preview_image(request)
         except Exception as error:
             show_error(
