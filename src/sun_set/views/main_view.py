@@ -602,7 +602,6 @@ class MainWindow(QMainWindow):
             return
 
         self.file_path = file_path
-        self.update_window_title()
         self.apply_project_data(project)
         self.update_window_title()
         self.update_action_buttons_state()
