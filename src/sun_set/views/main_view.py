@@ -57,6 +57,7 @@ from sun_set.services.dialog_service import (
     show_warning,
 )
 from sun_set.services.image_export_workflow import (
+    ImageExportSuccessResult,
     build_image_export_request,
     build_image_preview_request,
     build_selected_city_preview_image,
@@ -497,15 +498,12 @@ class MainWindow(QMainWindow):
 
         execution_result = execute_image_export(request)
 
-        if not execution_result.success:
+        if not isinstance(execution_result, ImageExportSuccessResult):
             show_error(
                 self,
                 "Ошибка экспорта изображений",
                 execution_result.error_message,
             )
-            return
-
-        if execution_result.results is None:
             return
 
         show_image_export_result_dialog(

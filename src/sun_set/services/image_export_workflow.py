@@ -32,10 +32,16 @@ class ImagePreviewRequest:
 
 
 @dataclass(frozen=True)
-class ImageExportExecutionResult:
-    success: bool
-    results: list[ExportResult] | None = None
-    error_message: str = ""
+class ImageExportSuccessResult:
+    results: list[ExportResult]
+
+
+@dataclass(frozen=True)
+class ImageExportErrorResult:
+    error_message: str
+
+
+ImageExportExecutionResult = ImageExportSuccessResult | ImageExportErrorResult
 
 
 def export_selected_city_images(
@@ -107,14 +113,9 @@ def execute_image_export(
 ) -> ImageExportExecutionResult:
     try:
         results = export_selected_city_images(request)
-
-        return ImageExportExecutionResult(
-            success=True,
-            results=results,
-        )
+        return ImageExportSuccessResult(results=results)
 
     except Exception as error:
-        return ImageExportExecutionResult(
-            success=False,
-            error_message=get_image_export_error_message(error),
+        return ImageExportErrorResult(
+            error_message=get_image_export_error_message(error)
         )
