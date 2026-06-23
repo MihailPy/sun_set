@@ -31,6 +31,13 @@ class ImagePreviewRequest:
     settings_path: Path
 
 
+@dataclass(frozen=True)
+class ImageExportExecutionResult:
+    success: bool
+    results: list[ExportResult] | None = None
+    error_message: str = ""
+
+
 def export_selected_city_images(
     request: ImageExportRequest,
 ) -> list[ExportResult]:
@@ -93,3 +100,21 @@ def build_image_preview_request(
 
 def get_image_export_error_message(error: Exception) -> str:
     return get_user_friendly_error(error)
+
+
+def execute_image_export(
+    request: ImageExportRequest,
+) -> ImageExportExecutionResult:
+    try:
+        results = export_selected_city_images(request)
+
+        return ImageExportExecutionResult(
+            success=True,
+            results=results,
+        )
+
+    except Exception as error:
+        return ImageExportExecutionResult(
+            success=False,
+            error_message=get_image_export_error_message(error),
+        )
