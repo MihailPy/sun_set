@@ -495,7 +495,15 @@ class MainWindow(QMainWindow):
             output_dir=output_dir,
         )
 
-        results = export_selected_city_images(request)
+        try:
+            results = export_selected_city_images(request)
+        except Exception as error:
+            show_error(
+                self,
+                "Ошибка экспорта изображений",
+                get_image_export_error_message(error),
+            )
+            return
 
         show_image_export_result_dialog(
             self,
