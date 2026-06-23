@@ -58,10 +58,11 @@ from sun_set.services.dialog_service import (
 )
 from sun_set.services.image_export_workflow import (
     ImageExportSuccessResult,
+    ImagePreviewSuccessResult,
     build_image_export_request,
     build_image_preview_request,
-    build_selected_city_preview_image,
     execute_image_export,
+    execute_image_preview,
     get_image_export_error_message,
     show_image_export_result_dialog,
 )
@@ -532,17 +533,17 @@ class MainWindow(QMainWindow):
             settings_path=settings_path,
         )
 
-        try:
-            image = build_selected_city_preview_image(request)
-        except Exception as error:
+        execution_result = execute_image_preview(request)
+
+        if not isinstance(execution_result, ImagePreviewSuccessResult):
             show_error(
                 self,
                 "Ошибка предпросмотра",
-                get_image_export_error_message(error),
+                execution_result.error_message,
             )
             return
 
-        self.show_image_preview(image)
+        self.show_image_preview(execution_result.image)
 
     def edit_image_export_settings(self) -> None:
         settings_path = self.get_export_settings_path()

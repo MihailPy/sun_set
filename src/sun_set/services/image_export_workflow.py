@@ -44,6 +44,19 @@ class ImageExportErrorResult:
 ImageExportExecutionResult = ImageExportSuccessResult | ImageExportErrorResult
 
 
+@dataclass(frozen=True)
+class ImagePreviewSuccessResult:
+    image: Image.Image
+
+
+@dataclass(frozen=True)
+class ImagePreviewErrorResult:
+    error_message: str
+
+
+ImagePreviewExecutionResult = ImagePreviewSuccessResult | ImagePreviewErrorResult
+
+
 def export_selected_city_images(
     request: ImageExportRequest,
 ) -> list[ExportResult]:
@@ -117,5 +130,18 @@ def execute_image_export(
 
     except Exception as error:
         return ImageExportErrorResult(
+            error_message=get_image_export_error_message(error)
+        )
+
+
+def execute_image_preview(
+    request: ImagePreviewRequest,
+) -> ImagePreviewExecutionResult:
+    try:
+        image = build_selected_city_preview_image(request)
+        return ImagePreviewSuccessResult(image=image)
+
+    except Exception as error:
+        return ImagePreviewErrorResult(
             error_message=get_image_export_error_message(error)
         )
