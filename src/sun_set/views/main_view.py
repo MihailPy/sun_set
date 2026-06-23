@@ -30,7 +30,7 @@ from sun_set.constants.project_defaults import (
     DEFAULT_WEEKDAY_2,
     get_default_project_year,
 )
-from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
+from sun_set.image_export.errors import ImageExportError
 from sun_set.image_export.settings import (
     create_default_export_settings,
     load_export_settings,
@@ -61,6 +61,7 @@ from sun_set.services.image_export_workflow import (
     build_image_preview_request,
     build_selected_city_preview_image,
     export_selected_city_images,
+    get_image_export_error_message,
     show_image_export_result_dialog,
 )
 from sun_set.services.project_file_service import load_project, save_project
@@ -528,7 +529,7 @@ class MainWindow(QMainWindow):
             show_error(
                 self,
                 "Ошибка предпросмотра",
-                get_user_friendly_error(error),
+                get_image_export_error_message(error),
             )
             return
 
@@ -545,7 +546,7 @@ class MainWindow(QMainWindow):
             show_error(
                 self,
                 "Ошибка настроек экспорта",
-                get_user_friendly_error(error),
+                get_image_export_error_message(error),
             )
             return
         except Exception as error:

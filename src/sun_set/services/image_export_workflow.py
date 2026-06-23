@@ -3,6 +3,7 @@ from pathlib import Path
 
 from PIL import Image
 
+from sun_set.image_export.errors import get_user_friendly_error
 from sun_set.image_export.service import (
     ExportResult,
     build_city_image_preview,
@@ -88,3 +89,7 @@ def build_image_preview_request(
         city=city,
         settings_path=settings_path,
     )
+
+
+def get_image_export_error_message(error: Exception) -> str:
+    return get_user_friendly_error(error)
