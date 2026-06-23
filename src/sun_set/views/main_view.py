@@ -22,6 +22,11 @@ from PyQt6.QtWidgets import (
 )
 
 from sun_set.constants.messages import (
+    EXPORT_IMAGES_TITLE,
+    EXPORT_SETTINGS_TITLE,
+    IMAGE_EXPORT_ERROR_TITLE,
+    IMAGE_PREVIEW_ERROR_TITLE,
+    IMAGE_PREVIEW_TITLE,
     MISSING_EXPORT_OUTPUT_DIR_MESSAGE,
     MISSING_EXPORT_SETTINGS_FILE_MESSAGE,
 )
@@ -502,7 +507,7 @@ class MainWindow(QMainWindow):
         if not isinstance(execution_result, ImageExportSuccessResult):
             show_error(
                 self,
-                "Ошибка экспорта изображений",
+                IMAGE_EXPORT_ERROR_TITLE,
                 execution_result.error_message,
             )
             return
@@ -518,7 +523,7 @@ class MainWindow(QMainWindow):
         if city is None:
             show_warning(
                 self,
-                "Предпросмотр изображения",
+                IMAGE_PREVIEW_TITLE,
                 "Выберите город.",
             )
             return
@@ -537,7 +542,7 @@ class MainWindow(QMainWindow):
         if not isinstance(execution_result, ImagePreviewSuccessResult):
             show_error(
                 self,
-                "Ошибка предпросмотра",
+                IMAGE_PREVIEW_ERROR_TITLE,
                 execution_result.error_message,
             )
             return
@@ -818,7 +823,7 @@ class MainWindow(QMainWindow):
 
             show_warning(
                 self,
-                "Настройки экспорта",
+                EXPORT_SETTINGS_TITLE,
                 MISSING_EXPORT_SETTINGS_FILE_MESSAGE,
             )
             self.export_path_state.clear_settings_path()
@@ -835,7 +840,7 @@ class MainWindow(QMainWindow):
 
             show_warning(
                 self,
-                "Экспорт изображений",
+                EXPORT_IMAGES_TITLE,
                 MISSING_EXPORT_OUTPUT_DIR_MESSAGE,
             )
             self.export_path_state.clear_output_dir()
