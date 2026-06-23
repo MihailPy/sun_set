@@ -515,7 +515,6 @@ class MainWindow(QMainWindow):
 
     def preview_selected_city_image(self) -> None:
         city = self.get_current_city_or_none()
-
         if city is None:
             show_warning(
                 self,
