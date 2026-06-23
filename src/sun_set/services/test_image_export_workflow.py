@@ -6,10 +6,13 @@ from sun_set.services.image_export_workflow import (
     ImageExportErrorResult,
     ImageExportRequest,
     ImageExportSuccessResult,
+    ImagePreviewErrorResult,
     ImagePreviewRequest,
+    ImagePreviewSuccessResult,
     build_image_export_result_message,
     build_selected_city_preview_image,
     execute_image_export,
+    execute_image_preview,
     export_selected_city_images,
     show_image_export_result_dialog,
 )
@@ -159,3 +162,42 @@ def test_execute_image_export_error(
 
     assert isinstance(execution_result, ImageExportErrorResult)
     assert execution_result.error_message == "Ошибка экспорта"
+
+
+@patch("sun_set.services.image_export_workflow.build_selected_city_preview_image")
+def test_execute_image_preview_success(
+    mock_build_selected_city_preview_image, tmp_path
+):
+    request = ImagePreviewRequest(
+        city=Mock(),
+        settings_path=tmp_path / "settings.json",
+    )
+    image = Mock(spec=Image.Image)
+
+    mock_build_selected_city_preview_image.return_value = image
+
+    execution_result = execute_image_preview(request)
+
+    assert isinstance(execution_result, ImagePreviewSuccessResult)
+    assert execution_result.image == image
+
+
+@patch("sun_set.services.image_export_workflow.get_image_export_error_message")
+@patch("sun_set.services.image_export_workflow.build_selected_city_preview_image")
+def test_execute_image_preview_error(
+    mock_build_selected_city_preview_image,
+    mock_get_image_export_error_message,
+    tmp_path,
+):
+    request = ImagePreviewRequest(
+        city=Mock(),
+        settings_path=tmp_path / "settings.json",
+    )
+
+    mock_build_selected_city_preview_image.side_effect = RuntimeError("boom")
+    mock_get_image_export_error_message.return_value = "Ошибка предпросмотра"
+
+    execution_result = execute_image_preview(request)
+
+    assert isinstance(execution_result, ImagePreviewErrorResult)
+    assert execution_result.error_message == "Ошибка предпросмотра"
