@@ -3,10 +3,13 @@ from unittest.mock import Mock, patch
 from PIL import Image
 
 from sun_set.services.image_export_workflow import (
+    ImageExportErrorResult,
     ImageExportRequest,
+    ImageExportSuccessResult,
     ImagePreviewRequest,
     build_image_export_result_message,
     build_selected_city_preview_image,
+    execute_image_export,
     export_selected_city_images,
     show_image_export_result_dialog,
 )
@@ -117,3 +120,42 @@ def test_show_image_export_result_dialog_does_not_open_folder(
     show_image_export_result_dialog(parent, results, output_dir)
 
     mock_open_directory.assert_not_called()
+
+
+@patch("sun_set.services.image_export_workflow.export_selected_city_images")
+def test_execute_image_export_success(mock_export_selected_city_images, tmp_path):
+    request = ImageExportRequest(
+        cities=[],
+        settings_path=tmp_path / "settings.json",
+        output_dir=tmp_path,
+    )
+    results = []
+
+    mock_export_selected_city_images.return_value = results
+
+    execution_result = execute_image_export(request)
+
+    assert isinstance(execution_result, ImageExportSuccessResult)
+    assert execution_result.results == results
+
+
+@patch("sun_set.services.image_export_workflow.get_image_export_error_message")
+@patch("sun_set.services.image_export_workflow.export_selected_city_images")
+def test_execute_image_export_error(
+    mock_export_selected_city_images,
+    mock_get_image_export_error_message,
+    tmp_path,
+):
+    request = ImageExportRequest(
+        cities=[],
+        settings_path=tmp_path / "settings.json",
+        output_dir=tmp_path,
+    )
+
+    mock_export_selected_city_images.side_effect = RuntimeError("boom")
+    mock_get_image_export_error_message.return_value = "Ошибка экспорта"
+
+    execution_result = execute_image_export(request)
+
+    assert isinstance(execution_result, ImageExportErrorResult)
+    assert execution_result.error_message == "Ошибка экспорта"
