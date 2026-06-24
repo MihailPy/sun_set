@@ -50,7 +50,6 @@ from sun_set.models.table_model import (
 )
 from sun_set.services.city_service import (
     create_default_city,
-    update_cities_sunset,
     update_city_sunset,
 )
 from sun_set.services.dialog_service import (
@@ -86,7 +85,10 @@ from sun_set.services.project_state_service import (
     get_export_paths_from_project,
     get_project_settings,
 )
-from sun_set.services.sunset_workflow import build_sunset_update_request
+from sun_set.services.sunset_workflow import (
+    build_sunset_update_request,
+    execute_sunset_update,
+)
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -480,7 +482,7 @@ class MainWindow(QMainWindow):
             weekday2=self.combo_weekday2.currentIndex(),
         )
 
-        update_cities_sunset(cities, year, weekday1, weekday2)
+        execute_sunset_update(request)
 
         model.clear_status_overrides_for_cities(cities)
         model.refresh_status_column()
