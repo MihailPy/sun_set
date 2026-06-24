@@ -614,12 +614,7 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        project = self.build_current_project_data()
-        save_project(project, file_path)
-        self.file_path = file_path
-        self.update_window_title()
-        self.update_status_bar()
-        self.update_action_buttons_state()
+        self.save_project_to_path(file_path)
 
     def add_city_in_table(self) -> None:
         new_city = create_default_city(self.year_spinbox.value())
@@ -921,3 +916,12 @@ class MainWindow(QMainWindow):
         self.update_window_title()
         self.update_action_buttons_state()
         self.update_status_bar()
+
+    def save_project_to_path(self, file_path: str) -> None:
+        project = self.build_current_project_data()
+        save_project(project, file_path)
+
+        self.file_path = file_path
+        self.update_window_title()
+        self.update_status_bar()
+        self.update_action_buttons_state()
