@@ -208,9 +208,9 @@ class TestMainWindow:
             assert main_window.combo_weekday1.itemText(i) == expected_day
             assert main_window.combo_weekday2.itemText(i) == expected_day
 
-    @patch("sun_set.views.main_view.update_cities_sunset")
+    @patch("sun_set.views.main_view.execute_sunset_update")
     def test_initiate_sunset_fetch_success(
-        self, mock_update_cities_sunset, main_window
+        self, mock_execute_sunset_update, main_window
     ):
         """Тест успешного обновления выбранных городов и ресайза колонки статуса"""
         main_window.year_spinbox.setValue(2025)
@@ -227,12 +227,11 @@ class TestMainWindow:
 
         main_window.initiate_sunset_fetch()
 
-        mock_update_cities_sunset.assert_called_once_with(
-            selected_cities,
-            2025,
-            0,
-            6,
-        )
+        request = mock_execute_sunset_update.call_args.args[0]
+
+        assert request.year == 2025
+        assert request.weekday1 == 0
+        assert request.weekday2 == 6
         mock_model.clear_status_overrides_for_cities.assert_called_once_with(
             selected_cities
         )
@@ -242,10 +241,10 @@ class TestMainWindow:
         )
 
     @patch("sun_set.views.main_view.show_warning")
-    @patch("sun_set.views.main_view.update_cities_sunset")
+    @patch("sun_set.views.main_view.execute_sunset_update")
     def test_initiate_sunset_fetch_no_updates(
         self,
-        mock_update_cities_sunset,
+        mock_execute_sunset_update,
         mock_show_warning,
         main_window,
     ):
@@ -263,7 +262,7 @@ class TestMainWindow:
             "Обновление данных",
             "Выберите хотя бы один город.",
         )
-        mock_update_cities_sunset.assert_not_called()
+        mock_execute_sunset_update.assert_not_called()
         mock_model.clear_status_overrides_for_cities.assert_not_called()
         mock_model.refresh_status_column.assert_not_called()
         main_window.table_view.resizeColumnToContents.assert_not_called()
