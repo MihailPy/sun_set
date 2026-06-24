@@ -595,11 +595,7 @@ class MainWindow(QMainWindow):
         if project is None:
             return
 
-        self.file_path = file_path
-        self.apply_project_data(project)
-        self.update_window_title()
-        self.update_action_buttons_state()
-        self.update_status_bar()
+        self.open_project(file_path, project)
 
     def save_file(self) -> None:
         if self.file_path is None:
@@ -918,3 +914,10 @@ class MainWindow(QMainWindow):
             return None
 
         return project
+
+    def open_project(self, file_path: str, project: ProjectData) -> None:
+        self.file_path = file_path
+        self.apply_project_data(project)
+        self.update_window_title()
+        self.update_action_buttons_state()
+        self.update_status_bar()
