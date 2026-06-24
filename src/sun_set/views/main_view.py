@@ -602,9 +602,7 @@ class MainWindow(QMainWindow):
             self.save_file_as()
             return
 
-        project = self.build_current_project_data()
-        save_project(project, self.file_path)
-        self.update_status_bar()
+        self.save_project_to_path(self.file_path)
 
     def save_file_as(self) -> None:
         file_path = choose_save_file(
