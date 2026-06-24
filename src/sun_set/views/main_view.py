@@ -591,13 +591,7 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        project, error = load_project(file_path)
-
-        if error is not None:
-            if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
-                self.open_file_dialog()
-            return
-
+        project = self.load_project_from_path(file_path)
         if project is None:
             return
 
@@ -914,3 +908,13 @@ class MainWindow(QMainWindow):
             return None
 
         return Path(self.file_path).name
+
+    def load_project_from_path(self, file_path: str) -> ProjectData | None:
+        project, error = load_project(file_path)
+
+        if error is not None:
+            if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
+                self.open_file_dialog()
+            return None
+
+        return project
