@@ -484,9 +484,7 @@ class MainWindow(QMainWindow):
 
         execute_sunset_update(request)
 
-        model.clear_status_overrides_for_cities(cities)
-        model.refresh_status_column()
-        self.table_view.resizeColumnToContents(STATUS_COLUMN)
+        self.refresh_sunset_update_result(model, cities)
 
     def export_all_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()
@@ -929,3 +927,12 @@ class MainWindow(QMainWindow):
         self.update_window_title()
         self.update_status_bar()
         self.update_action_buttons_state()
+
+    def refresh_sunset_update_result(
+        self,
+        model: CityTableModel,
+        cities: list[City],
+    ) -> None:
+        model.clear_status_overrides_for_cities(cities)
+        model.refresh_status_column()
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
