@@ -46,3 +46,15 @@ def test_execute_sunset_update(mock_update_cities_sunset):
         4,
         5,
     )
+
+
+def test_sunset_settings():
+    settings = SunsetSettings(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+    )
+
+    assert settings.year == 2027
+    assert settings.weekday1 == 4
+    assert settings.weekday2 == 5
