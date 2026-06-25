@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 
 from sun_set.models.city import City
-from sun_set.services.city_service import update_cities_sunset, update_city_sunset
+from sun_set.services.city_service import (
+    create_default_city,
+    update_cities_sunset,
+    update_city_sunset,
+)
 
 
 @dataclass(frozen=True)
@@ -61,3 +65,7 @@ def execute_single_city_sunset_update(
         request.settings.weekday1,
         request.settings.weekday2,
     )
+
+
+def create_city_for_year(year: int) -> City:
+    return create_default_city(year)

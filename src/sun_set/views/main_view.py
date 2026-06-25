@@ -48,9 +48,6 @@ from sun_set.models.table_model import (
     CityTableModel,
     StatusActionDelegate,
 )
-from sun_set.services.city_service import (
-    create_default_city,
-)
 from sun_set.services.dialog_service import (
     ask_retry,
     choose_directory,
@@ -88,6 +85,7 @@ from sun_set.services.sunset_workflow import (
     SunsetSettings,
     build_single_city_sunset_update_request,
     build_sunset_update_request,
+    create_city_for_year,
     execute_single_city_sunset_update,
     execute_sunset_update,
 )
@@ -622,7 +620,7 @@ class MainWindow(QMainWindow):
         self.save_project_to_path(file_path)
 
     def add_city_in_table(self) -> None:
-        new_city = create_default_city(self.year_spinbox.value())
+        new_city = create_city_for_year(self.year_spinbox.value())
 
         if self.model is None:
             self.load_cities_into_table([new_city])
