@@ -66,7 +66,7 @@ from sun_set.services.image_export_workflow import (
     get_image_export_error_message,
     show_image_export_result_dialog,
 )
-from sun_set.services.project_file_service import load_project, save_project
+from sun_set.services.project_file_service import save_project
 from sun_set.services.project_state_service import (
     ExportPaths,
     ExportPathState,
@@ -80,6 +80,10 @@ from sun_set.services.project_state_service import (
     export_settings_path_exists,
     get_export_paths_from_project,
     get_project_settings,
+)
+from sun_set.services.project_workflow import (
+    ProjectLoadSuccess,
+    execute_project_load,
 )
 from sun_set.services.sunset_workflow import (
     SunsetSettings,
@@ -904,14 +908,14 @@ class MainWindow(QMainWindow):
         return Path(self.file_path).name
 
     def load_project_from_path(self, file_path: str) -> ProjectData | None:
-        project, error = load_project(file_path)
+        result = execute_project_load(file_path)
 
-        if error is not None:
-            if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
+        if not isinstance(result, ProjectLoadSuccess):
+            if ask_retry(self, "Ошибка", f"{result.message}\n\nВыбрать файл снова?"):
                 self.open_file_dialog()
             return None
 
-        return project
+        return result.project
 
     def open_project(self, file_path: str, project: ProjectData) -> None:
         self.file_path = file_path
