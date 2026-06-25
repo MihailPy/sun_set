@@ -50,7 +50,6 @@ from sun_set.models.table_model import (
 )
 from sun_set.services.city_service import (
     create_default_city,
-    update_city_sunset,
 )
 from sun_set.services.dialog_service import (
     ask_retry,
@@ -87,7 +86,9 @@ from sun_set.services.project_state_service import (
 )
 from sun_set.services.sunset_workflow import (
     SunsetSettings,
+    build_single_city_sunset_update_request,
     build_sunset_update_request,
+    execute_single_city_sunset_update,
     execute_sunset_update,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
@@ -430,12 +431,13 @@ class MainWindow(QMainWindow):
             self.extra_window.show()
 
         if action_type == "update":
-            print(f"Запуск обновления для города: {city.name} (строка {row})")
-            year = self.year_spinbox.value()
-            weekday1 = self.combo_weekday1.currentIndex()
-            weekday2 = self.combo_weekday2.currentIndex()
+            settings = self.get_current_sunset_settings()
+            request = build_single_city_sunset_update_request(
+                city=city,
+                settings=settings,
+            )
 
-            update_city_sunset(city, year, weekday1, weekday2)
+            execute_single_city_sunset_update(request)
 
             self.model.refresh_status_row(row)
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from sun_set.models.city import City
-from sun_set.services.city_service import update_cities_sunset
+from sun_set.services.city_service import update_cities_sunset, update_city_sunset
 
 
 @dataclass(frozen=True)
@@ -30,6 +30,33 @@ def build_sunset_update_request(
 def execute_sunset_update(request: SunsetUpdateRequest) -> None:
     update_cities_sunset(
         request.cities,
+        request.settings.year,
+        request.settings.weekday1,
+        request.settings.weekday2,
+    )
+
+
+@dataclass(frozen=True)
+class SingleCitySunsetUpdateRequest:
+    city: City
+    settings: SunsetSettings
+
+
+def build_single_city_sunset_update_request(
+    city: City,
+    settings: SunsetSettings,
+) -> SingleCitySunsetUpdateRequest:
+    return SingleCitySunsetUpdateRequest(
+        city=city,
+        settings=settings,
+    )
+
+
+def execute_single_city_sunset_update(
+    request: SingleCitySunsetUpdateRequest,
+) -> None:
+    update_city_sunset(
+        request.city,
         request.settings.year,
         request.settings.weekday1,
         request.settings.weekday2,
