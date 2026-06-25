@@ -229,9 +229,9 @@ class TestMainWindow:
 
         request = mock_execute_sunset_update.call_args.args[0]
 
-        assert request.year == 2025
-        assert request.weekday1 == 0
-        assert request.weekday2 == 6
+        assert request.settings.year == 2025
+        assert request.settings.weekday1 == 0
+        assert request.settings.weekday2 == 6
         mock_model.clear_status_overrides_for_cities.assert_called_once_with(
             selected_cities
         )

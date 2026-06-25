@@ -5,18 +5,16 @@ from sun_set.services.city_service import update_cities_sunset
 
 
 @dataclass(frozen=True)
-class SunsetUpdateRequest:
-    cities: list[City]
+class SunsetSettings:
     year: int
     weekday1: int
     weekday2: int
 
 
 @dataclass(frozen=True)
-class SunsetSettings:
-    year: int
-    weekday1: int
-    weekday2: int
+class SunsetUpdateRequest:
+    cities: list[City]
+    settings: SunsetSettings
 
 
 def build_sunset_update_request(
@@ -25,16 +23,14 @@ def build_sunset_update_request(
 ) -> SunsetUpdateRequest:
     return SunsetUpdateRequest(
         cities=cities,
-        year=settings.year,
-        weekday1=settings.weekday1,
-        weekday2=settings.weekday2,
+        settings=settings,
     )
 
 
 def execute_sunset_update(request: SunsetUpdateRequest) -> None:
     update_cities_sunset(
         request.cities,
-        request.year,
-        request.weekday1,
-        request.weekday2,
+        request.settings.year,
+        request.settings.weekday1,
+        request.settings.weekday2,
     )

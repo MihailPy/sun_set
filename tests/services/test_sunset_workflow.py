@@ -22,18 +22,20 @@ def test_build_sunset_update_request():
 
     assert isinstance(request, SunsetUpdateRequest)
     assert request.cities == []
-    assert request.year == 2027
-    assert request.weekday1 == 4
-    assert request.weekday2 == 5
+    assert request.settings == settings
 
 
 @patch("sun_set.services.sunset_workflow.update_cities_sunset")
 def test_execute_sunset_update(mock_update_cities_sunset):
-    request = SunsetUpdateRequest(
-        cities=[],
+    settings = SunsetSettings(
         year=2027,
         weekday1=4,
         weekday2=5,
+    )
+
+    request = SunsetUpdateRequest(
+        cities=[],
+        settings=settings,
     )
 
     execute_sunset_update(request)
