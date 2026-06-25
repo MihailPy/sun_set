@@ -21,15 +21,13 @@ class SunsetSettings:
 
 def build_sunset_update_request(
     cities: list[City],
-    year: int,
-    weekday1: int,
-    weekday2: int,
+    settings: SunsetSettings,
 ) -> SunsetUpdateRequest:
     return SunsetUpdateRequest(
         cities=cities,
-        year=year,
-        weekday1=weekday1,
-        weekday2=weekday2,
+        year=settings.year,
+        weekday1=settings.weekday1,
+        weekday2=settings.weekday2,
     )
 
 

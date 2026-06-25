@@ -480,9 +480,7 @@ class MainWindow(QMainWindow):
 
         request = build_sunset_update_request(
             cities=cities,
-            year=settings.year,
-            weekday1=settings.weekday1,
-            weekday2=settings.weekday2,
+            settings=settings,
         )
 
         execute_sunset_update(request)
