@@ -6,6 +6,7 @@ from sun_set.services.sunset_workflow import (
     SunsetUpdateRequest,
     build_single_city_sunset_update_request,
     build_sunset_update_request,
+    create_city_for_year,
     execute_single_city_sunset_update,
     execute_sunset_update,
 )
@@ -102,3 +103,14 @@ def test_execute_single_city_sunset_update(mock_update_city_sunset):
         4,
         5,
     )
+
+
+@patch("sun_set.services.sunset_workflow.create_default_city")
+def test_create_city_for_year(mock_create_default_city):
+    city = Mock()
+    mock_create_default_city.return_value = city
+
+    result = create_city_for_year(2027)
+
+    assert result == city
+    mock_create_default_city.assert_called_once_with(2027)
