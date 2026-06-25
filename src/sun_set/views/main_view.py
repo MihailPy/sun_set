@@ -86,6 +86,7 @@ from sun_set.services.project_state_service import (
     get_project_settings,
 )
 from sun_set.services.sunset_workflow import (
+    SunsetSettings,
     build_sunset_update_request,
     execute_sunset_update,
 )
@@ -475,13 +476,13 @@ class MainWindow(QMainWindow):
         if model is None:
             return
 
-        year, weekday1, weekday2 = self.get_current_sunset_settings()
+        settings = self.get_current_sunset_settings()
 
         request = build_sunset_update_request(
             cities=cities,
-            year=year,
-            weekday1=weekday1,
-            weekday2=weekday2,
+            year=settings.year,
+            weekday1=settings.weekday1,
+            weekday2=settings.weekday2,
         )
 
         execute_sunset_update(request)
@@ -939,9 +940,9 @@ class MainWindow(QMainWindow):
         model.refresh_status_column()
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
-    def get_current_sunset_settings(self) -> tuple[int, int, int]:
-        return (
-            self.year_spinbox.value(),
-            self.combo_weekday1.currentIndex(),
-            self.combo_weekday2.currentIndex(),
+    def get_current_sunset_settings(self) -> SunsetSettings:
+        return SunsetSettings(
+            year=self.year_spinbox.value(),
+            weekday1=self.combo_weekday1.currentIndex(),
+            weekday2=self.combo_weekday2.currentIndex(),
         )

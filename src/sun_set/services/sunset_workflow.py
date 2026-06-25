@@ -12,6 +12,13 @@ class SunsetUpdateRequest:
     weekday2: int
 
 
+@dataclass(frozen=True)
+class SunsetSettings:
+    year: int
+    weekday1: int
+    weekday2: int
+
+
 def build_sunset_update_request(
     cities: list[City],
     year: int,
