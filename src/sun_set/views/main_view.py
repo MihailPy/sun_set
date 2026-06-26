@@ -66,7 +66,6 @@ from sun_set.services.image_export_workflow import (
     get_image_export_error_message,
     show_image_export_result_dialog,
 )
-from sun_set.services.project_file_service import save_project
 from sun_set.services.project_state_service import (
     ExportPaths,
     ExportPathState,
@@ -83,7 +82,9 @@ from sun_set.services.project_state_service import (
 )
 from sun_set.services.project_workflow import (
     ProjectLoadSuccess,
+    ProjectSaveSuccess,
     execute_project_load,
+    execute_project_save,
 )
 from sun_set.services.sunset_workflow import (
     SunsetSettings,
@@ -926,9 +927,17 @@ class MainWindow(QMainWindow):
 
     def save_project_to_path(self, file_path: str) -> None:
         project = self.build_current_project_data()
-        save_project(project, file_path)
+        result = execute_project_save(project, file_path)
 
-        self.file_path = file_path
+        if not isinstance(result, ProjectSaveSuccess):
+            show_error(
+                self,
+                "Ошибка сохранения",
+                result.message,
+            )
+            return
+
+        self.file_path = result.file_path
         self.update_window_title()
         self.update_status_bar()
         self.update_action_buttons_state()
