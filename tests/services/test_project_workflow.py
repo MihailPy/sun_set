@@ -3,7 +3,10 @@ from unittest.mock import Mock, patch
 from sun_set.services.project_workflow import (
     ProjectLoadError,
     ProjectLoadSuccess,
+    ProjectSaveError,
+    ProjectSaveSuccess,
     execute_project_load,
+    execute_project_save,
 )
 
 
@@ -36,3 +39,25 @@ def test_execute_project_load_empty_result(mock_load_project):
 
     assert isinstance(result, ProjectLoadError)
     assert result.message == "Не удалось загрузить проект."
+
+
+@patch("sun_set.services.project_workflow.save_project")
+def test_execute_project_save_success(mock_save_project):
+    project = Mock()
+
+    result = execute_project_save(project, "project.json")
+
+    assert isinstance(result, ProjectSaveSuccess)
+    assert result.file_path == "project.json"
+    mock_save_project.assert_called_once_with(project, "project.json")
+
+
+@patch("sun_set.services.project_workflow.save_project")
+def test_execute_project_save_error(mock_save_project):
+    project = Mock()
+    mock_save_project.side_effect = RuntimeError("Нет доступа")
+
+    result = execute_project_save(project, "project.json")
+
+    assert isinstance(result, ProjectSaveError)
+    assert result.message == "Нет доступа"
