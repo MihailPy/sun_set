@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from sun_set.models.project_data import ProjectData
-from sun_set.services.project_file_service import load_project
+from sun_set.services.project_file_service import load_project, save_project
 
 
 @dataclass(frozen=True)
@@ -27,3 +27,28 @@ def execute_project_load(file_path: str) -> ProjectLoadResult:
         return ProjectLoadError(message="Не удалось загрузить проект.")
 
     return ProjectLoadSuccess(project=project)
+
+
+@dataclass(frozen=True)
+class ProjectSaveSuccess:
+    file_path: str
+
+
+@dataclass(frozen=True)
+class ProjectSaveError:
+    message: str
+
+
+ProjectSaveResult = ProjectSaveSuccess | ProjectSaveError
+
+
+def execute_project_save(
+    project: ProjectData,
+    file_path: str,
+) -> ProjectSaveResult:
+    try:
+        save_project(project, file_path)
+        return ProjectSaveSuccess(file_path=file_path)
+
+    except Exception as error:
+        return ProjectSaveError(message=str(error))
