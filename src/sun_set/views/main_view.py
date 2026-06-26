@@ -21,19 +21,21 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from sun_set.constants.messages import (
+    EXPORT_IMAGES_TITLE,
+    EXPORT_SETTINGS_TITLE,
+    IMAGE_EXPORT_ERROR_TITLE,
+    IMAGE_PREVIEW_ERROR_TITLE,
+    IMAGE_PREVIEW_TITLE,
+    MISSING_EXPORT_OUTPUT_DIR_MESSAGE,
+    MISSING_EXPORT_SETTINGS_FILE_MESSAGE,
+)
 from sun_set.constants.project_defaults import (
     DEFAULT_WEEKDAY_1,
     DEFAULT_WEEKDAY_2,
     get_default_project_year,
 )
-from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
-from sun_set.image_export.service import (
-    ExportResult,
-    build_city_image_preview,
-    build_export_summary_message,
-    export_cities_images,
-    save_export_report,
-)
+from sun_set.image_export.errors import ImageExportError
 from sun_set.image_export.settings import (
     create_default_export_settings,
     load_export_settings,
@@ -46,22 +48,52 @@ from sun_set.models.table_model import (
     CityTableModel,
     StatusActionDelegate,
 )
-from sun_set.services.city_service import (
-    create_default_city,
-    update_cities_sunset,
-    update_city_sunset,
-)
 from sun_set.services.dialog_service import (
-    ask_open_folder_after_export,
     ask_retry,
     choose_directory,
     choose_file,
     choose_save_file,
-    open_directory,
     show_error,
     show_warning,
 )
-from sun_set.services.project_file_service import load_project, save_project
+from sun_set.services.image_export_workflow import (
+    ImageExportSuccessResult,
+    ImagePreviewSuccessResult,
+    build_image_export_request,
+    build_image_preview_request,
+    execute_image_export,
+    execute_image_preview,
+    get_image_export_error_message,
+    show_image_export_result_dialog,
+)
+from sun_set.services.project_state_service import (
+    ExportPaths,
+    ExportPathState,
+    build_export_action_tooltip,
+    build_export_paths_text,
+    build_export_paths_tooltip,
+    build_project_data,
+    can_export_images,
+    can_preview_image,
+    export_output_dir_exists,
+    export_settings_path_exists,
+    get_export_paths_from_project,
+    get_project_settings,
+)
+from sun_set.services.project_workflow import (
+    ProjectLoadSuccess,
+    ProjectSaveSuccess,
+    execute_project_load,
+    execute_project_save,
+)
+from sun_set.services.sunset_workflow import (
+    SunsetSettings,
+    build_single_city_sunset_update_request,
+    build_sunset_update_request,
+    create_city_for_year,
+    execute_single_city_sunset_update,
+    execute_sunset_update,
+)
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -76,8 +108,7 @@ class MainWindow(QMainWindow):
         self.resize(800, 400)
 
         self.file_path: str | None = None
-        self.last_image_export_settings_path: str = ""
-        self.last_image_export_output_dir: str = ""
+        self.export_path_state = ExportPathState.empty()
 
         self.cities: list[City] = []
         self.model: CityTableModel | None = None
@@ -403,12 +434,13 @@ class MainWindow(QMainWindow):
             self.extra_window.show()
 
         if action_type == "update":
-            print(f"Запуск обновления для города: {city.name} (строка {row})")
-            year = self.year_spinbox.value()
-            weekday1 = self.combo_weekday1.currentIndex()
-            weekday2 = self.combo_weekday2.currentIndex()
+            settings = self.get_current_sunset_settings()
+            request = build_single_city_sunset_update_request(
+                city=city,
+                settings=settings,
+            )
 
-            update_city_sunset(city, year, weekday1, weekday2)
+            execute_single_city_sunset_update(request)
 
             self.model.refresh_status_row(row)
 
@@ -449,15 +481,16 @@ class MainWindow(QMainWindow):
         if model is None:
             return
 
-        year = self.year_spinbox.value()
-        weekday1 = self.combo_weekday1.currentIndex()
-        weekday2 = self.combo_weekday2.currentIndex()
+        settings = self.get_current_sunset_settings()
 
-        update_cities_sunset(cities, year, weekday1, weekday2)
+        request = build_sunset_update_request(
+            cities=cities,
+            settings=settings,
+        )
 
-        model.clear_status_overrides_for_cities(cities)
-        model.refresh_status_column()
-        self.table_view.resizeColumnToContents(STATUS_COLUMN)
+        execute_sunset_update(request)
+
+        self.refresh_sunset_update_result(model, cities)
 
     def export_all_selected_city_image(self) -> None:
         cities = self.get_selected_cities_or_none()
@@ -473,22 +506,34 @@ class MainWindow(QMainWindow):
         if output_dir is None:
             return
 
-        results = export_cities_images(
+        request = build_image_export_request(
             cities=cities,
             settings_path=settings_path,
             output_dir=output_dir,
         )
 
-        save_export_report(results, output_dir)
-        self.show_image_export_result(results, output_dir)
+        execution_result = execute_image_export(request)
+
+        if not isinstance(execution_result, ImageExportSuccessResult):
+            show_error(
+                self,
+                IMAGE_EXPORT_ERROR_TITLE,
+                execution_result.error_message,
+            )
+            return
+
+        show_image_export_result_dialog(
+            self,
+            execution_result.results,
+            output_dir,
+        )
 
     def preview_selected_city_image(self) -> None:
         city = self.get_current_city_or_none()
-
         if city is None:
             show_warning(
                 self,
-                "Предпросмотр изображения",
+                IMAGE_PREVIEW_TITLE,
                 "Выберите город.",
             )
             return
@@ -497,20 +542,22 @@ class MainWindow(QMainWindow):
         if settings_path is None:
             return
 
-        try:
-            image = build_city_image_preview(
-                city=city,
-                settings_path=settings_path,
-            )
-        except Exception as error:
+        request = build_image_preview_request(
+            city=city,
+            settings_path=settings_path,
+        )
+
+        execution_result = execute_image_preview(request)
+
+        if not isinstance(execution_result, ImagePreviewSuccessResult):
             show_error(
                 self,
-                "Ошибка предпросмотра",
-                get_user_friendly_error(error),
+                IMAGE_PREVIEW_ERROR_TITLE,
+                execution_result.error_message,
             )
             return
 
-        self.show_image_preview(image)
+        self.show_image_preview(execution_result.image)
 
     def edit_image_export_settings(self) -> None:
         settings_path = self.get_export_settings_path()
@@ -523,7 +570,7 @@ class MainWindow(QMainWindow):
             show_error(
                 self,
                 "Ошибка настроек экспорта",
-                get_user_friendly_error(error),
+                get_image_export_error_message(error),
             )
             return
         except Exception as error:
@@ -554,31 +601,18 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        project, error = load_project(file_path)
-
-        if error is not None:
-            if ask_retry(self, "Ошибка", f"{error}\n\nВыбрать файл снова?"):
-                self.open_file_dialog()
-            return
-
+        project = self.load_project_from_path(file_path)
         if project is None:
             return
 
-        self.file_path = file_path
-        self.update_window_title()
-        self.apply_project_data(project)
-        self.update_window_title()
-        self.update_action_buttons_state()
-        self.update_status_bar()
+        self.open_project(file_path, project)
 
     def save_file(self) -> None:
         if self.file_path is None:
             self.save_file_as()
             return
 
-        project = self.build_current_project_data()
-        save_project(project, self.file_path)
-        self.update_status_bar()
+        self.save_project_to_path(self.file_path)
 
     def save_file_as(self) -> None:
         file_path = choose_save_file(
@@ -588,15 +622,10 @@ class MainWindow(QMainWindow):
         if not file_path:
             return
 
-        project = self.build_current_project_data()
-        save_project(project, file_path)
-        self.file_path = file_path
-        self.update_window_title()
-        self.update_status_bar()
-        self.update_action_buttons_state()
+        self.save_project_to_path(file_path)
 
     def add_city_in_table(self) -> None:
-        new_city = create_default_city(self.year_spinbox.value())
+        new_city = create_city_for_year(self.year_spinbox.value())
 
         if self.model is None:
             self.load_cities_into_table([new_city])
@@ -664,92 +693,69 @@ class MainWindow(QMainWindow):
         return cities
 
     def update_action_buttons_state(self) -> None:
-        has_selected_cities = False
-
-        if self.model is not None:
-            has_selected_cities = bool(self.model.get_selected_cities())
-
-        has_export_settings = bool(self.last_image_export_settings_path)
-        has_export_output_dir = bool(self.last_image_export_output_dir)
+        has_selected_cities = self.has_selected_cities()
+        export_paths = self.get_current_export_paths()
 
         self.btn_del_city.setEnabled(has_selected_cities)
         self.btn_get_sunset_info.setEnabled(has_selected_cities)
+        self.btn_save_file_main.setEnabled(self.has_cities())
 
         self.preview_image_button.setEnabled(
-            has_selected_cities and has_export_settings
+            can_preview_image(has_selected_cities, export_paths)
         )
         self.btn_export_image.setEnabled(
-            has_selected_cities and has_export_settings and has_export_output_dir
+            can_export_images(has_selected_cities, export_paths)
         )
-
-        self.btn_save_file_main.setEnabled(bool(self.cities))
 
         if has_selected_cities:
             self.btn_del_city.setToolTip("Удалить выбранные города")
             self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
         else:
-            tooltip = "Выберите один или несколько городов в таблице"
-            self.btn_del_city.setToolTip(tooltip)
-            self.btn_get_sunset_info.setToolTip(tooltip)
+            city_tooltip = "Выберите один или несколько городов в таблице"
+            self.btn_del_city.setToolTip(city_tooltip)
+            self.btn_get_sunset_info.setToolTip(city_tooltip)
 
-        if not has_selected_cities:
-            export_tooltip = "Выберите один или несколько городов в таблице"
-        elif not has_export_settings:
-            export_tooltip = "Выберите файл настроек экспорта"
-        elif not has_export_output_dir:
-            export_tooltip = "Выберите папку экспорта"
-        else:
-            export_tooltip = ""
+        export_tooltip = build_export_action_tooltip(
+            has_selected_cities,
+            export_paths,
+        )
 
         self.preview_image_button.setToolTip(
             "Предпросмотр перед сохранением изображения"
-            if has_selected_cities and has_export_settings
+            if self.preview_image_button.isEnabled()
             else export_tooltip
         )
         self.btn_export_image.setToolTip(
             "Экспорт выбранных городов в изображение"
-            if has_selected_cities and has_export_settings and has_export_output_dir
+            if self.btn_export_image.isEnabled()
             else export_tooltip
         )
 
     def update_status_bar(self) -> None:
-        file_name = "Файл не открыт"
-        if self.file_path is not None:
-            file_name = f"Файл: {Path(self.file_path).name}"
-
-        total_cities = len(self.cities)
-        selected_cities = 0
-
-        if self.model is not None:
-            selected = self.model.get_selected_cities()
-            selected_cities = len(selected) if selected else 0
-
-        if hasattr(self, "selected_cities_label"):
-            self.selected_cities_label.setText(f"Выбрано: {selected_cities}")
-
-        self.status_bar.showMessage(
-            f"{file_name} | Городов: {total_cities} | Выбрано: {selected_cities}"
-        )
+        self.update_selected_cities_label()
+        self.status_bar.showMessage(self.build_status_bar_text())
 
     def update_window_title(self) -> None:
-        if self.file_path is None:
+        file_name = self.get_current_file_name()
+
+        if file_name is None:
             self.setWindowTitle("Sun Set")
             return
 
-        self.setWindowTitle(f"Sun Set — {Path(self.file_path).name}")
+        self.setWindowTitle(f"Sun Set — {file_name}")
 
     def choose_export_settings_file(self) -> Path | None:
         settings_file = choose_file(
             self,
             "Выберите JSON-файл настроек экспорта",
             "JSON Files (*.json)",
-            self.last_image_export_settings_path,
+            self.get_current_export_paths().settings_path,
         )
 
         if not settings_file:
             return None
 
-        self.last_image_export_settings_path = settings_file
+        self.export_path_state.set_settings_path(str(settings_file))
         self.update_export_paths_label()
 
         return Path(settings_file)
@@ -758,26 +764,16 @@ class MainWindow(QMainWindow):
         output_dir = choose_directory(
             self,
             "Выберите папку, куда сохранить изображения",
-            self.last_image_export_output_dir,
+            self.get_current_export_paths().output_dir,
         )
 
         if not output_dir:
             return None
 
-        self.last_image_export_output_dir = output_dir
+        self.export_path_state.set_output_dir(str(output_dir))
         self.update_export_paths_label()
 
         return Path(output_dir)
-
-    def show_image_export_result(
-        self,
-        results: list[ExportResult],
-        output_dir: Path,
-    ) -> None:
-        message = build_export_summary_message(results)
-
-        if ask_open_folder_after_export(self, message):
-            open_directory(output_dir)
 
     def show_image_preview(self, image: Image.Image) -> None:
         dialog = ImagePreviewDialog(
@@ -787,79 +783,59 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def build_current_project_data(self) -> ProjectData:
-        return ProjectData(
+        export_paths = self.get_current_export_paths()
+
+        return build_project_data(
             year=self.year_spinbox.value(),
             weekday1=self.combo_weekday1.currentIndex(),
             weekday2=self.combo_weekday2.currentIndex(),
             cities=self.cities,
-            export_settings_path=self.last_image_export_settings_path or None,
-            export_output_dir=self.last_image_export_output_dir or None,
+            export_settings_path=export_paths.settings_path,
+            export_output_dir=export_paths.output_dir,
         )
 
     def apply_project_data(self, project: ProjectData) -> None:
-        self.year_spinbox.setValue(project.year)
-        self.combo_weekday1.setCurrentIndex(project.weekday1)
-        self.combo_weekday2.setCurrentIndex(project.weekday2)
-
-        self.last_image_export_settings_path = project.export_settings_path or ""
-        self.last_image_export_output_dir = project.export_output_dir or ""
-
-        self.update_export_paths_label()
-
+        self.apply_project_settings(project)
+        self.apply_export_paths(project)
         self.load_cities_into_table(project.cities)
 
     def update_export_paths_label(self) -> None:
-        settings_text = "не выбраны"
-        output_dir_text = "не выбрана"
+        export_paths = self.get_current_export_paths()
 
-        tooltip_parts = []
-
-        if self.last_image_export_settings_path:
-            settings_path = Path(self.last_image_export_settings_path)
-            settings_text = settings_path.name
-            tooltip_parts.append(f"Файл настроек: {settings_path}")
-
-        if self.last_image_export_output_dir:
-            output_dir = Path(self.last_image_export_output_dir)
-            output_dir_text = output_dir.name
-            tooltip_parts.append(f"Папка экспорта: {output_dir}")
-
-        self.export_paths_label.setText(
-            f"Настройки: {settings_text} | Папка: {output_dir_text}"
-        )
-        self.export_paths_label.setToolTip("\n".join(tooltip_parts))
+        self.export_paths_label.setText(build_export_paths_text(export_paths))
+        self.export_paths_label.setToolTip(build_export_paths_tooltip(export_paths))
         self.update_action_buttons_state()
 
     def get_export_settings_path(self) -> Path | None:
-        if self.last_image_export_settings_path:
-            settings_path = Path(self.last_image_export_settings_path)
+        export_paths = self.get_current_export_paths()
 
-            if settings_path.exists():
-                return settings_path
+        if export_paths.settings_path:
+            if export_settings_path_exists(export_paths):
+                return Path(export_paths.settings_path)
 
             show_warning(
                 self,
-                "Настройки экспорта",
-                "Сохранённый файл настроек экспорта не найден. Выберите файл заново.",
+                EXPORT_SETTINGS_TITLE,
+                MISSING_EXPORT_SETTINGS_FILE_MESSAGE,
             )
-            self.last_image_export_settings_path = ""
+            self.export_path_state.clear_settings_path()
             self.update_export_paths_label()
 
         return self.choose_export_settings_file()
 
     def get_export_output_dir(self) -> Path | None:
-        if self.last_image_export_output_dir:
-            output_dir = Path(self.last_image_export_output_dir)
+        export_paths = self.get_current_export_paths()
 
-            if output_dir.exists():
-                return output_dir
+        if export_paths.output_dir:
+            if export_output_dir_exists(export_paths):
+                return Path(export_paths.output_dir)
 
             show_warning(
                 self,
-                "Экспорт изображений",
-                "Сохранённая папка экспорта не найдена. Выберите папку заново.",
+                EXPORT_IMAGES_TITLE,
+                MISSING_EXPORT_OUTPUT_DIR_MESSAGE,
             )
-            self.last_image_export_output_dir = ""
+            self.export_path_state.clear_output_dir()
             self.update_export_paths_label()
 
         return self.choose_image_export_output_dir()
@@ -873,3 +849,111 @@ class MainWindow(QMainWindow):
     def setup_action_button(self, button: QPushButton) -> None:
         button.setMinimumWidth(120)
         button.setMaximumWidth(180)
+
+    def get_selected_cities_count(self) -> int:
+        if self.model is None:
+            return 0
+
+        selected = self.model.get_selected_cities()
+        return len(selected) if selected else 0
+
+    def has_selected_cities(self) -> bool:
+        return self.get_selected_cities_count() > 0
+
+    def has_cities(self) -> bool:
+        return bool(self.cities)
+
+    def get_status_file_text(self) -> str:
+        file_name = self.get_current_file_name()
+
+        if file_name is None:
+            return "Файл не открыт"
+
+        return f"Файл: {file_name}"
+
+    def build_status_bar_text(self) -> str:
+        return (
+            f"{self.get_status_file_text()} | "
+            f"Городов: {len(self.cities)} | "
+            f"Выбрано: {self.get_selected_cities_count()}"
+        )
+
+    def update_selected_cities_label(self) -> None:
+        if not hasattr(self, "selected_cities_label"):
+            return
+
+        self.selected_cities_label.setText(
+            f"Выбрано: {self.get_selected_cities_count()}"
+        )
+
+    def apply_project_settings(self, project: ProjectData) -> None:
+        settings = get_project_settings(project)
+
+        self.year_spinbox.setValue(settings.year)
+        self.combo_weekday1.setCurrentIndex(settings.weekday1)
+        self.combo_weekday2.setCurrentIndex(settings.weekday2)
+
+    def apply_export_paths(self, project: ProjectData) -> None:
+        export_paths = get_export_paths_from_project(project)
+
+        self.export_path_state.set_paths(export_paths)
+        self.update_export_paths_label()
+
+    def get_current_export_paths(self) -> ExportPaths:
+        return self.export_path_state.paths
+
+    def get_current_file_name(self) -> str | None:
+        if self.file_path is None:
+            return None
+
+        return Path(self.file_path).name
+
+    def load_project_from_path(self, file_path: str) -> ProjectData | None:
+        result = execute_project_load(file_path)
+
+        if not isinstance(result, ProjectLoadSuccess):
+            if ask_retry(self, "Ошибка", f"{result.message}\n\nВыбрать файл снова?"):
+                self.open_file_dialog()
+            return None
+
+        return result.project
+
+    def open_project(self, file_path: str, project: ProjectData) -> None:
+        self.file_path = file_path
+        self.apply_project_data(project)
+        self.update_window_title()
+        self.update_action_buttons_state()
+        self.update_status_bar()
+
+    def save_project_to_path(self, file_path: str) -> None:
+        project = self.build_current_project_data()
+        result = execute_project_save(project, file_path)
+
+        if not isinstance(result, ProjectSaveSuccess):
+            show_error(
+                self,
+                "Ошибка сохранения",
+                result.message,
+            )
+            return
+
+        self.file_path = result.file_path
+        self.update_window_title()
+        self.update_status_bar()
+        self.update_action_buttons_state()
+
+    def refresh_sunset_update_result(
+        self,
+        model: CityTableModel,
+        cities: list[City],
+    ) -> None:
+        model.clear_status_overrides_for_cities(cities)
+        model.refresh_status_column()
+        self.table_view.resizeColumnToContents(STATUS_COLUMN)
+
+    def get_current_sunset_settings(self) -> SunsetSettings:
+        return SunsetSettings(
+            year=self.year_spinbox.value(),
+            weekday1=self.combo_weekday1.currentIndex(),
+            weekday2=self.combo_weekday2.currentIndex(),
+        )

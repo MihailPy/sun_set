@@ -1,0 +1,338 @@
+from sun_set.models.project_data import ProjectData
+from sun_set.services.project_state_service import (
+    ExportPaths,
+    ExportPathState,
+    build_export_action_tooltip,
+    build_export_paths_text,
+    build_export_paths_tooltip,
+    build_project_data,
+    can_export_images,
+    can_preview_image,
+    export_output_dir_exists,
+    export_settings_path_exists,
+    get_export_paths_from_project,
+    get_project_settings,
+    normalize_optional_path,
+    restore_optional_path,
+)
+
+
+def test_build_project_data():
+    project = build_project_data(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="/tmp/export_settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    assert isinstance(project, ProjectData)
+    assert project.year == 2027
+    assert project.weekday1 == 4
+    assert project.weekday2 == 5
+    assert project.cities == []
+    assert project.export_settings_path == "/tmp/export_settings.json"
+    assert project.export_output_dir == "/tmp/export"
+
+
+def test_build_project_data_converts_empty_paths_to_none():
+    project = build_project_data(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="",
+        export_output_dir="",
+    )
+
+    assert project.export_settings_path is None
+    assert project.export_output_dir is None
+
+
+def test_normalize_optional_path():
+    assert normalize_optional_path("") is None
+    assert normalize_optional_path("/tmp/file.json") == "/tmp/file.json"
+
+
+def test_restore_optional_path():
+    assert restore_optional_path(None) == ""
+    assert restore_optional_path("/tmp/export") == "/tmp/export"
+
+
+def test_build_export_paths_text_without_paths():
+    text = build_export_paths_text(
+        ExportPaths(
+            settings_path="",
+            output_dir="",
+        )
+    )
+
+    assert text == "Настройки: не выбраны | Папка: не выбрана"
+
+
+def test_build_export_paths_text_with_paths():
+    text = build_export_paths_text(
+        ExportPaths(
+            settings_path="/tmp/export_settings.json",
+            output_dir="/tmp/images",
+        )
+    )
+
+    assert text == "Настройки: export_settings.json | Папка: images"
+
+
+def test_build_export_paths_tooltip_without_paths():
+    tooltip = build_export_paths_tooltip(
+        ExportPaths(
+            settings_path="",
+            output_dir="",
+        )
+    )
+
+    assert tooltip == ""
+
+
+def test_build_export_paths_tooltip_with_paths():
+    tooltip = build_export_paths_tooltip(
+        ExportPaths(
+            settings_path="/tmp/export_settings.json",
+            output_dir="/tmp/images",
+        )
+    )
+
+    assert "Файл настроек: /tmp/export_settings.json" in tooltip
+    assert "Папка экспорта: /tmp/images" in tooltip
+
+
+def test_can_preview_image():
+    assert can_preview_image(
+        has_selected_cities=True, export_paths=ExportPaths("/tmp/settings.json", "")
+    )
+
+    assert not can_preview_image(
+        has_selected_cities=False,
+        export_paths=ExportPaths("/tmp/settings.json", ""),
+    )
+
+    assert not can_preview_image(
+        has_selected_cities=True,
+        export_paths=ExportPaths("", ""),
+    )
+
+
+def test_can_export_images():
+    assert can_export_images(
+        has_selected_cities=True,
+        export_paths=ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="/tmp/export",
+        ),
+    )
+
+    assert not can_export_images(
+        has_selected_cities=False,
+        export_paths=ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="/tmp/export",
+        ),
+    )
+
+    assert not can_export_images(
+        has_selected_cities=True,
+        export_paths=ExportPaths(
+            settings_path="",
+            output_dir="/tmp/export",
+        ),
+    )
+
+    assert not can_export_images(
+        has_selected_cities=True,
+        export_paths=ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="",
+        ),
+    )
+
+
+def test_build_export_action_tooltip():
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=False,
+            export_paths=ExportPaths(
+                settings_path="/tmp/settings.json",
+                output_dir="/tmp/export",
+            ),
+        )
+        == "Выберите один или несколько городов в таблице"
+    )
+
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=True,
+            export_paths=ExportPaths(
+                settings_path="",
+                output_dir="/tmp/export",
+            ),
+        )
+        == "Выберите файл настроек экспорта"
+    )
+
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=True,
+            export_paths=ExportPaths(
+                settings_path="/tmp/settings.json",
+                output_dir="",
+            ),
+        )
+        == "Выберите папку экспорта"
+    )
+
+    assert (
+        build_export_action_tooltip(
+            has_selected_cities=True,
+            export_paths=ExportPaths(
+                settings_path="/tmp/settings.json",
+                output_dir="/tmp/export",
+            ),
+        )
+        == ""
+    )
+
+
+def test_get_export_paths_from_project():
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path="/tmp/settings.json",
+        export_output_dir="/tmp/export",
+    )
+
+    export_paths = get_export_paths_from_project(project)
+
+    assert export_paths.settings_path == "/tmp/settings.json"
+    assert export_paths.output_dir == "/tmp/export"
+
+
+def test_get_export_paths_from_project_without_paths():
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path=None,
+        export_output_dir=None,
+    )
+
+    export_paths = get_export_paths_from_project(project)
+
+    assert export_paths.settings_path == ""
+    assert export_paths.output_dir == ""
+
+
+def test_get_project_settings():
+    project = ProjectData(
+        year=2030,
+        weekday1=1,
+        weekday2=6,
+        cities=[],
+    )
+
+    settings = get_project_settings(project)
+
+    assert settings.year == 2030
+    assert settings.weekday1 == 1
+    assert settings.weekday2 == 6
+
+
+def test_export_path_state_empty():
+    state = ExportPathState.empty()
+
+    assert state.paths.settings_path == ""
+    assert state.paths.output_dir == ""
+
+
+def test_export_path_state_set_settings_path():
+    state = ExportPathState.empty()
+
+    state.set_settings_path("/tmp/settings.json")
+
+    assert state.paths.settings_path == "/tmp/settings.json"
+    assert state.paths.output_dir == ""
+
+
+def test_export_path_state_set_output_dir():
+    state = ExportPathState.empty()
+
+    state.set_output_dir("/tmp/export")
+
+    assert state.paths.settings_path == ""
+    assert state.paths.output_dir == "/tmp/export"
+
+
+def test_export_path_state_clear_paths():
+    state = ExportPathState.empty()
+    state.set_settings_path("/tmp/settings.json")
+    state.set_output_dir("/tmp/export")
+
+    state.clear_settings_path()
+    state.clear_output_dir()
+
+    assert state.paths.settings_path == ""
+    assert state.paths.output_dir == ""
+
+
+def test_export_path_state_set_paths():
+    state = ExportPathState.empty()
+
+    state.set_paths(
+        ExportPaths(
+            settings_path="/tmp/settings.json",
+            output_dir="/tmp/export",
+        )
+    )
+
+    assert state.paths.settings_path == "/tmp/settings.json"
+    assert state.paths.output_dir == "/tmp/export"
+
+
+def test_export_settings_path_exists(tmp_path):
+    settings_path = tmp_path / "settings.json"
+    settings_path.write_text("{}", encoding="utf-8")
+
+    export_paths = ExportPaths(
+        settings_path=str(settings_path),
+        output_dir="",
+    )
+
+    assert export_settings_path_exists(export_paths)
+
+
+def test_export_settings_path_exists_returns_false_for_missing_file(tmp_path):
+    export_paths = ExportPaths(
+        settings_path=str(tmp_path / "missing.json"),
+        output_dir="",
+    )
+
+    assert not export_settings_path_exists(export_paths)
+
+
+def test_export_output_dir_exists(tmp_path):
+    export_paths = ExportPaths(
+        settings_path="",
+        output_dir=str(tmp_path),
+    )
+
+    assert export_output_dir_exists(export_paths)
+
+
+def test_export_output_dir_exists_returns_false_for_missing_dir(tmp_path):
+    export_paths = ExportPaths(
+        settings_path="",
+        output_dir=str(tmp_path / "missing"),
+    )
+
+    assert not export_output_dir_exists(export_paths)
