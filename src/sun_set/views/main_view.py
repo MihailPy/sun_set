@@ -44,6 +44,7 @@ from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.table_model import (
     STATUS_COLUMN,
+    SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     StatusActionDelegate,
@@ -315,7 +316,9 @@ class MainWindow(QMainWindow):
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
 
         self.status_delegate = StatusActionDelegate(self.table_view)
-        self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
+        self.table_view.setItemDelegateForColumn(
+            SUNSET_DATA_COLUMN, self.status_delegate
+        )
         self.status_delegate.buttonClicked.connect(self.handle_city_update)
 
     def _create_date_group(self) -> QGroupBox:

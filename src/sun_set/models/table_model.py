@@ -264,7 +264,7 @@ class CityTableModel(QAbstractTableModel):
                     elif city.sunset_data.source == Source.EDITED:
                         return "⚠️ Изменено"
             if col == SUNSET_DATA_COLUMN:
-                return ""
+                return "Открыть"
 
         return None
 

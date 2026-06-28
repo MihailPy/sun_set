@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QEvent, QModelIndex, QPoint, QPointF, QRect, QSize, Qt
+from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, QSize, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
 from PyQt6.QtWidgets import QApplication, QStyleOptionViewItem
 
