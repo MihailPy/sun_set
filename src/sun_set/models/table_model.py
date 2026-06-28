@@ -23,6 +23,7 @@ from sun_set.models.city import City
 from sun_set.models.sunset import Source
 
 STATUS_COLUMN = 7
+SUNSET_DATA_COLUMN = 8
 
 
 class StatusActionDelegate(QStyledItemDelegate):
@@ -191,6 +192,7 @@ class CityTableModel(QAbstractTableModel):
             "Timezone",
             "Высота ASL",
             "Статус",
+            "Данные заката",
         ]
         self.checked_states = [False] * len(cities)
         self.status_overrides = {}
@@ -206,7 +208,7 @@ class CityTableModel(QAbstractTableModel):
         base_flags = super().flags(index)
         if index.column() == 0:
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
-        if index.column() == STATUS_COLUMN:
+        if index.column() in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
             return Qt.ItemFlag.ItemIsEnabled
         return base_flags | Qt.ItemFlag.ItemIsEditable
 
@@ -261,6 +263,8 @@ class CityTableModel(QAbstractTableModel):
                         return "✅ Загружено"
                     elif city.sunset_data.source == Source.EDITED:
                         return "⚠️ Изменено"
+            if col == SUNSET_DATA_COLUMN:
+                return ""
 
         return None
 
