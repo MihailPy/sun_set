@@ -88,10 +88,8 @@ from sun_set.services.project_workflow import (
 )
 from sun_set.services.sunset_workflow import (
     SunsetSettings,
-    build_single_city_sunset_update_request,
     build_sunset_update_request,
     create_city_for_year,
-    execute_single_city_sunset_update,
     execute_sunset_update,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
@@ -432,17 +430,6 @@ class MainWindow(QMainWindow):
                 lambda: self.on_city_data_changed(row)
             )
             self.extra_window.show()
-
-        if action_type == "update":
-            settings = self.get_current_sunset_settings()
-            request = build_single_city_sunset_update_request(
-                city=city,
-                settings=settings,
-            )
-
-            execute_single_city_sunset_update(request)
-
-            self.model.refresh_status_row(row)
 
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 

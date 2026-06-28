@@ -267,25 +267,6 @@ class TestMainWindow:
         mock_model.refresh_status_column.assert_not_called()
         main_window.table_view.resizeColumnToContents.assert_not_called()
 
-    def test_handle_city_update_logic(self, qtbot, main_window, temp_json_file):
-        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
-            main_window.open_file_dialog()
-
-        mock_sunset_data = MagicMock()
-        mock_sunset_data.get_stable_hash.return_value = "new_hash_123"
-
-        with patch(
-            "sun_set.services.city_service.get_city_sunset",
-            return_value=mock_sunset_data,
-        ) as mock_get:
-            with qtbot.waitSignal(main_window.model.dataChanged):
-                main_window.handle_city_update(0, "update")
-
-        city = main_window.model.cities[0]
-        mock_get.assert_called_once()
-        assert city.sunset_data == mock_sunset_data
-        assert city.sunset_data.hash_before_edit == city.get_stable_hash()
-
     def test_handle_city_update_view(self, qtbot, main_window, temp_json_file):
         with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
