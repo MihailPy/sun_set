@@ -3,19 +3,13 @@ from typing import Any
 from PyQt6 import QtGui
 from PyQt6.QtCore import (
     QAbstractTableModel,
-    QEvent,
     QModelIndex,
-    QRect,
-    QSize,
     Qt,
     pyqtSignal,
 )
-from PyQt6.QtGui import QMouseEvent  # Needed for type checking
 from PyQt6.QtWidgets import (
-    QApplication,
     QHeaderView,
     QStyle,
-    QStyledItemDelegate,
     QStyleOptionButton,
 )
 
@@ -24,67 +18,6 @@ from sun_set.models.sunset import Source
 
 STATUS_COLUMN = 7
 SUNSET_DATA_COLUMN = 8
-
-
-class SunsetDataActionDelegate(QStyledItemDelegate):
-    buttonClicked = pyqtSignal(int)
-
-    BTN_WIDTH = 90
-    MARGIN = 5
-
-    def sizeHint(self, option, index) -> QSize:
-        return QSize(self.BTN_WIDTH + self.MARGIN * 2, 40)
-
-    def paint(self, painter, option, index):
-        if painter is None:
-            return
-
-        painter.save()
-
-        button_rect = QRect(
-            option.rect.left() + self.MARGIN,
-            option.rect.top() + self.MARGIN,
-            option.rect.width() - self.MARGIN * 2,
-            option.rect.height() - self.MARGIN * 2,
-        )
-
-        button_option = QStyleOptionButton()
-        button_option.rect = button_rect
-        button_option.text = "Открыть"
-        button_option.state = (
-            QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
-        )
-
-        style = option.widget.style() if option.widget else QApplication.style()
-        if style:
-            style.drawControl(
-                QStyle.ControlElement.CE_PushButton,
-                button_option,
-                painter,
-            )
-
-        painter.restore()
-
-    def editorEvent(self, event, model, option, index) -> bool:
-        if event is None:
-            return False
-
-        if event.type() == QEvent.Type.MouseButtonRelease:
-            if isinstance(event, QMouseEvent):
-                pos = event.position().toPoint()
-
-                button_rect = QRect(
-                    option.rect.left() + self.MARGIN,
-                    option.rect.top() + self.MARGIN,
-                    option.rect.width() - self.MARGIN * 2,
-                    option.rect.height() - self.MARGIN * 2,
-                )
-
-                if button_rect.contains(pos):
-                    self.buttonClicked.emit(index.row())
-                    return True
-
-        return super().editorEvent(event, model, option, index)
 
 
 class CheckBoxHeader(QHeaderView):

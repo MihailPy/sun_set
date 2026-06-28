@@ -47,7 +47,6 @@ from sun_set.models.table_model import (
     SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
-    SunsetDataActionDelegate,
 )
 from sun_set.services.dialog_service import (
     ask_retry,
@@ -315,12 +314,7 @@ class MainWindow(QMainWindow):
         self.table_view.hide()
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
 
-        self.sunset_data_delegate = SunsetDataActionDelegate(self.table_view)
-        self.table_view.setItemDelegateForColumn(
-            SUNSET_DATA_COLUMN,
-            self.sunset_data_delegate,
-        )
-        self.sunset_data_delegate.buttonClicked.connect(self.open_city_sunset_data)
+        self.table_view.clicked.connect(self.handle_table_click)
 
     def _create_date_group(self) -> QGroupBox:
         date_group = QGroupBox("Дни расчёта")
@@ -944,3 +938,9 @@ class MainWindow(QMainWindow):
         self.extra_window = YearEditorWindow(city)
         self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
         self.extra_window.show()
+
+    def handle_table_click(self, index: QModelIndex) -> None:
+        if index.column() != SUNSET_DATA_COLUMN:
+            return
+
+        self.open_city_sunset_data(index.row())
