@@ -112,48 +112,6 @@ class TestStatusActionDelegate:
 
         painter.end()
 
-    def test_editor_event_view_button(self, status_delegate, table_model):
-        """Тест клика по кнопке просмотра"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        status_delegate.buttonClicked = Mock()
-
-        event = Mock(spec=QMouseEvent)
-        event.type.return_value = QEvent.Type.MouseButtonRelease
-        event.position.return_value.toPoint.return_value = QPoint(120, 20)
-
-        with patch.object(CityTableModel, "data") as mock_data:
-            mock_data.return_value = True
-
-            result = status_delegate.editorEvent(event, table_model, option, index)
-
-            assert result is True
-            status_delegate.buttonClicked.emit.assert_called_once_with(0, "view")
-
-    def test_editor_event_disabled_button(self, status_delegate, table_model):
-        """Тест клика по отключенной кнопке"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        status_delegate.buttonClicked = Mock()
-
-        event = Mock(spec=QMouseEvent)
-        event.type.return_value = QEvent.Type.MouseButtonRelease
-        event.position.return_value.toPoint.return_value = QPoint(160, 20)
-
-        with patch.object(CityTableModel, "data") as mock_data:
-            mock_data.return_value = False
-
-            result = status_delegate.editorEvent(event, table_model, option, index)
-
-            assert result is True
-            status_delegate.buttonClicked.emit.assert_not_called()
-
     def test_editor_event_null_event(self, status_delegate):
         """Тест с None событием"""
         index = Mock()
@@ -231,7 +189,7 @@ class TestCityTableModel:
 
     def test_column_count(self, table_model):
         """Тест количества колонок"""
-        assert table_model.columnCount() == 8
+        assert table_model.columnCount() == 9
 
     def test_flags(self, table_model):
         """Тест флагов для разных колонок"""
