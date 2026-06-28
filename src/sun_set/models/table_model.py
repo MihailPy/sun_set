@@ -26,7 +26,7 @@ STATUS_COLUMN = 7
 
 
 class StatusActionDelegate(QStyledItemDelegate):
-    buttonClicked = pyqtSignal(int, str)  # row, action_type ('view' или 'update')
+    buttonClicked = pyqtSignal(int, str)  # row, action_type
 
     # Константы
     BTN_WIDTH = 40  # Уменьшаем ширину для иконок
@@ -35,13 +35,12 @@ class StatusActionDelegate(QStyledItemDelegate):
 
     # Роли данных для хранения состояний кнопок
     ViewEnabledRole = Qt.ItemDataRole.UserRole + 1
-    UpdateEnabledRole = Qt.ItemDataRole.UserRole + 2
 
     def sizeHint(self, option, index) -> QSize:
         status_text = f"{index.data() or '✅ Загружено'}"
 
         # Ширина для двух кнопок + отступы
-        buttons_width = self.BTN_WIDTH * 2 + self.BUTTON_SPACING
+        buttons_width = self.BTN_WIDTH
 
         text_width = option.fontMetrics.horizontalAdvance(status_text)
         total_width = text_width + buttons_width + (self.MARGIN * 6)
@@ -64,21 +63,11 @@ class StatusActionDelegate(QStyledItemDelegate):
             option.rect.height() - 2 * v_margin,
         )
 
-        update_btn_rect = QRect(
-            option.rect.right() - self.BTN_WIDTH - self.MARGIN,
-            option.rect.top() + v_margin,
-            self.BTN_WIDTH,
-            option.rect.height() - 2 * v_margin,
-        )
-
         # Текст статуса
         text_rect = QRect(
             option.rect.left() + self.MARGIN,
             option.rect.top(),
-            option.rect.width()
-            - (self.BTN_WIDTH * 2)
-            - self.BUTTON_SPACING
-            - (self.MARGIN * 4),
+            option.rect.width() - self.BTN_WIDTH - (self.MARGIN * 3),
             option.rect.height(),
         )
 
@@ -91,7 +80,6 @@ class StatusActionDelegate(QStyledItemDelegate):
 
         # Получаем состояния кнопок
         view_enabled = index.data(self.ViewEnabledRole)
-        update_enabled = index.data(self.UpdateEnabledRole)
 
         # Рисуем кнопку "Просмотреть" 👁️
         view_btn_option = QStyleOptionButton()
@@ -110,22 +98,6 @@ class StatusActionDelegate(QStyledItemDelegate):
                 QStyle.ControlElement.CE_PushButton, view_btn_option, painter
             )
 
-        # Рисуем кнопку "Обновить" 🔄
-        update_btn_option = QStyleOptionButton()
-        update_btn_option.rect = update_btn_rect
-        update_btn_option.text = "🔄"  # Эмодзи обновления
-        update_btn_option.state = (
-            QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
-        )
-
-        if update_enabled is False:
-            update_btn_option.state &= ~QStyle.StateFlag.State_Enabled
-
-        if style:
-            style.drawControl(
-                QStyle.ControlElement.CE_PushButton, update_btn_option, painter
-            )
-
         painter.restore()
 
     def editorEvent(self, event, model, option, index) -> bool:
@@ -138,14 +110,6 @@ class StatusActionDelegate(QStyledItemDelegate):
 
                 # Проверяем клик по кнопке "Просмотреть"
                 view_btn_rect = QRect(
-                    option.rect.right() - self.BTN_WIDTH * 2 - self.BUTTON_SPACING,
-                    option.rect.top() + self.MARGIN,
-                    self.BTN_WIDTH,
-                    option.rect.height() - 2 * self.MARGIN,
-                )
-
-                # Проверяем клик по кнопке "Обновить"
-                update_btn_rect = QRect(
                     option.rect.right() - self.BTN_WIDTH - self.MARGIN,
                     option.rect.top() + self.MARGIN,
                     self.BTN_WIDTH,
@@ -154,16 +118,10 @@ class StatusActionDelegate(QStyledItemDelegate):
 
                 # Получаем состояния кнопок
                 view_enabled = index.data(self.ViewEnabledRole)
-                update_enabled = index.data(self.UpdateEnabledRole)
 
                 if view_btn_rect.contains(pos):
                     if view_enabled is not False:  # Если кнопка включена
                         self.buttonClicked.emit(index.row(), "view")
-                    return True
-
-                if update_btn_rect.contains(pos):
-                    if update_enabled is not False:  # Если кнопка включена
-                        self.buttonClicked.emit(index.row(), "update")
                     return True
 
         return super().editorEvent(event, model, option, index)
@@ -269,14 +227,6 @@ class CityTableModel(QAbstractTableModel):
                 return True
             return False
 
-        if role == StatusActionDelegate.UpdateEnabledRole:
-            if (
-                city.get_stable_hash() != city.sunset_data.hash_before_edit
-                or city.sunset_data.source == Source.EDITED
-            ):
-                return True
-            return False
-
         if role == Qt.ItemDataRole.CheckStateRole and col == 0:
             return (
                 Qt.CheckState.Checked
@@ -360,7 +310,6 @@ class CityTableModel(QAbstractTableModel):
                     index,
                     [
                         Qt.ItemDataRole.DisplayRole,
-                        StatusActionDelegate.UpdateEnabledRole,
                     ],
                 )
                 return True
@@ -428,7 +377,6 @@ class CityTableModel(QAbstractTableModel):
             self.index(len(self.cities) - 1, STATUS_COLUMN),
             [
                 Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.UpdateEnabledRole,
                 StatusActionDelegate.ViewEnabledRole,
             ],
         )
@@ -443,7 +391,6 @@ class CityTableModel(QAbstractTableModel):
             index,
             [
                 Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.UpdateEnabledRole,
                 StatusActionDelegate.ViewEnabledRole,
             ],
         )

@@ -133,27 +133,6 @@ class TestStatusActionDelegate:
             assert result is True
             status_delegate.buttonClicked.emit.assert_called_once_with(0, "view")
 
-    def test_editor_event_update_button(self, status_delegate, table_model):
-        """Тест клика по кнопке обновления"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        status_delegate.buttonClicked = Mock()
-
-        event = Mock(spec=QMouseEvent)
-        event.type.return_value = QEvent.Type.MouseButtonRelease
-        event.position.return_value.toPoint.return_value = QPoint(160, 20)
-
-        with patch.object(CityTableModel, "data") as mock_data:
-            mock_data.return_value = True
-
-            result = status_delegate.editorEvent(event, table_model, option, index)
-
-            assert result is True
-            status_delegate.buttonClicked.emit.assert_called_once_with(0, "update")
-
     def test_editor_event_disabled_button(self, status_delegate, table_model):
         """Тест клика по отключенной кнопке"""
         index = table_model.index(0, 7)
@@ -321,24 +300,6 @@ class TestCityTableModel:
         enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
         assert enabled is False
 
-    def test_data_update_enabled_when_source_calculated(self, table_model, sample_city):
-        """Тест роли включения кнопки обновления, когда данные собранны данные и не изменены."""
-        index = table_model.index(0, 7)
-
-        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
-        sample_city.sunset_data.source = Source.CALCULATED
-        enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
-        assert enabled is False
-
-    def test_data_update_enabled_when_source_edited(self, table_model, sample_city):
-        """Тест роли включения кнопки обновления, когда данные были изменены."""
-        index = table_model.index(0, 7)
-
-        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
-        sample_city.sunset_data.source = Source.EDITED
-        enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
-        assert enabled is True
-
     def test_data_invalid_index(self, table_model):
         """Тест получения данных для невалидного индекса"""
         invalid_index = QModelIndex()
@@ -483,9 +444,6 @@ class TestIntegration:
 
         view_enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
         assert view_enabled in (True, False)
-
-        update_enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
-        assert update_enabled in (True, False)
 
     def test_header_model_interaction(self, checkbox_header, table_model):
         """Тест взаимодействия заголовке и модели"""
