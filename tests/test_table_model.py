@@ -366,7 +366,7 @@ class TestCityTableModel:
         assert data == "Город"
 
         data = table_model.headerData(7, Qt.Orientation.Horizontal)
-        assert data == "Данные заката"
+        assert data == "Статус"
 
     def test_add_city(self, table_model):
         """Тест добавления города"""

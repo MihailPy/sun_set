@@ -190,7 +190,7 @@ class CityTableModel(QAbstractTableModel):
             "Долгота",
             "Timezone",
             "Высота ASL",
-            "Данные заката",
+            "Статус",
         ]
         self.checked_states = [False] * len(cities)
         self.status_overrides = {}
