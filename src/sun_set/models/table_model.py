@@ -30,7 +30,7 @@ class StatusActionDelegate(QStyledItemDelegate):
     buttonClicked = pyqtSignal(int, str)  # row, action_type
 
     # Константы
-    BTN_WIDTH = 40  # Уменьшаем ширину для иконок
+    BTN_WIDTH = 90  # Уменьшаем ширину для иконок
     MARGIN = 5
     BUTTON_SPACING = 5  # Расстояние между кнопками
 
@@ -85,7 +85,7 @@ class StatusActionDelegate(QStyledItemDelegate):
         # Рисуем кнопку "Просмотреть" 👁️
         view_btn_option = QStyleOptionButton()
         view_btn_option.rect = view_btn_rect
-        view_btn_option.text = "👁️"  # Эмодзи глаза
+        view_btn_option.text = "Открыть"
         view_btn_option.state = (
             QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
         )
