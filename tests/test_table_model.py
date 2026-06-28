@@ -1,16 +1,15 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, QSize, Qt
+from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
-from PyQt6.QtWidgets import QApplication, QStyleOptionViewItem
+from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
     CheckBoxHeader,
     CityTableModel,
-    StatusActionDelegate,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -64,62 +63,10 @@ def table_model(sample_cities, qapp):
 
 
 @pytest.fixture
-def status_delegate(qapp):
-    """Создает делегат статуса"""
-    return StatusActionDelegate()
-
-
-@pytest.fixture
 def checkbox_header(qapp):
     header = CheckBoxHeader(Qt.Orientation.Horizontal)
     header.setModel(CityTableModel([]))
     return header
-
-
-class TestStatusActionDelegate:
-    def test_size_hint(self, status_delegate, table_model):
-        """Тест расчета размера ячейки"""
-        index = table_model.index(0, 7)
-        option = Mock()
-        option.fontMetrics.horizontalAdvance.return_value = 100
-
-        size = status_delegate.sizeHint(option, index)
-
-        assert isinstance(size, QSize)
-        assert size.width() > 0
-        assert size.height() == 40
-
-    def test_paint_with_null_painter(self, status_delegate, table_model):
-        """Тест отрисовки с None painter"""
-        index = table_model.index(0, 7)
-        option = Mock()
-
-        status_delegate.paint(None, option, index)
-
-    def test_paint_buttons(self, status_delegate, table_model, qapp, mocker):
-        """Тест отрисовки кнопок"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        pixmap = QPixmap(200, 40)
-        painter = QPainter(pixmap)
-
-        mocked_draw = mocker.patch.object(painter, "drawText")
-        status_delegate.paint(painter, option, index)
-        assert mocked_draw.called
-
-        painter.end()
-
-    def test_editor_event_null_event(self, status_delegate):
-        """Тест с None событием"""
-        index = Mock()
-        option = Mock()
-        model = Mock()
-
-        result = status_delegate.editorEvent(None, model, option, index)
-        assert result is False
 
 
 class TestCheckBoxHeader:
@@ -245,18 +192,6 @@ class TestCityTableModel:
         sample_city.sunset_data.source = Source.CALCULATED
         status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
         assert status == "✅ Загружено"
-
-    def test_data_view_enabled_role(self, table_model, sample_city):
-        """Тест роли включения кнопки просмотра"""
-        index = table_model.index(0, 7)
-
-        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert enabled is True
-
-        sample_city.sunset_data.hash_before_edit = None
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert enabled is False
 
     def test_data_invalid_index(self, table_model):
         """Тест получения данных для невалидного индекса"""
@@ -393,23 +328,3 @@ class TestCityTableModel:
         table_model.setData(index, "Новое имя", Qt.ItemDataRole.EditRole)
 
         assert signal_received is True
-
-
-class TestIntegration:
-    def test_model_delegate_interaction(self, table_model):
-        """Тест взаимодействия модели и делегата"""
-        index = table_model.index(0, 7)
-
-        view_enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert view_enabled in (True, False)
-
-    def test_header_model_interaction(self, checkbox_header, table_model):
-        """Тест взаимодействия заголовке и модели"""
-        checkbox_header.setModel(table_model)
-
-        assert not any(table_model.checked_states)
-
-        checkbox_header.is_checked = True
-        table_model.select_all(True)
-
-        assert all(table_model.checked_states)

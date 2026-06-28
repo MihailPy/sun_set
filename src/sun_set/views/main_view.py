@@ -47,7 +47,7 @@ from sun_set.models.table_model import (
     SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
-    StatusActionDelegate,
+    SunsetDataActionDelegate,
 )
 from sun_set.services.dialog_service import (
     ask_retry,
@@ -315,11 +315,12 @@ class MainWindow(QMainWindow):
         self.table_view.hide()
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
 
-        self.status_delegate = StatusActionDelegate(self.table_view)
+        self.sunset_data_delegate = SunsetDataActionDelegate(self.table_view)
         self.table_view.setItemDelegateForColumn(
-            SUNSET_DATA_COLUMN, self.status_delegate
+            SUNSET_DATA_COLUMN,
+            self.sunset_data_delegate,
         )
-        self.status_delegate.buttonClicked.connect(self.handle_city_update)
+        self.sunset_data_delegate.buttonClicked.connect(self.open_city_sunset_data)
 
     def _create_date_group(self) -> QGroupBox:
         date_group = QGroupBox("Дни расчёта")
@@ -419,21 +420,6 @@ class MainWindow(QMainWindow):
             return
 
         self.model.update_status_for_row(top_left.row())
-        self.table_view.resizeColumnToContents(STATUS_COLUMN)
-
-    def handle_city_update(self, row: int, action_type: str):
-        if self.model is None:
-            self.show_no_cities_warning()
-            return
-
-        city = self.model.cities[row]
-        if action_type == "view":
-            self.extra_window = YearEditorWindow(city)
-            self.extra_window.dataChanged.connect(
-                lambda: self.on_city_data_changed(row)
-            )
-            self.extra_window.show()
-
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def on_city_data_changed(self, row: int):
@@ -947,3 +933,14 @@ class MainWindow(QMainWindow):
             weekday1=self.combo_weekday1.currentIndex(),
             weekday2=self.combo_weekday2.currentIndex(),
         )
+
+    def open_city_sunset_data(self, row: int) -> None:
+        if self.model is None:
+            self.show_no_cities_warning()
+            return
+
+        city = self.model.cities[row]
+
+        self.extra_window = YearEditorWindow(city)
+        self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
+        self.extra_window.show()

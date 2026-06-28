@@ -26,77 +26,41 @@ STATUS_COLUMN = 7
 SUNSET_DATA_COLUMN = 8
 
 
-class StatusActionDelegate(QStyledItemDelegate):
-    buttonClicked = pyqtSignal(int, str)  # row, action_type
+class SunsetDataActionDelegate(QStyledItemDelegate):
+    buttonClicked = pyqtSignal(int)
 
-    # Константы
-    BTN_WIDTH = 90  # Уменьшаем ширину для иконок
+    BTN_WIDTH = 90
     MARGIN = 5
-    BUTTON_SPACING = 5  # Расстояние между кнопками
-
-    # Роли данных для хранения состояний кнопок
-    ViewEnabledRole = Qt.ItemDataRole.UserRole + 1
 
     def sizeHint(self, option, index) -> QSize:
-        status_text = f"{index.data() or '✅ Загружено'}"
-
-        # Ширина для двух кнопок + отступы
-        buttons_width = self.BTN_WIDTH
-
-        text_width = option.fontMetrics.horizontalAdvance(status_text)
-        total_width = text_width + buttons_width + (self.MARGIN * 6)
-
-        return QSize(total_width, 40)
+        return QSize(self.BTN_WIDTH + self.MARGIN * 2, 40)
 
     def paint(self, painter, option, index):
         if painter is None:
             return
-        self.initStyleOption(option, index)
+
         painter.save()
 
-        v_margin = 1
-
-        # Прямоугольники для двух кнопок
-        view_btn_rect = QRect(
-            option.rect.right() - self.BTN_WIDTH * 2 - self.BUTTON_SPACING,
-            option.rect.top() + v_margin,
-            self.BTN_WIDTH,
-            option.rect.height() - 2 * v_margin,
-        )
-
-        # Текст статуса
-        text_rect = QRect(
+        button_rect = QRect(
             option.rect.left() + self.MARGIN,
-            option.rect.top(),
-            option.rect.width() - self.BTN_WIDTH - (self.MARGIN * 3),
-            option.rect.height(),
+            option.rect.top() + self.MARGIN,
+            option.rect.width() - self.MARGIN * 2,
+            option.rect.height() - self.MARGIN * 2,
         )
 
-        status_text = f"{index.data() or '✅ Загружено'}"
-        painter.drawText(
-            text_rect,
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-            status_text,
-        )
-
-        # Получаем состояния кнопок
-        view_enabled = index.data(self.ViewEnabledRole)
-
-        # Рисуем кнопку "Просмотреть" 👁️
-        view_btn_option = QStyleOptionButton()
-        view_btn_option.rect = view_btn_rect
-        view_btn_option.text = "Открыть"
-        view_btn_option.state = (
+        button_option = QStyleOptionButton()
+        button_option.rect = button_rect
+        button_option.text = "Открыть"
+        button_option.state = (
             QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
         )
-
-        if view_enabled is False:
-            view_btn_option.state &= ~QStyle.StateFlag.State_Enabled
 
         style = option.widget.style() if option.widget else QApplication.style()
         if style:
             style.drawControl(
-                QStyle.ControlElement.CE_PushButton, view_btn_option, painter
+                QStyle.ControlElement.CE_PushButton,
+                button_option,
+                painter,
             )
 
         painter.restore()
@@ -109,20 +73,15 @@ class StatusActionDelegate(QStyledItemDelegate):
             if isinstance(event, QMouseEvent):
                 pos = event.position().toPoint()
 
-                # Проверяем клик по кнопке "Просмотреть"
-                view_btn_rect = QRect(
-                    option.rect.right() - self.BTN_WIDTH - self.MARGIN,
+                button_rect = QRect(
+                    option.rect.left() + self.MARGIN,
                     option.rect.top() + self.MARGIN,
-                    self.BTN_WIDTH,
-                    option.rect.height() - 2 * self.MARGIN,
+                    option.rect.width() - self.MARGIN * 2,
+                    option.rect.height() - self.MARGIN * 2,
                 )
 
-                # Получаем состояния кнопок
-                view_enabled = index.data(self.ViewEnabledRole)
-
-                if view_btn_rect.contains(pos):
-                    if view_enabled is not False:  # Если кнопка включена
-                        self.buttonClicked.emit(index.row(), "view")
+                if button_rect.contains(pos):
+                    self.buttonClicked.emit(index.row())
                     return True
 
         return super().editorEvent(event, model, option, index)
@@ -219,15 +178,6 @@ class CityTableModel(QAbstractTableModel):
         row = index.row()
         col = index.column()
         city = self.cities[row]
-
-        # Роли для делегата StatusActionDelegate
-        if role == StatusActionDelegate.ViewEnabledRole:
-            if (
-                city.sunset_data.hash_before_edit
-                and city.get_stable_hash() == city.sunset_data.hash_before_edit
-            ):
-                return True
-            return False
 
         if role == Qt.ItemDataRole.CheckStateRole and col == 0:
             return (
@@ -381,7 +331,6 @@ class CityTableModel(QAbstractTableModel):
             self.index(len(self.cities) - 1, STATUS_COLUMN),
             [
                 Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.ViewEnabledRole,
             ],
         )
 
@@ -395,7 +344,6 @@ class CityTableModel(QAbstractTableModel):
             index,
             [
                 Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.ViewEnabledRole,
             ],
         )
 
