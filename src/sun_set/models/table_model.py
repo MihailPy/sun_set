@@ -69,6 +69,22 @@ class CheckBoxHeader(QHeaderView):
             super().mousePressEvent(e)
 
 
+def build_city_sunset_status_text(city: City) -> str:
+    if city.get_stable_hash() != city.sunset_data.hash_before_edit:
+        return "❗️ Неактуальные данные"
+
+    if city.sunset_data.source == Source.CALCULATED:
+        return "✅ Загружено"
+
+    if city.sunset_data.source == Source.EDITED:
+        return "⚠️ Изменено"
+
+    if city.sunset_data.source == Source.ERROR_POLAR:
+        return "⚠️ Ошибка расчёта"
+
+    return "Нет данных"
+
+
 class CityTableModel(QAbstractTableModel):
     selection_changed = pyqtSignal()
 
@@ -143,19 +159,7 @@ class CityTableModel(QAbstractTableModel):
                 if row in self.status_overrides:
                     return self.status_overrides[row]
 
-                if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-                    return "❗️ Неактуальные данные"
-
-                if city.sunset_data.source == Source.CALCULATED:
-                    return "✅ Загружено"
-
-                if city.sunset_data.source == Source.EDITED:
-                    return "⚠️ Изменено"
-
-                if city.sunset_data.source == Source.ERROR_POLAR:
-                    return "⚠️ Ошибка расчёта"
-
-                return "Нет данных"
+                return build_city_sunset_status_text(city)
             if col == SUNSET_DATA_COLUMN:
                 return "Открыть"
 
@@ -293,11 +297,5 @@ class CityTableModel(QAbstractTableModel):
     def update_status_for_row(self, row: int) -> None:
         city = self.cities[row]
 
-        if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-            self.status_overrides[row] = "❗️ Неактуальные данные"
-        elif city.sunset_data.source == Source.CALCULATED:
-            self.status_overrides[row] = "✅ Загружено"
-        elif city.sunset_data.source == Source.EDITED:
-            self.status_overrides[row] = "⚠️ Изменено"
-
+        self.status_overrides[row] = build_city_sunset_status_text(city)
         self.refresh_status_row(row)
