@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
-from sun_set.models.table_model import STATUS_COLUMN
+from sun_set.models.table_model import STATUS_COLUMN, SUNSET_DATA_COLUMN
 from sun_set.storage.city_json_storage import save_project_to_json
 from sun_set.views.main_view import MainWindow
 
@@ -329,3 +329,31 @@ class TestMainWindow:
         export_paths_tooltip = main_window.export_paths_label.toolTip()
         assert "/tmp/export_settings.json" in export_paths_tooltip
         assert "/tmp/export" in export_paths_tooltip
+
+    @patch.object(MainWindow, "open_city_sunset_data")
+    def test_handle_table_click_opens_sunset_data(
+        self,
+        mock_open_city_sunset_data,
+        main_window,
+        sample_city,
+    ):
+        main_window.load_cities_into_table([sample_city])
+        index = main_window.model.index(0, SUNSET_DATA_COLUMN)
+
+        main_window.handle_table_click(index)
+
+        mock_open_city_sunset_data.assert_called_once_with(0)
+
+    @patch.object(MainWindow, "open_city_sunset_data")
+    def test_handle_table_click_ignores_other_columns(
+        self,
+        mock_open_city_sunset_data,
+        main_window,
+        sample_city,
+    ):
+        main_window.load_cities_into_table([sample_city])
+        index = main_window.model.index(0, STATUS_COLUMN)
+
+        main_window.handle_table_click(index)
+
+        mock_open_city_sunset_data.assert_not_called()
