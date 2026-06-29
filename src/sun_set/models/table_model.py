@@ -71,16 +71,16 @@ class CheckBoxHeader(QHeaderView):
 
 def build_city_sunset_status_text(city: City) -> str:
     if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-        return "❗️ Неактуальные данные"
+        return "Требует обновления"
 
     if city.sunset_data.source == Source.CALCULATED:
-        return "✅ Загружено"
+        return "Актуально"
 
     if city.sunset_data.source == Source.EDITED:
-        return "⚠️ Изменено"
+        return "Изменено вручную"
 
     if city.sunset_data.source == Source.ERROR_POLAR:
-        return "⚠️ Ошибка расчёта"
+        return "Ошибка расчёта"
 
     return "Нет данных"
 

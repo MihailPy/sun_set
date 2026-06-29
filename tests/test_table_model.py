@@ -187,25 +187,25 @@ class TestCityTableModel:
     def test_build_city_sunset_status_text_changed_city(self, sample_city):
         sample_city.sunset_data.hash_before_edit = "old-hash"
 
-        assert build_city_sunset_status_text(sample_city) == "❗️ Неактуальные данные"
+        assert build_city_sunset_status_text(sample_city) == "Требует обновления"
 
     def test_build_city_sunset_status_text_calculated(self, sample_city):
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.CALCULATED
 
-        assert build_city_sunset_status_text(sample_city) == "✅ Загружено"
+        assert build_city_sunset_status_text(sample_city) == "Актуально"
 
     def test_build_city_sunset_status_text_edited(self, sample_city):
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.EDITED
 
-        assert build_city_sunset_status_text(sample_city) == "⚠️ Изменено"
+        assert build_city_sunset_status_text(sample_city) == "Изменено вручную"
 
     def test_build_city_sunset_status_text_error_polar(self, sample_city):
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.ERROR_POLAR
 
-        assert build_city_sunset_status_text(sample_city) == "⚠️ Ошибка расчёта"
+        assert build_city_sunset_status_text(sample_city) == "Ошибка расчёта"
 
     def test_data_status_column(self, table_model, sample_city):
         index = table_model.index(0, 7)
@@ -215,7 +215,7 @@ class TestCityTableModel:
 
         status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
 
-        assert status == "✅ Загружено"
+        assert status == "Актуально"
 
     def test_data_sunset_data_column(self, table_model):
         index = table_model.index(0, SUNSET_DATA_COLUMN)
