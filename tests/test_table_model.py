@@ -10,6 +10,7 @@ from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
     CheckBoxHeader,
     CityTableModel,
+    build_city_sunset_status_text,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -181,16 +182,37 @@ class TestCityTableModel:
         state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
         assert state == Qt.CheckState.Checked
 
-    def test_data_status_column(self, table_model, sample_city):
-        """Тест данных в колонке статуса"""
-        index = table_model.index(0, 7)
+    def test_build_city_sunset_status_text_changed_city(self, sample_city):
+        sample_city.sunset_data.hash_before_edit = "old-hash"
 
-        status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
-        assert status == "❗️ Неактуальные данные"
+        assert build_city_sunset_status_text(sample_city) == "❗️ Неактуальные данные"
+
+    def test_build_city_sunset_status_text_calculated(self, sample_city):
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.CALCULATED
+
+        assert build_city_sunset_status_text(sample_city) == "✅ Загружено"
+
+    def test_build_city_sunset_status_text_edited(self, sample_city):
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.EDITED
+
+        assert build_city_sunset_status_text(sample_city) == "⚠️ Изменено"
+
+    def test_build_city_sunset_status_text_error_polar(self, sample_city):
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.ERROR_POLAR
+
+        assert build_city_sunset_status_text(sample_city) == "⚠️ Ошибка расчёта"
+
+    def test_data_status_column(self, table_model, sample_city):
+        index = table_model.index(0, 7)
 
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.CALCULATED
+
         status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
+
         assert status == "✅ Загружено"
 
     def test_data_invalid_index(self, table_model):
