@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
+    SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     build_city_sunset_status_text,
@@ -214,6 +215,13 @@ class TestCityTableModel:
         status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
 
         assert status == "✅ Загружено"
+
+    def test_data_sunset_data_column(self, table_model):
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
+
+        action_text = table_model.data(index, Qt.ItemDataRole.DisplayRole)
+
+        assert action_text == "Открыть"
 
     def test_data_invalid_index(self, table_model):
         """Тест получения данных для невалидного индекса"""
