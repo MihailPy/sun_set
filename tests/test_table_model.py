@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
+    STATUS_COLUMN,
     SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
@@ -290,6 +291,21 @@ class TestCityTableModel:
 
         data = table_model.headerData(7, Qt.Orientation.Horizontal)
         assert data == "Статус"
+
+    def test_table_headers_include_status_and_sunset_data(self, table_model):
+        status_header = table_model.headerData(
+            STATUS_COLUMN,
+            Qt.Orientation.Horizontal,
+            Qt.ItemDataRole.DisplayRole,
+        )
+        sunset_data_header = table_model.headerData(
+            SUNSET_DATA_COLUMN,
+            Qt.Orientation.Horizontal,
+            Qt.ItemDataRole.DisplayRole,
+        )
+
+        assert status_header == "Статус"
+        assert sunset_data_header == "Данные заката"
 
     def test_add_city(self, table_model):
         """Тест добавления города"""
