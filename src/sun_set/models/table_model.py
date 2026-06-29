@@ -145,11 +145,17 @@ class CityTableModel(QAbstractTableModel):
 
                 if city.get_stable_hash() != city.sunset_data.hash_before_edit:
                     return "❗️ Неактуальные данные"
-                else:
-                    if city.sunset_data.source == Source.CALCULATED:
-                        return "✅ Загружено"
-                    elif city.sunset_data.source == Source.EDITED:
-                        return "⚠️ Изменено"
+
+                if city.sunset_data.source == Source.CALCULATED:
+                    return "✅ Загружено"
+
+                if city.sunset_data.source == Source.EDITED:
+                    return "⚠️ Изменено"
+
+                if city.sunset_data.source == Source.ERROR_POLAR:
+                    return "⚠️ Ошибка расчёта"
+
+                return "Нет данных"
             if col == SUNSET_DATA_COLUMN:
                 return "Открыть"
 
