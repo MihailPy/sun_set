@@ -112,6 +112,10 @@ class CityTableModel(QAbstractTableModel):
         col = index.column()
         city = self.cities[row]
 
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            if col in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
+                return Qt.AlignmentFlag.AlignCenter
+
         if role == Qt.ItemDataRole.CheckStateRole and col == 0:
             return (
                 Qt.CheckState.Checked
