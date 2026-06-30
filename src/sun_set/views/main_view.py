@@ -47,6 +47,7 @@ from sun_set.models.table_model import (
     SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
+    can_open_city_sunset_data,
 )
 from sun_set.services.dialog_service import (
     ask_retry,
@@ -947,6 +948,13 @@ class MainWindow(QMainWindow):
 
     def handle_table_click(self, index: QModelIndex) -> None:
         if index.column() != SUNSET_DATA_COLUMN:
+            return
+
+        if self.model is None:
+            return
+
+        city = self.model.cities[index.row()]
+        if not can_open_city_sunset_data(city):
             return
 
         self.open_city_sunset_data(index.row())

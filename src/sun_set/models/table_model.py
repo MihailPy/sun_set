@@ -85,6 +85,10 @@ def build_city_sunset_status_text(city: City) -> str:
     return "Нет данных"
 
 
+def can_open_city_sunset_data(city: City) -> bool:
+    return bool(city.sunset_data.months)
+
+
 class CityTableModel(QAbstractTableModel):
     selection_changed = pyqtSignal()
 
@@ -161,14 +165,14 @@ class CityTableModel(QAbstractTableModel):
 
                 return build_city_sunset_status_text(city)
             if col == SUNSET_DATA_COLUMN:
-                return "Открыть"
+                return "Открыть" if can_open_city_sunset_data(city) else ""
 
         if role == Qt.ItemDataRole.ForegroundRole:
-            if col == SUNSET_DATA_COLUMN:
+            if col == SUNSET_DATA_COLUMN and can_open_city_sunset_data(city):
                 return QtGui.QColor("#0066CC")
 
         if role == Qt.ItemDataRole.FontRole:
-            if col == SUNSET_DATA_COLUMN:
+            if col == SUNSET_DATA_COLUMN and can_open_city_sunset_data(city):
                 font = QtGui.QFont()
                 font.setUnderline(True)
                 return font
