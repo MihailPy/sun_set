@@ -307,9 +307,15 @@ class MainWindow(QMainWindow):
 
         header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
         self.table_view.setHorizontalHeader(header)
-        header.setStretchLastSection(True)
+        header.setStretchLastSection(False)
+
         header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(STATUS_COLUMN, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
+        header.setSectionResizeMode(
+            SUNSET_DATA_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
 
         self.table_view.hide()
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
@@ -381,7 +387,7 @@ class MainWindow(QMainWindow):
         self.table_view.setModel(model)
         self.table_view.show()
         self.initial_prompt_text.hide()
-        self.table_view.resizeColumnsToContents()
+        self.resize_table_columns()
 
     def load_cities_into_table(self, cities: list[City]) -> None:
         self.cities = cities
@@ -602,7 +608,7 @@ class MainWindow(QMainWindow):
         else:
             self.model.add_city(new_city)
             self.cities = self.model.cities
-            self.table_view.resizeColumnsToContents()
+            self.resize_table_columns()
 
         self.update_action_buttons_state()
         self.update_status_bar()
@@ -612,7 +618,7 @@ class MainWindow(QMainWindow):
             return
 
         self.model.remove_checked_cities()
-        self.table_view.resizeColumnsToContents()
+        self.resize_table_columns()
 
         self.cities = self.model.cities
 
@@ -944,3 +950,8 @@ class MainWindow(QMainWindow):
             return
 
         self.open_city_sunset_data(index.row())
+
+    def resize_table_columns(self) -> None:
+        self.table_view.resizeColumnsToContents()
+        self.table_view.setColumnWidth(STATUS_COLUMN, 170)
+        self.table_view.setColumnWidth(SUNSET_DATA_COLUMN, 120)
