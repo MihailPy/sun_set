@@ -232,9 +232,6 @@ class TestMainWindow:
         assert request.settings.year == 2025
         assert request.settings.weekday1 == 0
         assert request.settings.weekday2 == 6
-        mock_model.clear_status_overrides_for_cities.assert_called_once_with(
-            selected_cities
-        )
         mock_model.refresh_status_column.assert_called_once()
         main_window.table_view.resizeColumnToContents.assert_called_once_with(
             STATUS_COLUMN

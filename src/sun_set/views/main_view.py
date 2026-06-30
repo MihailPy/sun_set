@@ -924,7 +924,6 @@ class MainWindow(QMainWindow):
         model: CityTableModel,
         cities: list[City],
     ) -> None:
-        model.clear_status_overrides_for_cities(cities)
         model.refresh_status_column()
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 

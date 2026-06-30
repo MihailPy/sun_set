@@ -107,7 +107,6 @@ class CityTableModel(QAbstractTableModel):
             "Данные заката",
         ]
         self.checked_states = [False] * len(cities)
-        self.status_overrides = {}
         self._updating = False
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -160,9 +159,6 @@ class CityTableModel(QAbstractTableModel):
             if col == 6:
                 return str(city.elevation)
             if col == STATUS_COLUMN:
-                if row in self.status_overrides:
-                    return self.status_overrides[row]
-
                 return build_city_sunset_status_text(city)
             if col == SUNSET_DATA_COLUMN:
                 return "Открыть" if can_open_city_sunset_data(city) else ""
@@ -276,11 +272,6 @@ class CityTableModel(QAbstractTableModel):
             del self.checked_states[row]
             self.endRemoveRows()
 
-    def clear_status_overrides_for_cities(self, cities: list[City]) -> None:
-        for row, city in enumerate(self.cities):
-            if city in cities and row in self.status_overrides:
-                del self.status_overrides[row]
-
     def refresh_status_column(self) -> None:
         if not self.cities:
             return
@@ -294,9 +285,6 @@ class CityTableModel(QAbstractTableModel):
         )
 
     def refresh_status_row(self, row: int) -> None:
-        if row in self.status_overrides:
-            del self.status_overrides[row]
-
         index = self.index(row, STATUS_COLUMN)
         self.dataChanged.emit(
             index,
@@ -307,7 +295,5 @@ class CityTableModel(QAbstractTableModel):
         )
 
     def update_status_for_row(self, row: int) -> None:
-        city = self.cities[row]
 
-        self.status_overrides[row] = build_city_sunset_status_text(city)
         self.refresh_status_row(row)
