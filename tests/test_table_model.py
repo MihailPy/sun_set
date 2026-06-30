@@ -274,15 +274,6 @@ class TestCityTableModel:
 
         assert result is False
 
-    def test_set_data_status_override(self, table_model):
-        """Тест переопределения статуса"""
-        index = table_model.index(0, 7)
-
-        result = table_model.setData(index, "Тестовый статус", Qt.ItemDataRole.EditRole)
-
-        assert result is True
-        assert table_model.status_overrides[0] == "Тестовый статус"
-
     def test_header_data(self, table_model):
         """Тест данных заголовка"""
         data = table_model.headerData(0, Qt.Orientation.Horizontal)

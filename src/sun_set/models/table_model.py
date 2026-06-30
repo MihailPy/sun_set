@@ -216,8 +216,6 @@ class CityTableModel(QAbstractTableModel):
                     city.timezone = value
                 elif col == 6:
                     city.elevation = int(value)
-                elif col == STATUS_COLUMN:
-                    self.status_overrides[index.row()] = str(value)
 
                 # Обновляем все затронутые роли
                 self.dataChanged.emit(
