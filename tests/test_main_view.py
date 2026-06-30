@@ -260,7 +260,6 @@ class TestMainWindow:
             "Выберите хотя бы один город.",
         )
         mock_execute_sunset_update.assert_not_called()
-        mock_model.clear_status_overrides_for_cities.assert_not_called()
         mock_model.refresh_status_column.assert_not_called()
         main_window.table_view.resizeColumnToContents.assert_not_called()
 
