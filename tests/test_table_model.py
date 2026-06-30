@@ -13,6 +13,7 @@ from sun_set.models.table_model import (
     CheckBoxHeader,
     CityTableModel,
     build_city_sunset_status_text,
+    can_open_city_sunset_data,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -217,7 +218,8 @@ class TestCityTableModel:
 
         assert status == "Актуально"
 
-    def test_data_sunset_data_column(self, table_model):
+    def test_data_sunset_data_column(self, table_model, sample_city):
+        sample_city.sunset_data.months = {"1": []}
         index = table_model.index(0, SUNSET_DATA_COLUMN)
 
         action_text = table_model.data(index, Qt.ItemDataRole.DisplayRole)
@@ -375,17 +377,35 @@ class TestCityTableModel:
 
         assert signal_received is True
 
-    def test_sunset_data_column_foreground_role(self, table_model):
+    def test_sunset_data_column_foreground_role(self, table_model, sample_city):
+        sample_city.sunset_data.months = {"1": []}
         index = table_model.index(0, SUNSET_DATA_COLUMN)
 
         color = table_model.data(index, Qt.ItemDataRole.ForegroundRole)
 
         assert color is not None
 
-    def test_sunset_data_column_font_role(self, table_model):
+    def test_sunset_data_column_font_role(self, table_model, sample_city):
+        sample_city.sunset_data.months = {"1": []}
         index = table_model.index(0, SUNSET_DATA_COLUMN)
 
         font = table_model.data(index, Qt.ItemDataRole.FontRole)
 
         assert font is not None
         assert font.underline()
+
+    def test_can_open_city_sunset_data_when_months_exist(self, sample_city):
+        sample_city.sunset_data.months = {"1": []}
+
+        assert can_open_city_sunset_data(sample_city)
+
+    def test_can_open_city_sunset_data_when_months_empty(self, sample_city):
+        sample_city.sunset_data.months = {}
+
+        assert not can_open_city_sunset_data(sample_city)
+
+    def test_data_sunset_data_column_without_data(self, table_model, sample_city):
+        sample_city.sunset_data.months = {}
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
+
+        assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == ""

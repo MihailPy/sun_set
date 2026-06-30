@@ -338,6 +338,7 @@ class TestMainWindow:
         sample_city,
     ):
         main_window.load_cities_into_table([sample_city])
+        sample_city.sunset_data.months = {"1": []}
         index = main_window.model.index(0, SUNSET_DATA_COLUMN)
 
         main_window.handle_table_click(index)
