@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
+    QDialog,
     QTableWidget,
     QTableWidgetItem,
     QTabWidget,
@@ -13,7 +14,7 @@ from sun_set.models.sunset import Source
 from sun_set.views.delegates.delegate_sunset_table import TimeDelegate
 
 
-class YearEditorWindow(QWidget):
+class YearEditorWindow(QDialog):
     dataChanged = pyqtSignal()
 
     def __init__(self, city: City):

@@ -163,6 +163,16 @@ class CityTableModel(QAbstractTableModel):
             if col == SUNSET_DATA_COLUMN:
                 return "Открыть"
 
+        if role == Qt.ItemDataRole.ForegroundRole:
+            if col == SUNSET_DATA_COLUMN:
+                return QtGui.QColor("#0066CC")
+
+        if role == Qt.ItemDataRole.FontRole:
+            if col == SUNSET_DATA_COLUMN:
+                font = QtGui.QFont()
+                font.setUnderline(True)
+                return font
+
         return None
 
     def setData(
