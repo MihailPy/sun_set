@@ -44,9 +44,10 @@ from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.table_model import (
     STATUS_COLUMN,
+    SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
-    StatusActionDelegate,
+    can_open_city_sunset_data,
 )
 from sun_set.services.dialog_service import (
     ask_retry,
@@ -88,10 +89,8 @@ from sun_set.services.project_workflow import (
 )
 from sun_set.services.sunset_workflow import (
     SunsetSettings,
-    build_single_city_sunset_update_request,
     build_sunset_update_request,
     create_city_for_year,
-    execute_single_city_sunset_update,
     execute_sunset_update,
 )
 from sun_set.views.delegates.custom_delegate import CityDelegate
@@ -309,16 +308,20 @@ class MainWindow(QMainWindow):
 
         header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
         self.table_view.setHorizontalHeader(header)
-        header.setStretchLastSection(True)
+        header.setStretchLastSection(False)
+
         header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(STATUS_COLUMN, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
+        header.setSectionResizeMode(
+            SUNSET_DATA_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
 
         self.table_view.hide()
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
 
-        self.status_delegate = StatusActionDelegate(self.table_view)
-        self.table_view.setItemDelegateForColumn(STATUS_COLUMN, self.status_delegate)
-        self.status_delegate.buttonClicked.connect(self.handle_city_update)
+        self.table_view.clicked.connect(self.handle_table_click)
 
     def _create_date_group(self) -> QGroupBox:
         date_group = QGroupBox("Дни расчёта")
@@ -385,7 +388,7 @@ class MainWindow(QMainWindow):
         self.table_view.setModel(model)
         self.table_view.show()
         self.initial_prompt_text.hide()
-        self.table_view.resizeColumnsToContents()
+        self.resize_table_columns()
 
     def load_cities_into_table(self, cities: list[City]) -> None:
         self.cities = cities
@@ -418,32 +421,6 @@ class MainWindow(QMainWindow):
             return
 
         self.model.update_status_for_row(top_left.row())
-        self.table_view.resizeColumnToContents(STATUS_COLUMN)
-
-    def handle_city_update(self, row: int, action_type: str):
-        if self.model is None:
-            self.show_no_cities_warning()
-            return
-
-        city = self.model.cities[row]
-        if action_type == "view":
-            self.extra_window = YearEditorWindow(city)
-            self.extra_window.dataChanged.connect(
-                lambda: self.on_city_data_changed(row)
-            )
-            self.extra_window.show()
-
-        if action_type == "update":
-            settings = self.get_current_sunset_settings()
-            request = build_single_city_sunset_update_request(
-                city=city,
-                settings=settings,
-            )
-
-            execute_single_city_sunset_update(request)
-
-            self.model.refresh_status_row(row)
-
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
     def on_city_data_changed(self, row: int):
@@ -632,7 +609,7 @@ class MainWindow(QMainWindow):
         else:
             self.model.add_city(new_city)
             self.cities = self.model.cities
-            self.table_view.resizeColumnsToContents()
+            self.resize_table_columns()
 
         self.update_action_buttons_state()
         self.update_status_bar()
@@ -642,7 +619,7 @@ class MainWindow(QMainWindow):
             return
 
         self.model.remove_checked_cities()
-        self.table_view.resizeColumnsToContents()
+        self.resize_table_columns()
 
         self.cities = self.model.cities
 
@@ -947,7 +924,6 @@ class MainWindow(QMainWindow):
         model: CityTableModel,
         cities: list[City],
     ) -> None:
-        model.clear_status_overrides_for_cities(cities)
         model.refresh_status_column()
         self.table_view.resizeColumnToContents(STATUS_COLUMN)
 
@@ -957,3 +933,32 @@ class MainWindow(QMainWindow):
             weekday1=self.combo_weekday1.currentIndex(),
             weekday2=self.combo_weekday2.currentIndex(),
         )
+
+    def open_city_sunset_data(self, row: int) -> None:
+        if self.model is None:
+            self.show_no_cities_warning()
+            return
+
+        city = self.model.cities[row]
+
+        self.extra_window = YearEditorWindow(city)
+        self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
+        self.extra_window.show()
+
+    def handle_table_click(self, index: QModelIndex) -> None:
+        if index.column() != SUNSET_DATA_COLUMN:
+            return
+
+        if self.model is None:
+            return
+
+        city = self.model.cities[index.row()]
+        if not can_open_city_sunset_data(city):
+            return
+
+        self.open_city_sunset_data(index.row())
+
+    def resize_table_columns(self) -> None:
+        self.table_view.resizeColumnsToContents()
+        self.table_view.setColumnWidth(STATUS_COLUMN, 170)
+        self.table_view.setColumnWidth(SUNSET_DATA_COLUMN, 120)

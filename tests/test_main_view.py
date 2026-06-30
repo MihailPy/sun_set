@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.sunset import Source, YearData
-from sun_set.models.table_model import STATUS_COLUMN
+from sun_set.models.table_model import STATUS_COLUMN, SUNSET_DATA_COLUMN
 from sun_set.storage.city_json_storage import save_project_to_json
 from sun_set.views.main_view import MainWindow
 
@@ -232,9 +232,6 @@ class TestMainWindow:
         assert request.settings.year == 2025
         assert request.settings.weekday1 == 0
         assert request.settings.weekday2 == 6
-        mock_model.clear_status_overrides_for_cities.assert_called_once_with(
-            selected_cities
-        )
         mock_model.refresh_status_column.assert_called_once()
         main_window.table_view.resizeColumnToContents.assert_called_once_with(
             STATUS_COLUMN
@@ -263,47 +260,8 @@ class TestMainWindow:
             "Выберите хотя бы один город.",
         )
         mock_execute_sunset_update.assert_not_called()
-        mock_model.clear_status_overrides_for_cities.assert_not_called()
         mock_model.refresh_status_column.assert_not_called()
         main_window.table_view.resizeColumnToContents.assert_not_called()
-
-    def test_handle_city_update_logic(self, qtbot, main_window, temp_json_file):
-        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
-            main_window.open_file_dialog()
-
-        mock_sunset_data = MagicMock()
-        mock_sunset_data.get_stable_hash.return_value = "new_hash_123"
-
-        with patch(
-            "sun_set.services.city_service.get_city_sunset",
-            return_value=mock_sunset_data,
-        ) as mock_get:
-            with qtbot.waitSignal(main_window.model.dataChanged):
-                main_window.handle_city_update(0, "update")
-
-        city = main_window.model.cities[0]
-        mock_get.assert_called_once()
-        assert city.sunset_data == mock_sunset_data
-        assert city.sunset_data.hash_before_edit == city.get_stable_hash()
-
-    def test_handle_city_update_view(self, qtbot, main_window, temp_json_file):
-        with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
-            main_window.open_file_dialog()
-
-        city = main_window.model.cities[0]
-
-        mock_sunset_data = MagicMock()
-        mock_sunset_data.months = [MagicMock() for _ in range(12)]
-        city.sunset_data = mock_sunset_data
-
-        main_window.handle_city_update(0, "view")
-
-        assert main_window.extra_window is not None
-        assert main_window.extra_window.isVisible()
-
-        with patch.object(main_window, "on_city_data_changed") as mock_on_changed:
-            main_window.extra_window.dataChanged.emit()
-            mock_on_changed.assert_called_once_with(0)
 
     def test_on_city_data_changed_updates_hash_and_ui(
         self, qtbot, main_window, temp_json_file
@@ -367,3 +325,32 @@ class TestMainWindow:
         export_paths_tooltip = main_window.export_paths_label.toolTip()
         assert "/tmp/export_settings.json" in export_paths_tooltip
         assert "/tmp/export" in export_paths_tooltip
+
+    @patch.object(MainWindow, "open_city_sunset_data")
+    def test_handle_table_click_opens_sunset_data(
+        self,
+        mock_open_city_sunset_data,
+        main_window,
+        sample_city,
+    ):
+        main_window.load_cities_into_table([sample_city])
+        sample_city.sunset_data.months = {"1": []}
+        index = main_window.model.index(0, SUNSET_DATA_COLUMN)
+
+        main_window.handle_table_click(index)
+
+        mock_open_city_sunset_data.assert_called_once_with(0)
+
+    @patch.object(MainWindow, "open_city_sunset_data")
+    def test_handle_table_click_ignores_other_columns(
+        self,
+        mock_open_city_sunset_data,
+        main_window,
+        sample_city,
+    ):
+        main_window.load_cities_into_table([sample_city])
+        index = main_window.model.index(0, STATUS_COLUMN)
+
+        main_window.handle_table_click(index)
+
+        mock_open_city_sunset_data.assert_not_called()

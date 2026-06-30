@@ -3,19 +3,13 @@ from typing import Any
 from PyQt6 import QtGui
 from PyQt6.QtCore import (
     QAbstractTableModel,
-    QEvent,
     QModelIndex,
-    QRect,
-    QSize,
     Qt,
     pyqtSignal,
 )
-from PyQt6.QtGui import QMouseEvent  # Needed for type checking
 from PyQt6.QtWidgets import (
-    QApplication,
     QHeaderView,
     QStyle,
-    QStyledItemDelegate,
     QStyleOptionButton,
 )
 
@@ -23,150 +17,7 @@ from sun_set.models.city import City
 from sun_set.models.sunset import Source
 
 STATUS_COLUMN = 7
-
-
-class StatusActionDelegate(QStyledItemDelegate):
-    buttonClicked = pyqtSignal(int, str)  # row, action_type ('view' или 'update')
-
-    # Константы
-    BTN_WIDTH = 40  # Уменьшаем ширину для иконок
-    MARGIN = 5
-    BUTTON_SPACING = 5  # Расстояние между кнопками
-
-    # Роли данных для хранения состояний кнопок
-    ViewEnabledRole = Qt.ItemDataRole.UserRole + 1
-    UpdateEnabledRole = Qt.ItemDataRole.UserRole + 2
-
-    def sizeHint(self, option, index) -> QSize:
-        status_text = f"{index.data() or '✅ Загружено'}"
-
-        # Ширина для двух кнопок + отступы
-        buttons_width = self.BTN_WIDTH * 2 + self.BUTTON_SPACING
-
-        text_width = option.fontMetrics.horizontalAdvance(status_text)
-        total_width = text_width + buttons_width + (self.MARGIN * 6)
-
-        return QSize(total_width, 40)
-
-    def paint(self, painter, option, index):
-        if painter is None:
-            return
-        self.initStyleOption(option, index)
-        painter.save()
-
-        v_margin = 1
-
-        # Прямоугольники для двух кнопок
-        view_btn_rect = QRect(
-            option.rect.right() - self.BTN_WIDTH * 2 - self.BUTTON_SPACING,
-            option.rect.top() + v_margin,
-            self.BTN_WIDTH,
-            option.rect.height() - 2 * v_margin,
-        )
-
-        update_btn_rect = QRect(
-            option.rect.right() - self.BTN_WIDTH - self.MARGIN,
-            option.rect.top() + v_margin,
-            self.BTN_WIDTH,
-            option.rect.height() - 2 * v_margin,
-        )
-
-        # Текст статуса
-        text_rect = QRect(
-            option.rect.left() + self.MARGIN,
-            option.rect.top(),
-            option.rect.width()
-            - (self.BTN_WIDTH * 2)
-            - self.BUTTON_SPACING
-            - (self.MARGIN * 4),
-            option.rect.height(),
-        )
-
-        status_text = f"{index.data() or '✅ Загружено'}"
-        painter.drawText(
-            text_rect,
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-            status_text,
-        )
-
-        # Получаем состояния кнопок
-        view_enabled = index.data(self.ViewEnabledRole)
-        update_enabled = index.data(self.UpdateEnabledRole)
-
-        # Рисуем кнопку "Просмотреть" 👁️
-        view_btn_option = QStyleOptionButton()
-        view_btn_option.rect = view_btn_rect
-        view_btn_option.text = "👁️"  # Эмодзи глаза
-        view_btn_option.state = (
-            QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
-        )
-
-        if view_enabled is False:
-            view_btn_option.state &= ~QStyle.StateFlag.State_Enabled
-
-        style = option.widget.style() if option.widget else QApplication.style()
-        if style:
-            style.drawControl(
-                QStyle.ControlElement.CE_PushButton, view_btn_option, painter
-            )
-
-        # Рисуем кнопку "Обновить" 🔄
-        update_btn_option = QStyleOptionButton()
-        update_btn_option.rect = update_btn_rect
-        update_btn_option.text = "🔄"  # Эмодзи обновления
-        update_btn_option.state = (
-            QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
-        )
-
-        if update_enabled is False:
-            update_btn_option.state &= ~QStyle.StateFlag.State_Enabled
-
-        if style:
-            style.drawControl(
-                QStyle.ControlElement.CE_PushButton, update_btn_option, painter
-            )
-
-        painter.restore()
-
-    def editorEvent(self, event, model, option, index) -> bool:
-        if event is None:
-            return False
-
-        if event.type() == QEvent.Type.MouseButtonRelease:
-            if isinstance(event, QMouseEvent):
-                pos = event.position().toPoint()
-
-                # Проверяем клик по кнопке "Просмотреть"
-                view_btn_rect = QRect(
-                    option.rect.right() - self.BTN_WIDTH * 2 - self.BUTTON_SPACING,
-                    option.rect.top() + self.MARGIN,
-                    self.BTN_WIDTH,
-                    option.rect.height() - 2 * self.MARGIN,
-                )
-
-                # Проверяем клик по кнопке "Обновить"
-                update_btn_rect = QRect(
-                    option.rect.right() - self.BTN_WIDTH - self.MARGIN,
-                    option.rect.top() + self.MARGIN,
-                    self.BTN_WIDTH,
-                    option.rect.height() - 2 * self.MARGIN,
-                )
-
-                # Получаем состояния кнопок
-                view_enabled = index.data(self.ViewEnabledRole)
-                update_enabled = index.data(self.UpdateEnabledRole)
-
-                if view_btn_rect.contains(pos):
-                    if view_enabled is not False:  # Если кнопка включена
-                        self.buttonClicked.emit(index.row(), "view")
-                    return True
-
-                if update_btn_rect.contains(pos):
-                    if update_enabled is not False:  # Если кнопка включена
-                        self.buttonClicked.emit(index.row(), "update")
-                    return True
-
-        return super().editorEvent(event, model, option, index)
+SUNSET_DATA_COLUMN = 8
 
 
 class CheckBoxHeader(QHeaderView):
@@ -218,6 +69,26 @@ class CheckBoxHeader(QHeaderView):
             super().mousePressEvent(e)
 
 
+def build_city_sunset_status_text(city: City) -> str:
+    if city.get_stable_hash() != city.sunset_data.hash_before_edit:
+        return "Требует обновления"
+
+    if city.sunset_data.source == Source.CALCULATED:
+        return "Актуально"
+
+    if city.sunset_data.source == Source.EDITED:
+        return "Изменено вручную"
+
+    if city.sunset_data.source == Source.ERROR_POLAR:
+        return "Ошибка расчёта"
+
+    return "Нет данных"
+
+
+def can_open_city_sunset_data(city: City) -> bool:
+    return bool(city.sunset_data.months)
+
+
 class CityTableModel(QAbstractTableModel):
     selection_changed = pyqtSignal()
 
@@ -232,10 +103,10 @@ class CityTableModel(QAbstractTableModel):
             "Долгота",
             "Timezone",
             "Высота ASL",
+            "Статус",
             "Данные заката",
         ]
         self.checked_states = [False] * len(cities)
-        self.status_overrides = {}
         self._updating = False
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -248,7 +119,7 @@ class CityTableModel(QAbstractTableModel):
         base_flags = super().flags(index)
         if index.column() == 0:
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
-        if index.column() == STATUS_COLUMN:
+        if index.column() in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
             return Qt.ItemFlag.ItemIsEnabled
         return base_flags | Qt.ItemFlag.ItemIsEditable
 
@@ -260,22 +131,9 @@ class CityTableModel(QAbstractTableModel):
         col = index.column()
         city = self.cities[row]
 
-        # Роли для делегата StatusActionDelegate
-        if role == StatusActionDelegate.ViewEnabledRole:
-            if (
-                city.sunset_data.hash_before_edit
-                and city.get_stable_hash() == city.sunset_data.hash_before_edit
-            ):
-                return True
-            return False
-
-        if role == StatusActionDelegate.UpdateEnabledRole:
-            if (
-                city.get_stable_hash() != city.sunset_data.hash_before_edit
-                or city.sunset_data.source == Source.EDITED
-            ):
-                return True
-            return False
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            if col in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
+                return Qt.AlignmentFlag.AlignCenter
 
         if role == Qt.ItemDataRole.CheckStateRole and col == 0:
             return (
@@ -301,16 +159,19 @@ class CityTableModel(QAbstractTableModel):
             if col == 6:
                 return str(city.elevation)
             if col == STATUS_COLUMN:
-                if row in self.status_overrides:
-                    return self.status_overrides[row]
+                return build_city_sunset_status_text(city)
+            if col == SUNSET_DATA_COLUMN:
+                return "Открыть" if can_open_city_sunset_data(city) else ""
 
-                if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-                    return "❗️ Неактуальные данные"
-                else:
-                    if city.sunset_data.source == Source.CALCULATED:
-                        return "✅ Загружено"
-                    elif city.sunset_data.source == Source.EDITED:
-                        return "⚠️ Изменено"
+        if role == Qt.ItemDataRole.ForegroundRole:
+            if col == SUNSET_DATA_COLUMN and can_open_city_sunset_data(city):
+                return QtGui.QColor("#0066CC")
+
+        if role == Qt.ItemDataRole.FontRole:
+            if col == SUNSET_DATA_COLUMN and can_open_city_sunset_data(city):
+                font = QtGui.QFont()
+                font.setUnderline(True)
+                return font
 
         return None
 
@@ -351,8 +212,6 @@ class CityTableModel(QAbstractTableModel):
                     city.timezone = value
                 elif col == 6:
                     city.elevation = int(value)
-                elif col == STATUS_COLUMN:
-                    self.status_overrides[index.row()] = str(value)
 
                 # Обновляем все затронутые роли
                 self.dataChanged.emit(
@@ -360,7 +219,6 @@ class CityTableModel(QAbstractTableModel):
                     index,
                     [
                         Qt.ItemDataRole.DisplayRole,
-                        StatusActionDelegate.UpdateEnabledRole,
                     ],
                 )
                 return True
@@ -414,11 +272,6 @@ class CityTableModel(QAbstractTableModel):
             del self.checked_states[row]
             self.endRemoveRows()
 
-    def clear_status_overrides_for_cities(self, cities: list[City]) -> None:
-        for row, city in enumerate(self.cities):
-            if city in cities and row in self.status_overrides:
-                del self.status_overrides[row]
-
     def refresh_status_column(self) -> None:
         if not self.cities:
             return
@@ -428,34 +281,19 @@ class CityTableModel(QAbstractTableModel):
             self.index(len(self.cities) - 1, STATUS_COLUMN),
             [
                 Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.UpdateEnabledRole,
-                StatusActionDelegate.ViewEnabledRole,
             ],
         )
 
     def refresh_status_row(self, row: int) -> None:
-        if row in self.status_overrides:
-            del self.status_overrides[row]
-
         index = self.index(row, STATUS_COLUMN)
         self.dataChanged.emit(
             index,
             index,
             [
                 Qt.ItemDataRole.DisplayRole,
-                StatusActionDelegate.UpdateEnabledRole,
-                StatusActionDelegate.ViewEnabledRole,
             ],
         )
 
     def update_status_for_row(self, row: int) -> None:
-        city = self.cities[row]
-
-        if city.get_stable_hash() != city.sunset_data.hash_before_edit:
-            self.status_overrides[row] = "❗️ Неактуальные данные"
-        elif city.sunset_data.source == Source.CALCULATED:
-            self.status_overrides[row] = "✅ Загружено"
-        elif city.sunset_data.source == Source.EDITED:
-            self.status_overrides[row] = "⚠️ Изменено"
 
         self.refresh_status_row(row)

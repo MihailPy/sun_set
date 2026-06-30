@@ -1,16 +1,19 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QEvent, QModelIndex, QPoint, QPointF, QRect, QSize, Qt
+from PyQt6.QtCore import QModelIndex, QPoint, QPointF, QRect, Qt
 from PyQt6.QtGui import QMouseEvent, QPainter, QPixmap
-from PyQt6.QtWidgets import QApplication, QStyleOptionViewItem
+from PyQt6.QtWidgets import QApplication
 
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
+    STATUS_COLUMN,
+    SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
-    StatusActionDelegate,
+    build_city_sunset_status_text,
+    can_open_city_sunset_data,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -64,125 +67,10 @@ def table_model(sample_cities, qapp):
 
 
 @pytest.fixture
-def status_delegate(qapp):
-    """Создает делегат статуса"""
-    return StatusActionDelegate()
-
-
-@pytest.fixture
 def checkbox_header(qapp):
     header = CheckBoxHeader(Qt.Orientation.Horizontal)
     header.setModel(CityTableModel([]))
     return header
-
-
-class TestStatusActionDelegate:
-    def test_size_hint(self, status_delegate, table_model):
-        """Тест расчета размера ячейки"""
-        index = table_model.index(0, 7)
-        option = Mock()
-        option.fontMetrics.horizontalAdvance.return_value = 100
-
-        size = status_delegate.sizeHint(option, index)
-
-        assert isinstance(size, QSize)
-        assert size.width() > 0
-        assert size.height() == 40
-
-    def test_paint_with_null_painter(self, status_delegate, table_model):
-        """Тест отрисовки с None painter"""
-        index = table_model.index(0, 7)
-        option = Mock()
-
-        status_delegate.paint(None, option, index)
-
-    def test_paint_buttons(self, status_delegate, table_model, qapp, mocker):
-        """Тест отрисовки кнопок"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        pixmap = QPixmap(200, 40)
-        painter = QPainter(pixmap)
-
-        mocked_draw = mocker.patch.object(painter, "drawText")
-        status_delegate.paint(painter, option, index)
-        assert mocked_draw.called
-
-        painter.end()
-
-    def test_editor_event_view_button(self, status_delegate, table_model):
-        """Тест клика по кнопке просмотра"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        status_delegate.buttonClicked = Mock()
-
-        event = Mock(spec=QMouseEvent)
-        event.type.return_value = QEvent.Type.MouseButtonRelease
-        event.position.return_value.toPoint.return_value = QPoint(120, 20)
-
-        with patch.object(CityTableModel, "data") as mock_data:
-            mock_data.return_value = True
-
-            result = status_delegate.editorEvent(event, table_model, option, index)
-
-            assert result is True
-            status_delegate.buttonClicked.emit.assert_called_once_with(0, "view")
-
-    def test_editor_event_update_button(self, status_delegate, table_model):
-        """Тест клика по кнопке обновления"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        status_delegate.buttonClicked = Mock()
-
-        event = Mock(spec=QMouseEvent)
-        event.type.return_value = QEvent.Type.MouseButtonRelease
-        event.position.return_value.toPoint.return_value = QPoint(160, 20)
-
-        with patch.object(CityTableModel, "data") as mock_data:
-            mock_data.return_value = True
-
-            result = status_delegate.editorEvent(event, table_model, option, index)
-
-            assert result is True
-            status_delegate.buttonClicked.emit.assert_called_once_with(0, "update")
-
-    def test_editor_event_disabled_button(self, status_delegate, table_model):
-        """Тест клика по отключенной кнопке"""
-        index = table_model.index(0, 7)
-
-        option = QStyleOptionViewItem()
-        option.rect = QRect(0, 0, 200, 40)
-
-        status_delegate.buttonClicked = Mock()
-
-        event = Mock(spec=QMouseEvent)
-        event.type.return_value = QEvent.Type.MouseButtonRelease
-        event.position.return_value.toPoint.return_value = QPoint(160, 20)
-
-        with patch.object(CityTableModel, "data") as mock_data:
-            mock_data.return_value = False
-
-            result = status_delegate.editorEvent(event, table_model, option, index)
-
-            assert result is True
-            status_delegate.buttonClicked.emit.assert_not_called()
-
-    def test_editor_event_null_event(self, status_delegate):
-        """Тест с None событием"""
-        index = Mock()
-        option = Mock()
-        model = Mock()
-
-        result = status_delegate.editorEvent(None, model, option, index)
-        assert result is False
 
 
 class TestCheckBoxHeader:
@@ -252,7 +140,7 @@ class TestCityTableModel:
 
     def test_column_count(self, table_model):
         """Тест количества колонок"""
-        assert table_model.columnCount() == 8
+        assert table_model.columnCount() == 9
 
     def test_flags(self, table_model):
         """Тест флагов для разных колонок"""
@@ -297,47 +185,46 @@ class TestCityTableModel:
         state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
         assert state == Qt.CheckState.Checked
 
-    def test_data_status_column(self, table_model, sample_city):
-        """Тест данных в колонке статуса"""
-        index = table_model.index(0, 7)
+    def test_build_city_sunset_status_text_changed_city(self, sample_city):
+        sample_city.sunset_data.hash_before_edit = "old-hash"
 
-        status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
-        assert status == "❗️ Неактуальные данные"
+        assert build_city_sunset_status_text(sample_city) == "Требует обновления"
 
+    def test_build_city_sunset_status_text_calculated(self, sample_city):
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.CALCULATED
-        status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
-        assert status == "✅ Загружено"
 
-    def test_data_view_enabled_role(self, table_model, sample_city):
-        """Тест роли включения кнопки просмотра"""
-        index = table_model.index(0, 7)
+        assert build_city_sunset_status_text(sample_city) == "Актуально"
 
-        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert enabled is True
-
-        sample_city.sunset_data.hash_before_edit = None
-        enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert enabled is False
-
-    def test_data_update_enabled_when_source_calculated(self, table_model, sample_city):
-        """Тест роли включения кнопки обновления, когда данные собранны данные и не изменены."""
-        index = table_model.index(0, 7)
-
-        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
-        sample_city.sunset_data.source = Source.CALCULATED
-        enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
-        assert enabled is False
-
-    def test_data_update_enabled_when_source_edited(self, table_model, sample_city):
-        """Тест роли включения кнопки обновления, когда данные были изменены."""
-        index = table_model.index(0, 7)
-
+    def test_build_city_sunset_status_text_edited(self, sample_city):
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.EDITED
-        enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
-        assert enabled is True
+
+        assert build_city_sunset_status_text(sample_city) == "Изменено вручную"
+
+    def test_build_city_sunset_status_text_error_polar(self, sample_city):
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.ERROR_POLAR
+
+        assert build_city_sunset_status_text(sample_city) == "Ошибка расчёта"
+
+    def test_data_status_column(self, table_model, sample_city):
+        index = table_model.index(0, 7)
+
+        sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
+        sample_city.sunset_data.source = Source.CALCULATED
+
+        status = table_model.data(index, Qt.ItemDataRole.DisplayRole)
+
+        assert status == "Актуально"
+
+    def test_data_sunset_data_column(self, table_model, sample_city):
+        sample_city.sunset_data.months = {"1": []}
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
+
+        action_text = table_model.data(index, Qt.ItemDataRole.DisplayRole)
+
+        assert action_text == "Открыть"
 
     def test_data_invalid_index(self, table_model):
         """Тест получения данных для невалидного индекса"""
@@ -387,15 +274,6 @@ class TestCityTableModel:
 
         assert result is False
 
-    def test_set_data_status_override(self, table_model):
-        """Тест переопределения статуса"""
-        index = table_model.index(0, 7)
-
-        result = table_model.setData(index, "Тестовый статус", Qt.ItemDataRole.EditRole)
-
-        assert result is True
-        assert table_model.status_overrides[0] == "Тестовый статус"
-
     def test_header_data(self, table_model):
         """Тест данных заголовка"""
         data = table_model.headerData(0, Qt.Orientation.Horizontal)
@@ -405,7 +283,22 @@ class TestCityTableModel:
         assert data == "Город"
 
         data = table_model.headerData(7, Qt.Orientation.Horizontal)
-        assert data == "Данные заката"
+        assert data == "Статус"
+
+    def test_table_headers_include_status_and_sunset_data(self, table_model):
+        status_header = table_model.headerData(
+            STATUS_COLUMN,
+            Qt.Orientation.Horizontal,
+            Qt.ItemDataRole.DisplayRole,
+        )
+        sunset_data_header = table_model.headerData(
+            SUNSET_DATA_COLUMN,
+            Qt.Orientation.Horizontal,
+            Qt.ItemDataRole.DisplayRole,
+        )
+
+        assert status_header == "Статус"
+        assert sunset_data_header == "Данные заката"
 
     def test_add_city(self, table_model):
         """Тест добавления города"""
@@ -475,25 +368,35 @@ class TestCityTableModel:
 
         assert signal_received is True
 
+    def test_sunset_data_column_foreground_role(self, table_model, sample_city):
+        sample_city.sunset_data.months = {"1": []}
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
 
-class TestIntegration:
-    def test_model_delegate_interaction(self, table_model):
-        """Тест взаимодействия модели и делегата"""
-        index = table_model.index(0, 7)
+        color = table_model.data(index, Qt.ItemDataRole.ForegroundRole)
 
-        view_enabled = table_model.data(index, StatusActionDelegate.ViewEnabledRole)
-        assert view_enabled in (True, False)
+        assert color is not None
 
-        update_enabled = table_model.data(index, StatusActionDelegate.UpdateEnabledRole)
-        assert update_enabled in (True, False)
+    def test_sunset_data_column_font_role(self, table_model, sample_city):
+        sample_city.sunset_data.months = {"1": []}
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
 
-    def test_header_model_interaction(self, checkbox_header, table_model):
-        """Тест взаимодействия заголовке и модели"""
-        checkbox_header.setModel(table_model)
+        font = table_model.data(index, Qt.ItemDataRole.FontRole)
 
-        assert not any(table_model.checked_states)
+        assert font is not None
+        assert font.underline()
 
-        checkbox_header.is_checked = True
-        table_model.select_all(True)
+    def test_can_open_city_sunset_data_when_months_exist(self, sample_city):
+        sample_city.sunset_data.months = {"1": []}
 
-        assert all(table_model.checked_states)
+        assert can_open_city_sunset_data(sample_city)
+
+    def test_can_open_city_sunset_data_when_months_empty(self, sample_city):
+        sample_city.sunset_data.months = {}
+
+        assert not can_open_city_sunset_data(sample_city)
+
+    def test_data_sunset_data_column_without_data(self, table_model, sample_city):
+        sample_city.sunset_data.months = {}
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
+
+        assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == ""
