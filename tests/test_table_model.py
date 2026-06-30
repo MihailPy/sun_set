@@ -374,3 +374,18 @@ class TestCityTableModel:
         table_model.setData(index, "Новое имя", Qt.ItemDataRole.EditRole)
 
         assert signal_received is True
+
+    def test_sunset_data_column_foreground_role(self, table_model):
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
+
+        color = table_model.data(index, Qt.ItemDataRole.ForegroundRole)
+
+        assert color is not None
+
+    def test_sunset_data_column_font_role(self, table_model):
+        index = table_model.index(0, SUNSET_DATA_COLUMN)
+
+        font = table_model.data(index, Qt.ItemDataRole.FontRole)
+
+        assert font is not None
+        assert font.underline()
