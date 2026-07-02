@@ -2,9 +2,12 @@ from unittest.mock import Mock, patch
 
 from PIL import Image
 
+from sun_set.image_export.errors import ImageExportError
 from sun_set.services.image_export_workflow import (
     ImageExportErrorResult,
     ImageExportRequest,
+    ImageExportSettingsLoadError,
+    ImageExportSettingsLoadSuccess,
     ImageExportSuccessResult,
     ImagePreviewErrorResult,
     ImagePreviewRequest,
@@ -12,6 +15,7 @@ from sun_set.services.image_export_workflow import (
     build_image_export_result_message,
     build_selected_city_preview_image,
     execute_image_export,
+    execute_image_export_settings_load,
     execute_image_preview,
     export_selected_city_images,
     show_image_export_result_dialog,
@@ -201,3 +205,51 @@ def test_execute_image_preview_error(
 
     assert isinstance(execution_result, ImagePreviewErrorResult)
     assert execution_result.error_message == "Ошибка предпросмотра"
+
+
+@patch("sun_set.services.image_export_workflow.load_export_settings")
+def test_execute_image_export_settings_load_success(
+    mock_load_export_settings, tmp_path
+):
+    settings = Mock()
+    settings_path = tmp_path / "settings.json"
+
+    mock_load_export_settings.return_value = settings
+
+    result = execute_image_export_settings_load(settings_path)
+
+    assert isinstance(result, ImageExportSettingsLoadSuccess)
+    assert result.settings == settings
+
+
+@patch("sun_set.services.image_export_workflow.get_image_export_error_message")
+@patch("sun_set.services.image_export_workflow.load_export_settings")
+def test_execute_image_export_settings_load_image_export_error(
+    mock_load_export_settings,
+    mock_get_image_export_error_message,
+    tmp_path,
+):
+    settings_path = tmp_path / "settings.json"
+
+    mock_load_export_settings.side_effect = ImageExportError("boom")
+    mock_get_image_export_error_message.return_value = "Ошибка настроек"
+
+    result = execute_image_export_settings_load(settings_path)
+
+    assert isinstance(result, ImageExportSettingsLoadError)
+    assert result.message == "Ошибка настроек"
+
+
+@patch("sun_set.services.image_export_workflow.load_export_settings")
+def test_execute_image_export_settings_load_unexpected_error(
+    mock_load_export_settings,
+    tmp_path,
+):
+    settings_path = tmp_path / "settings.json"
+
+    mock_load_export_settings.side_effect = RuntimeError("Нет доступа")
+
+    result = execute_image_export_settings_load(settings_path)
+
+    assert isinstance(result, ImageExportSettingsLoadError)
+    assert result.message == "Нет доступа"
