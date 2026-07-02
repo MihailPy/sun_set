@@ -532,7 +532,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        self.show_image_preview(execution_result.image)
+        self.open_image_preview_dialog(execution_result.image)
 
     def edit_image_export_settings(self) -> None:
         settings_path = self.get_export_settings_path()
@@ -735,7 +735,7 @@ class MainWindow(QMainWindow):
 
         return Path(output_dir)
 
-    def show_image_preview(self, image: Image.Image) -> None:
+    def open_image_preview_dialog(self, image: Image.Image) -> None:
         dialog = ImagePreviewDialog(
             image=image,
             parent=self,
