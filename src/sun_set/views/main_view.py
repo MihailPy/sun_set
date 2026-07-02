@@ -35,6 +35,7 @@ from sun_set.constants.project_defaults import (
     DEFAULT_WEEKDAY_2,
     get_default_project_year,
 )
+from sun_set.image_export.settings import ExportImageSettings
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.table_model import (
@@ -531,7 +532,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        self.show_image_preview(execution_result.image)
+        self.open_image_preview_dialog(execution_result.image)
 
     def edit_image_export_settings(self) -> None:
         settings_path = self.get_export_settings_path()
@@ -550,15 +551,10 @@ class MainWindow(QMainWindow):
 
         settings = load_result.settings
 
-        city = self.get_current_city_or_none()
-
-        dialog = ImageExportSettingsDialog(
+        self.open_image_export_settings_dialog(
             settings=settings,
             settings_path=settings_path,
-            city=city,
-            parent=self,
         )
-        dialog.exec()
 
     def open_file_dialog(self) -> None:
         file_path = choose_file(
@@ -631,15 +627,10 @@ class MainWindow(QMainWindow):
 
     def create_image_export_settings(self) -> None:
         settings = create_default_image_export_settings()
-        city = self.get_current_city_or_none()
-
-        dialog = ImageExportSettingsDialog(
+        self.open_image_export_settings_dialog(
             settings=settings,
             settings_path=None,
-            city=city,
-            parent=self,
         )
-        dialog.exec()
 
     def get_current_city_or_none(self) -> City | None:
         if self.model is None:
@@ -744,7 +735,7 @@ class MainWindow(QMainWindow):
 
         return Path(output_dir)
 
-    def show_image_preview(self, image: Image.Image) -> None:
+    def open_image_preview_dialog(self, image: Image.Image) -> None:
         dialog = ImagePreviewDialog(
             image=image,
             parent=self,
@@ -932,10 +923,7 @@ class MainWindow(QMainWindow):
             return
 
         city = self.model.cities[row]
-
-        self.extra_window = YearEditorWindow(city)
-        self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
-        self.extra_window.show()
+        self.open_year_editor_window(city, row)
 
     def handle_table_click(self, index: QModelIndex) -> None:
         if index.column() != SUNSET_DATA_COLUMN:
@@ -954,3 +942,23 @@ class MainWindow(QMainWindow):
         self.table_view.resizeColumnsToContents()
         self.table_view.setColumnWidth(STATUS_COLUMN, 170)
         self.table_view.setColumnWidth(SUNSET_DATA_COLUMN, 120)
+
+    def open_image_export_settings_dialog(
+        self,
+        settings: ExportImageSettings,
+        settings_path: Path | None,
+    ) -> None:
+        city = self.get_current_city_or_none()
+
+        dialog = ImageExportSettingsDialog(
+            settings=settings,
+            settings_path=settings_path,
+            city=city,
+            parent=self,
+        )
+        dialog.exec()
+
+    def open_year_editor_window(self, city: City, row: int) -> None:
+        self.extra_window = YearEditorWindow(city)
+        self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
+        self.extra_window.show()
