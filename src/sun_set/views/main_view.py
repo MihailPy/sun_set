@@ -923,10 +923,7 @@ class MainWindow(QMainWindow):
             return
 
         city = self.model.cities[row]
-
-        self.extra_window = YearEditorWindow(city)
-        self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
-        self.extra_window.show()
+        self.open_year_editor_window(city, row)
 
     def handle_table_click(self, index: QModelIndex) -> None:
         if index.column() != SUNSET_DATA_COLUMN:
@@ -960,3 +957,8 @@ class MainWindow(QMainWindow):
             parent=self,
         )
         dialog.exec()
+
+    def open_year_editor_window(self, city: City, row: int) -> None:
+        self.extra_window = YearEditorWindow(city)
+        self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
+        self.extra_window.show()
