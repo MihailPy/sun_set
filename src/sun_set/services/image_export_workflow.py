@@ -11,7 +11,7 @@ from sun_set.image_export.service import (
     export_cities_images,
     save_export_report,
 )
-from sun_set.image_export.settings import load_export_settings
+from sun_set.image_export.settings import ExportImageSettings, load_export_settings
 from sun_set.models.city import City
 from sun_set.services.dialog_service import (
     ask_open_folder_after_export,
@@ -60,7 +60,7 @@ ImagePreviewExecutionResult = ImagePreviewSuccessResult | ImagePreviewErrorResul
 
 @dataclass(frozen=True)
 class ImageExportSettingsLoadSuccess:
-    settings: object
+    settings: ExportImageSettings
 
 
 @dataclass(frozen=True)
