@@ -14,6 +14,7 @@ from sun_set.services.image_export_workflow import (
     ImagePreviewSuccessResult,
     build_image_export_result_message,
     build_selected_city_preview_image,
+    create_default_image_export_settings,
     execute_image_export,
     execute_image_export_settings_load,
     execute_image_preview,
@@ -253,3 +254,14 @@ def test_execute_image_export_settings_load_unexpected_error(
 
     assert isinstance(result, ImageExportSettingsLoadError)
     assert result.message == "Нет доступа"
+
+
+@patch("sun_set.services.image_export_workflow.create_default_export_settings")
+def test_create_default_image_export_settings(mock_create_default_export_settings):
+    settings = Mock()
+    mock_create_default_export_settings.return_value = settings
+
+    result = create_default_image_export_settings()
+
+    assert result == settings
+    mock_create_default_export_settings.assert_called_once_with()
