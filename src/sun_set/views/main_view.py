@@ -35,11 +35,6 @@ from sun_set.constants.project_defaults import (
     DEFAULT_WEEKDAY_2,
     get_default_project_year,
 )
-from sun_set.image_export.errors import ImageExportError
-from sun_set.image_export.settings import (
-    create_default_export_settings,
-    load_export_settings,
-)
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.table_model import (
@@ -58,13 +53,15 @@ from sun_set.services.dialog_service import (
     show_warning,
 )
 from sun_set.services.image_export_workflow import (
+    ImageExportSettingsLoadSuccess,
     ImageExportSuccessResult,
     ImagePreviewSuccessResult,
     build_image_export_request,
     build_image_preview_request,
+    create_default_image_export_settings,
     execute_image_export,
+    execute_image_export_settings_load,
     execute_image_preview,
-    get_image_export_error_message,
     show_image_export_result_dialog,
 )
 from sun_set.services.project_state_service import (
@@ -541,22 +538,17 @@ class MainWindow(QMainWindow):
         if settings_path is None:
             return
 
-        try:
-            settings = load_export_settings(settings_path)
-        except ImageExportError as error:
+        load_result = execute_image_export_settings_load(settings_path)
+
+        if not isinstance(load_result, ImageExportSettingsLoadSuccess):
             show_error(
                 self,
                 "Ошибка настроек экспорта",
-                get_image_export_error_message(error),
+                load_result.message,
             )
             return
-        except Exception as error:
-            show_error(
-                self,
-                "Ошибка настроек экспорта",
-                str(error),
-            )
-            return
+
+        settings = load_result.settings
 
         city = self.get_current_city_or_none()
 
@@ -638,7 +630,7 @@ class MainWindow(QMainWindow):
         self.initial_prompt_text.show()
 
     def create_image_export_settings(self) -> None:
-        settings = create_default_export_settings()
+        settings = create_default_image_export_settings()
         city = self.get_current_city_or_none()
 
         dialog = ImageExportSettingsDialog(

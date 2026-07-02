@@ -3,13 +3,18 @@ from pathlib import Path
 
 from PIL import Image
 
-from sun_set.image_export.errors import get_user_friendly_error
+from sun_set.image_export.errors import ImageExportError, get_user_friendly_error
 from sun_set.image_export.service import (
     ExportResult,
     build_city_image_preview,
     build_export_summary_message,
     export_cities_images,
     save_export_report,
+)
+from sun_set.image_export.settings import (
+    ExportImageSettings,
+    create_default_export_settings,
+    load_export_settings,
 )
 from sun_set.models.city import City
 from sun_set.services.dialog_service import (
@@ -55,6 +60,21 @@ class ImagePreviewErrorResult:
 
 
 ImagePreviewExecutionResult = ImagePreviewSuccessResult | ImagePreviewErrorResult
+
+
+@dataclass(frozen=True)
+class ImageExportSettingsLoadSuccess:
+    settings: ExportImageSettings
+
+
+@dataclass(frozen=True)
+class ImageExportSettingsLoadError:
+    message: str
+
+
+ImageExportSettingsLoadResult = (
+    ImageExportSettingsLoadSuccess | ImageExportSettingsLoadError
+)
 
 
 def export_selected_city_images(
@@ -145,3 +165,23 @@ def execute_image_preview(
         return ImagePreviewErrorResult(
             error_message=get_image_export_error_message(error)
         )
+
+
+def execute_image_export_settings_load(
+    settings_path: Path,
+) -> ImageExportSettingsLoadResult:
+    try:
+        settings = load_export_settings(settings_path)
+        return ImageExportSettingsLoadSuccess(settings=settings)
+
+    except ImageExportError as error:
+        return ImageExportSettingsLoadError(
+            message=get_image_export_error_message(error)
+        )
+
+    except Exception as error:
+        return ImageExportSettingsLoadError(message=str(error))
+
+
+def create_default_image_export_settings() -> ExportImageSettings:
+    return create_default_export_settings()
