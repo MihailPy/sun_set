@@ -35,9 +35,6 @@ from sun_set.constants.project_defaults import (
     DEFAULT_WEEKDAY_2,
     get_default_project_year,
 )
-from sun_set.image_export.settings import (
-    create_default_export_settings,
-)
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
 from sun_set.models.table_model import (
@@ -61,6 +58,7 @@ from sun_set.services.image_export_workflow import (
     ImagePreviewSuccessResult,
     build_image_export_request,
     build_image_preview_request,
+    create_default_image_export_settings,
     execute_image_export,
     execute_image_export_settings_load,
     execute_image_preview,
@@ -632,7 +630,7 @@ class MainWindow(QMainWindow):
         self.initial_prompt_text.show()
 
     def create_image_export_settings(self) -> None:
-        settings = create_default_export_settings()
+        settings = create_default_image_export_settings()
         city = self.get_current_city_or_none()
 
         dialog = ImageExportSettingsDialog(

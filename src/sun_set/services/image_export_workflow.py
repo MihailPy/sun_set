@@ -11,7 +11,11 @@ from sun_set.image_export.service import (
     export_cities_images,
     save_export_report,
 )
-from sun_set.image_export.settings import ExportImageSettings, load_export_settings
+from sun_set.image_export.settings import (
+    ExportImageSettings,
+    create_default_export_settings,
+    load_export_settings,
+)
 from sun_set.models.city import City
 from sun_set.services.dialog_service import (
     ask_open_folder_after_export,
@@ -177,3 +181,7 @@ def execute_image_export_settings_load(
 
     except Exception as error:
         return ImageExportSettingsLoadError(message=str(error))
+
+
+def create_default_image_export_settings() -> ExportImageSettings:
+    return create_default_export_settings()
