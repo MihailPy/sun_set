@@ -505,7 +505,7 @@ class MainWindow(QMainWindow):
         )
 
     def preview_selected_city_image(self) -> None:
-        city = self.get_current_city_or_none()
+        city = self.get_first_selected_city_or_none()
         if city is None:
             show_warning(
                 self,
@@ -633,7 +633,7 @@ class MainWindow(QMainWindow):
             settings_path=None,
         )
 
-    def get_current_city_or_none(self) -> City | None:
+    def get_first_selected_city_or_none(self) -> City | None:
         if self.model is None:
             return None
 
@@ -938,7 +938,7 @@ class MainWindow(QMainWindow):
         settings: ExportImageSettings,
         settings_path: Path | None,
     ) -> None:
-        city = self.get_current_city_or_none()
+        city = self.get_first_selected_city_or_none()
 
         dialog = ImageExportSettingsDialog(
             settings=settings,
