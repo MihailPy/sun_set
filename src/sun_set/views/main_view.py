@@ -697,7 +697,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(self.build_status_bar_text())
 
     def update_window_title(self) -> None:
-        file_name = self.get_current_file_name()
+        file_name = self.project_window_state.get_file_name()
 
         if file_name is None:
             self.setWindowTitle("Sun Set")
@@ -857,9 +857,6 @@ class MainWindow(QMainWindow):
 
     def get_current_export_paths(self) -> ExportPaths:
         return self.export_path_state.paths
-
-    def get_current_file_name(self) -> str | None:
-        return self.project_window_state.get_file_name()
 
     def load_project_from_path(self, file_path: str) -> ProjectData | None:
         result = execute_project_load(file_path)
