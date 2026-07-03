@@ -825,12 +825,7 @@ class MainWindow(QMainWindow):
         return bool(self.cities)
 
     def get_status_file_text(self) -> str:
-        file_name = self.get_current_file_name()
-
-        if file_name is None:
-            return "Файл не открыт"
-
-        return f"Файл: {file_name}"
+        return self.project_window_state.get_status_file_text()
 
     def build_status_bar_text(self) -> str:
         return (
