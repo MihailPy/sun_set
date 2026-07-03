@@ -634,24 +634,12 @@ class MainWindow(QMainWindow):
         )
 
     def get_first_selected_city_or_none(self) -> City | None:
-        if self.model is None:
-            return None
-
-        cities = self.model.get_selected_cities()
-        if not cities:
-            return None
-
-        return cities[0]
+        cities = self.get_selected_cities()
+        return cities[0] if cities else None
 
     def get_selected_cities_or_none(self) -> list[City] | None:
-        if self.model is None:
-            return None
-
-        cities = self.model.get_selected_cities()
-        if not cities:
-            return None
-
-        return cities
+        cities = self.get_selected_cities()
+        return cities or None
 
     def update_action_buttons_state(self) -> None:
         has_selected_cities = self.has_selected_cities()
@@ -812,11 +800,7 @@ class MainWindow(QMainWindow):
         button.setMaximumWidth(180)
 
     def get_selected_cities_count(self) -> int:
-        if self.model is None:
-            return 0
-
-        selected = self.model.get_selected_cities()
-        return len(selected) if selected else 0
+        return len(self.get_selected_cities())
 
     def has_selected_cities(self) -> bool:
         return self.get_selected_cities_count() > 0
@@ -952,3 +936,9 @@ class MainWindow(QMainWindow):
         self.extra_window = YearEditorWindow(city)
         self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
         self.extra_window.show()
+
+    def get_selected_cities(self) -> list[City]:
+        if self.model is None:
+            return []
+
+        return self.model.get_selected_cities() or []
