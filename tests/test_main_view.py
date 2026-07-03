@@ -91,7 +91,7 @@ class TestMainWindow:
         with patch("sun_set.views.main_view.choose_file", return_value=temp_json_file):
             main_window.open_file_dialog()
 
-        assert main_window.file_path == temp_json_file
+        assert main_window.project_window_state.file_path == temp_json_file
 
     def test_open_file_error(self, main_window, qtbot, temp_json_file, sample_city):
         project = ProjectData(
@@ -113,7 +113,7 @@ class TestMainWindow:
                 with patch("sun_set.views.main_view.ask_retry", return_value=True):
                     main_window.open_file_dialog()
 
-        assert main_window.file_path == temp_json_file
+        assert main_window.project_window_state.file_path == temp_json_file
 
     def test_open_file_updates_ui(self, main_window, qtbot, temp_json_file):
         """Тест обновления UI после открытия файла"""
@@ -141,7 +141,7 @@ class TestMainWindow:
 
     def test_save_file_with_valid_path(self, main_window, qtbot, temp_json_file):
         """Тест сохранения файла с существующим путем"""
-        main_window.file_path = temp_json_file
+        main_window.project_window_state.file_path = temp_json_file
 
         with patch("builtins.open", mock_open()):
             with patch("json.dump") as mock_dump:
@@ -155,7 +155,7 @@ class TestMainWindow:
         ):
             with patch("builtins.open", mock_open()):
                 main_window.save_file_as()
-                assert main_window.file_path == "new_file.json"
+                assert main_window.project_window_state.file_path == "new_file.json"
 
     def test_add_city(self, main_window, qtbot):
         """Тест добавления городов"""

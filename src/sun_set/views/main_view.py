@@ -79,6 +79,7 @@ from sun_set.services.project_state_service import (
     get_export_paths_from_project,
     get_project_settings,
 )
+from sun_set.services.project_window_state import ProjectWindowState
 from sun_set.services.project_workflow import (
     ProjectLoadSuccess,
     ProjectSaveSuccess,
@@ -104,7 +105,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Sun set")
         self.resize(800, 400)
 
-        self.file_path: str | None = None
+        self.project_window_state = ProjectWindowState()
         self.export_path_state = ExportPathState.empty()
 
         self.cities: list[City] = []
@@ -573,11 +574,11 @@ class MainWindow(QMainWindow):
         self.open_project(file_path, project)
 
     def save_file(self) -> None:
-        if self.file_path is None:
+        if self.project_window_state.file_path is None:
             self.save_file_as()
             return
 
-        self.save_project_to_path(self.file_path)
+        self.save_project_to_path(self.project_window_state.file_path)
 
     def save_file_as(self) -> None:
         file_path = choose_save_file(
@@ -863,10 +864,7 @@ class MainWindow(QMainWindow):
         return self.export_path_state.paths
 
     def get_current_file_name(self) -> str | None:
-        if self.file_path is None:
-            return None
-
-        return Path(self.file_path).name
+        return self.project_window_state.get_file_name()
 
     def load_project_from_path(self, file_path: str) -> ProjectData | None:
         result = execute_project_load(file_path)
@@ -879,7 +877,7 @@ class MainWindow(QMainWindow):
         return result.project
 
     def open_project(self, file_path: str, project: ProjectData) -> None:
-        self.file_path = file_path
+        self.project_window_state.file_path = file_path
         self.apply_project_data(project)
         self.update_window_title()
         self.update_action_buttons_state()
@@ -897,7 +895,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        self.file_path = result.file_path
+        self.project_window_state.file_path = result.file_path
         self.update_window_title()
         self.update_status_bar()
         self.update_action_buttons_state()
