@@ -72,8 +72,6 @@ from sun_set.services.project_state_service import (
     build_export_paths_text,
     build_export_paths_tooltip,
     build_project_data,
-    can_export_images,
-    can_preview_image,
     export_output_dir_exists,
     export_settings_path_exists,
     get_export_paths_from_project,
@@ -645,24 +643,7 @@ class MainWindow(QMainWindow):
         has_selected_cities = self.has_selected_cities()
         export_paths = self.get_current_export_paths()
 
-        self.btn_del_city.setEnabled(has_selected_cities)
-        self.btn_get_sunset_info.setEnabled(has_selected_cities)
-        self.btn_save_file_main.setEnabled(self.has_cities())
-
-        self.preview_image_button.setEnabled(
-            can_preview_image(has_selected_cities, export_paths)
-        )
-        self.btn_export_image.setEnabled(
-            can_export_images(has_selected_cities, export_paths)
-        )
-
-        if has_selected_cities:
-            self.btn_del_city.setToolTip("Удалить выбранные города")
-            self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
-        else:
-            city_tooltip = self.get_city_actions_tooltip(has_selected_cities)
-            self.btn_del_city.setToolTip(city_tooltip)
-            self.btn_get_sunset_info.setToolTip(city_tooltip)
+        self.update_city_action_buttons_state(has_selected_cities)
 
         export_tooltip = build_export_action_tooltip(
             has_selected_cities,
@@ -948,3 +929,17 @@ class MainWindow(QMainWindow):
             return ""
 
         return "Выберите один или несколько городов в таблице"
+
+    def update_city_action_buttons_state(self, has_selected_cities: bool) -> None:
+        self.btn_del_city.setEnabled(has_selected_cities)
+        self.btn_get_sunset_info.setEnabled(has_selected_cities)
+        self.btn_save_file_main.setEnabled(self.has_cities())
+
+        if has_selected_cities:
+            self.btn_del_city.setToolTip("Удалить выбранные города")
+            self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
+            return
+
+        city_tooltip = self.get_city_actions_tooltip(has_selected_cities)
+        self.btn_del_city.setToolTip(city_tooltip)
+        self.btn_get_sunset_info.setToolTip(city_tooltip)
