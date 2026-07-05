@@ -608,10 +608,7 @@ class MainWindow(QMainWindow):
 
     def show_empty_city_state(self) -> None:
         self.table_view.hide()
-
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-
+        self.setup_table_header()
         self.initial_prompt_text.show()
 
     def create_image_export_settings(self) -> None:
