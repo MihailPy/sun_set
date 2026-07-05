@@ -305,17 +305,7 @@ class MainWindow(QMainWindow):
     def _setup_table(self) -> None:
         self.table_view = QTableView()
 
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-        header.setStretchLastSection(False)
-
-        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(
-            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
-        )
-        header.setSectionResizeMode(
-            SUNSET_DATA_COLUMN, QHeaderView.ResizeMode.ResizeToContents
-        )
+        self.setup_table_header()
 
         self.table_view.hide()
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
@@ -960,4 +950,17 @@ class MainWindow(QMainWindow):
             "Экспорт выбранных городов в изображение"
             if self.btn_export_image.isEnabled()
             else export_tooltip
+        )
+
+    def setup_table_header(self) -> None:
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
+        header.setSectionResizeMode(
+            SUNSET_DATA_COLUMN,
+            QHeaderView.ResizeMode.ResizeToContents,
         )
