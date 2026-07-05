@@ -660,7 +660,7 @@ class MainWindow(QMainWindow):
             self.btn_del_city.setToolTip("Удалить выбранные города")
             self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
         else:
-            city_tooltip = "Выберите один или несколько городов в таблице"
+            city_tooltip = self.get_city_actions_tooltip(has_selected_cities)
             self.btn_del_city.setToolTip(city_tooltip)
             self.btn_get_sunset_info.setToolTip(city_tooltip)
 
@@ -942,3 +942,9 @@ class MainWindow(QMainWindow):
             return []
 
         return self.model.get_selected_cities() or []
+
+    def get_city_actions_tooltip(self, has_selected_cities: bool) -> str:
+        if has_selected_cities:
+            return ""
+
+        return "Выберите один или несколько городов в таблице"
