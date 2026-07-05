@@ -305,22 +305,11 @@ class MainWindow(QMainWindow):
     def _setup_table(self) -> None:
         self.table_view = QTableView()
 
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-        header.setStretchLastSection(False)
-
-        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(
-            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
-        )
-        header.setSectionResizeMode(
-            SUNSET_DATA_COLUMN, QHeaderView.ResizeMode.ResizeToContents
-        )
+        self.setup_table_header()
+        self.setup_table_delegates()
+        self.connect_table_signals()
 
         self.table_view.hide()
-        self.table_view.setItemDelegate(CityDelegate(self.table_view))
-
-        self.table_view.clicked.connect(self.handle_table_click)
 
     def _create_date_group(self) -> QGroupBox:
         date_group = QGroupBox("Дни расчёта")
@@ -385,8 +374,7 @@ class MainWindow(QMainWindow):
 
     def show_city_model(self, model: CityTableModel) -> None:
         self.table_view.setModel(model)
-        self.table_view.show()
-        self.initial_prompt_text.hide()
+        self.show_table_view()
         self.resize_table_columns()
 
     def load_cities_into_table(self, cities: list[City]) -> None:
@@ -620,10 +608,7 @@ class MainWindow(QMainWindow):
 
     def show_empty_city_state(self) -> None:
         self.table_view.hide()
-
-        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
-        self.table_view.setHorizontalHeader(header)
-
+        self.setup_table_header()
         self.initial_prompt_text.show()
 
     def create_image_export_settings(self) -> None:
@@ -961,3 +946,26 @@ class MainWindow(QMainWindow):
             if self.btn_export_image.isEnabled()
             else export_tooltip
         )
+
+    def setup_table_header(self) -> None:
+        header = CheckBoxHeader(Qt.Orientation.Horizontal, self.table_view)
+        self.table_view.setHorizontalHeader(header)
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(
+            STATUS_COLUMN, QHeaderView.ResizeMode.ResizeToContents
+        )
+        header.setSectionResizeMode(
+            SUNSET_DATA_COLUMN,
+            QHeaderView.ResizeMode.ResizeToContents,
+        )
+
+    def setup_table_delegates(self) -> None:
+        self.table_view.setItemDelegate(CityDelegate(self.table_view))
+
+    def connect_table_signals(self) -> None:
+        self.table_view.clicked.connect(self.handle_table_click)
+
+    def show_table_view(self) -> None:
+        self.table_view.show()
+        self.initial_prompt_text.hide()
