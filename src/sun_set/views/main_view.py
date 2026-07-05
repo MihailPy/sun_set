@@ -307,9 +307,9 @@ class MainWindow(QMainWindow):
 
         self.setup_table_header()
         self.setup_table_delegates()
+        self.connect_table_signals()
 
         self.table_view.hide()
-        self.table_view.clicked.connect(self.handle_table_click)
 
     def _create_date_group(self) -> QGroupBox:
         date_group = QGroupBox("Дни расчёта")
@@ -966,3 +966,6 @@ class MainWindow(QMainWindow):
 
     def setup_table_delegates(self) -> None:
         self.table_view.setItemDelegate(CityDelegate(self.table_view))
+
+    def connect_table_signals(self) -> None:
+        self.table_view.clicked.connect(self.handle_table_click)
