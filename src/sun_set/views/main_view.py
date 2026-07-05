@@ -646,7 +646,10 @@ class MainWindow(QMainWindow):
         export_paths = self.get_current_export_paths()
 
         self.update_city_action_buttons_state(has_selected_cities)
-        self.update_export_action_buttons_state(has_selected_cities, export_paths)
+        self.update_export_action_buttons_state(
+            has_selected_cities,
+            export_paths,
+        )
 
     def update_status_bar(self) -> None:
         self.update_selected_cities_label()
