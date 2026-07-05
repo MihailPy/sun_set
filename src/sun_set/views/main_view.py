@@ -79,6 +79,7 @@ from sun_set.services.project_state_service import (
     get_export_paths_from_project,
     get_project_settings,
 )
+from sun_set.services.project_window_state import ProjectWindowState
 from sun_set.services.project_workflow import (
     ProjectLoadSuccess,
     ProjectSaveSuccess,
@@ -104,7 +105,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Sun set")
         self.resize(800, 400)
 
-        self.file_path: str | None = None
+        self.project_window_state = ProjectWindowState()
         self.export_path_state = ExportPathState.empty()
 
         self.cities: list[City] = []
@@ -504,7 +505,7 @@ class MainWindow(QMainWindow):
         )
 
     def preview_selected_city_image(self) -> None:
-        city = self.get_current_city_or_none()
+        city = self.get_first_selected_city_or_none()
         if city is None:
             show_warning(
                 self,
@@ -573,11 +574,11 @@ class MainWindow(QMainWindow):
         self.open_project(file_path, project)
 
     def save_file(self) -> None:
-        if self.file_path is None:
+        if self.project_window_state.file_path is None:
             self.save_file_as()
             return
 
-        self.save_project_to_path(self.file_path)
+        self.save_project_to_path(self.project_window_state.file_path)
 
     def save_file_as(self) -> None:
         file_path = choose_save_file(
@@ -632,63 +633,22 @@ class MainWindow(QMainWindow):
             settings_path=None,
         )
 
-    def get_current_city_or_none(self) -> City | None:
-        if self.model is None:
-            return None
-
-        cities = self.model.get_selected_cities()
-        if not cities:
-            return None
-
-        return cities[0]
+    def get_first_selected_city_or_none(self) -> City | None:
+        cities = self.get_selected_cities()
+        return cities[0] if cities else None
 
     def get_selected_cities_or_none(self) -> list[City] | None:
-        if self.model is None:
-            return None
-
-        cities = self.model.get_selected_cities()
-        if not cities:
-            return None
-
-        return cities
+        cities = self.get_selected_cities()
+        return cities or None
 
     def update_action_buttons_state(self) -> None:
         has_selected_cities = self.has_selected_cities()
         export_paths = self.get_current_export_paths()
 
-        self.btn_del_city.setEnabled(has_selected_cities)
-        self.btn_get_sunset_info.setEnabled(has_selected_cities)
-        self.btn_save_file_main.setEnabled(self.has_cities())
-
-        self.preview_image_button.setEnabled(
-            can_preview_image(has_selected_cities, export_paths)
-        )
-        self.btn_export_image.setEnabled(
-            can_export_images(has_selected_cities, export_paths)
-        )
-
-        if has_selected_cities:
-            self.btn_del_city.setToolTip("Удалить выбранные города")
-            self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
-        else:
-            city_tooltip = "Выберите один или несколько городов в таблице"
-            self.btn_del_city.setToolTip(city_tooltip)
-            self.btn_get_sunset_info.setToolTip(city_tooltip)
-
-        export_tooltip = build_export_action_tooltip(
+        self.update_city_action_buttons_state(has_selected_cities)
+        self.update_export_action_buttons_state(
             has_selected_cities,
             export_paths,
-        )
-
-        self.preview_image_button.setToolTip(
-            "Предпросмотр перед сохранением изображения"
-            if self.preview_image_button.isEnabled()
-            else export_tooltip
-        )
-        self.btn_export_image.setToolTip(
-            "Экспорт выбранных городов в изображение"
-            if self.btn_export_image.isEnabled()
-            else export_tooltip
         )
 
     def update_status_bar(self) -> None:
@@ -696,7 +656,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(self.build_status_bar_text())
 
     def update_window_title(self) -> None:
-        file_name = self.get_current_file_name()
+        file_name = self.project_window_state.get_file_name()
 
         if file_name is None:
             self.setWindowTitle("Sun Set")
@@ -811,11 +771,7 @@ class MainWindow(QMainWindow):
         button.setMaximumWidth(180)
 
     def get_selected_cities_count(self) -> int:
-        if self.model is None:
-            return 0
-
-        selected = self.model.get_selected_cities()
-        return len(selected) if selected else 0
+        return len(self.get_selected_cities())
 
     def has_selected_cities(self) -> bool:
         return self.get_selected_cities_count() > 0
@@ -824,12 +780,7 @@ class MainWindow(QMainWindow):
         return bool(self.cities)
 
     def get_status_file_text(self) -> str:
-        file_name = self.get_current_file_name()
-
-        if file_name is None:
-            return "Файл не открыт"
-
-        return f"Файл: {file_name}"
+        return self.project_window_state.get_status_file_text()
 
     def build_status_bar_text(self) -> str:
         return (
@@ -862,12 +813,6 @@ class MainWindow(QMainWindow):
     def get_current_export_paths(self) -> ExportPaths:
         return self.export_path_state.paths
 
-    def get_current_file_name(self) -> str | None:
-        if self.file_path is None:
-            return None
-
-        return Path(self.file_path).name
-
     def load_project_from_path(self, file_path: str) -> ProjectData | None:
         result = execute_project_load(file_path)
 
@@ -879,7 +824,7 @@ class MainWindow(QMainWindow):
         return result.project
 
     def open_project(self, file_path: str, project: ProjectData) -> None:
-        self.file_path = file_path
+        self.project_window_state.file_path = file_path
         self.apply_project_data(project)
         self.update_window_title()
         self.update_action_buttons_state()
@@ -897,7 +842,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        self.file_path = result.file_path
+        self.project_window_state.file_path = result.file_path
         self.update_window_title()
         self.update_status_bar()
         self.update_action_buttons_state()
@@ -948,7 +893,7 @@ class MainWindow(QMainWindow):
         settings: ExportImageSettings,
         settings_path: Path | None,
     ) -> None:
-        city = self.get_current_city_or_none()
+        city = self.get_first_selected_city_or_none()
 
         dialog = ImageExportSettingsDialog(
             settings=settings,
@@ -962,3 +907,57 @@ class MainWindow(QMainWindow):
         self.extra_window = YearEditorWindow(city)
         self.extra_window.dataChanged.connect(lambda: self.on_city_data_changed(row))
         self.extra_window.show()
+
+    def get_selected_cities(self) -> list[City]:
+        if self.model is None:
+            return []
+
+        return self.model.get_selected_cities() or []
+
+    def get_city_actions_tooltip(self, has_selected_cities: bool) -> str:
+        if has_selected_cities:
+            return ""
+
+        return "Выберите один или несколько городов в таблице"
+
+    def update_city_action_buttons_state(self, has_selected_cities: bool) -> None:
+        self.btn_del_city.setEnabled(has_selected_cities)
+        self.btn_get_sunset_info.setEnabled(has_selected_cities)
+        self.btn_save_file_main.setEnabled(self.has_cities())
+
+        if has_selected_cities:
+            self.btn_del_city.setToolTip("Удалить выбранные города")
+            self.btn_get_sunset_info.setToolTip("Обновить выбранные данные закатов")
+            return
+
+        city_tooltip = self.get_city_actions_tooltip(has_selected_cities)
+        self.btn_del_city.setToolTip(city_tooltip)
+        self.btn_get_sunset_info.setToolTip(city_tooltip)
+
+    def update_export_action_buttons_state(
+        self,
+        has_selected_cities: bool,
+        export_paths: ExportPaths,
+    ) -> None:
+        self.preview_image_button.setEnabled(
+            can_preview_image(has_selected_cities, export_paths)
+        )
+        self.btn_export_image.setEnabled(
+            can_export_images(has_selected_cities, export_paths)
+        )
+
+        export_tooltip = build_export_action_tooltip(
+            has_selected_cities,
+            export_paths,
+        )
+
+        self.preview_image_button.setToolTip(
+            "Предпросмотр перед сохранением изображения"
+            if self.preview_image_button.isEnabled()
+            else export_tooltip
+        )
+        self.btn_export_image.setToolTip(
+            "Экспорт выбранных городов в изображение"
+            if self.btn_export_image.isEnabled()
+            else export_tooltip
+        )
