@@ -306,10 +306,9 @@ class MainWindow(QMainWindow):
         self.table_view = QTableView()
 
         self.setup_table_header()
+        self.setup_table_delegates()
 
         self.table_view.hide()
-        self.table_view.setItemDelegate(CityDelegate(self.table_view))
-
         self.table_view.clicked.connect(self.handle_table_click)
 
     def _create_date_group(self) -> QGroupBox:
@@ -964,3 +963,6 @@ class MainWindow(QMainWindow):
             SUNSET_DATA_COLUMN,
             QHeaderView.ResizeMode.ResizeToContents,
         )
+
+    def setup_table_delegates(self) -> None:
+        self.table_view.setItemDelegate(CityDelegate(self.table_view))
