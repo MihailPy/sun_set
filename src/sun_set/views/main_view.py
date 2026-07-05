@@ -72,6 +72,8 @@ from sun_set.services.project_state_service import (
     build_export_paths_text,
     build_export_paths_tooltip,
     build_project_data,
+    can_export_images,
+    can_preview_image,
     export_output_dir_exists,
     export_settings_path_exists,
     get_export_paths_from_project,
@@ -644,22 +646,7 @@ class MainWindow(QMainWindow):
         export_paths = self.get_current_export_paths()
 
         self.update_city_action_buttons_state(has_selected_cities)
-
-        export_tooltip = build_export_action_tooltip(
-            has_selected_cities,
-            export_paths,
-        )
-
-        self.preview_image_button.setToolTip(
-            "Предпросмотр перед сохранением изображения"
-            if self.preview_image_button.isEnabled()
-            else export_tooltip
-        )
-        self.btn_export_image.setToolTip(
-            "Экспорт выбранных городов в изображение"
-            if self.btn_export_image.isEnabled()
-            else export_tooltip
-        )
+        self.update_export_action_buttons_state(has_selected_cities, export_paths)
 
     def update_status_bar(self) -> None:
         self.update_selected_cities_label()
@@ -943,3 +930,31 @@ class MainWindow(QMainWindow):
         city_tooltip = self.get_city_actions_tooltip(has_selected_cities)
         self.btn_del_city.setToolTip(city_tooltip)
         self.btn_get_sunset_info.setToolTip(city_tooltip)
+
+    def update_export_action_buttons_state(
+        self,
+        has_selected_cities: bool,
+        export_paths: ExportPaths,
+    ) -> None:
+        self.preview_image_button.setEnabled(
+            can_preview_image(has_selected_cities, export_paths)
+        )
+        self.btn_export_image.setEnabled(
+            can_export_images(has_selected_cities, export_paths)
+        )
+
+        export_tooltip = build_export_action_tooltip(
+            has_selected_cities,
+            export_paths,
+        )
+
+        self.preview_image_button.setToolTip(
+            "Предпросмотр перед сохранением изображения"
+            if self.preview_image_button.isEnabled()
+            else export_tooltip
+        )
+        self.btn_export_image.setToolTip(
+            "Экспорт выбранных городов в изображение"
+            if self.btn_export_image.isEnabled()
+            else export_tooltip
+        )
