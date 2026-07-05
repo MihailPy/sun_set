@@ -374,8 +374,7 @@ class MainWindow(QMainWindow):
 
     def show_city_model(self, model: CityTableModel) -> None:
         self.table_view.setModel(model)
-        self.table_view.show()
-        self.initial_prompt_text.hide()
+        self.show_table_view()
         self.resize_table_columns()
 
     def load_cities_into_table(self, cities: list[City]) -> None:
@@ -969,3 +968,7 @@ class MainWindow(QMainWindow):
 
     def connect_table_signals(self) -> None:
         self.table_view.clicked.connect(self.handle_table_click)
+
+    def show_table_view(self) -> None:
+        self.table_view.show()
+        self.initial_prompt_text.hide()
