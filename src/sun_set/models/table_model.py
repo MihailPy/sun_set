@@ -202,26 +202,13 @@ class CityTableModel(QAbstractTableModel):
             col = index.column()
 
             try:
-                if col == CITY_NAME_COLUMN:
-                    city.name = value
-                elif col == REGION_COLUMN:
-                    city.region = value
-                elif col == LAT_COLUMN:
-                    city.lat = float(value.replace(",", "."))
-                elif col == LON_COLUMN:
-                    city.lon = float(value.replace(",", "."))
-                elif col == TIMEZONE_COLUMN:
-                    city.timezone = value
-                elif col == ELEVATION_COLUMN:
-                    city.elevation = int(value)
+                if not self.set_city_cell_value(city, col, value):
+                    return False
 
-                # Обновляем все затронутые роли
                 self.dataChanged.emit(
                     index,
                     index,
-                    [
-                        Qt.ItemDataRole.DisplayRole,
-                    ],
+                    [Qt.ItemDataRole.DisplayRole],
                 )
                 return True
             except ValueError:
@@ -315,3 +302,25 @@ class CityTableModel(QAbstractTableModel):
             return str(city.elevation)
 
         return None
+
+    def set_city_cell_value(self, city: City, col: int, value: Any) -> bool:
+        if col == CITY_NAME_COLUMN:
+            city.name = value
+            return True
+        if col == REGION_COLUMN:
+            city.region = value
+            return True
+        if col == LAT_COLUMN:
+            city.lat = float(value.replace(",", "."))
+            return True
+        if col == LON_COLUMN:
+            city.lon = float(value.replace(",", "."))
+            return True
+        if col == TIMEZONE_COLUMN:
+            city.timezone = value
+            return True
+        if col == ELEVATION_COLUMN:
+            city.elevation = int(value)
+            return True
+
+        return False
