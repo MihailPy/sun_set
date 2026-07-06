@@ -25,6 +25,17 @@ TIMEZONE_COLUMN = 5
 ELEVATION_COLUMN = 6
 STATUS_COLUMN = 7
 SUNSET_DATA_COLUMN = 8
+CITY_TABLE_HEADERS = [
+    "",
+    "Город",
+    "Регион",
+    "Широта",
+    "Долгота",
+    "Timezone",
+    "Высота ASL",
+    "Статус",
+    "Данные заката",
+]
 
 
 class CheckBoxHeader(QHeaderView):
@@ -102,17 +113,7 @@ class CityTableModel(QAbstractTableModel):
     def __init__(self, cities: list[City]) -> None:
         super().__init__()
         self.cities = cities
-        self.headers = [
-            "",
-            "Город",
-            "Регион",
-            "Широта",
-            "Долгота",
-            "Timezone",
-            "Высота ASL",
-            "Статус",
-            "Данные заката",
-        ]
+        self.headers = CITY_TABLE_HEADERS.copy()
         self.checked_states = [False] * len(cities)
         self._updating = False
 
