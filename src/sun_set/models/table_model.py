@@ -16,6 +16,13 @@ from PyQt6.QtWidgets import (
 from sun_set.models.city import City
 from sun_set.models.sunset import Source
 
+CHECK_COLUMN = 0
+CITY_NAME_COLUMN = 1
+REGION_COLUMN = 2
+LAT_COLUMN = 3
+LON_COLUMN = 4
+TIMEZONE_COLUMN = 5
+ELEVATION_COLUMN = 6
 STATUS_COLUMN = 7
 SUNSET_DATA_COLUMN = 8
 
@@ -135,7 +142,7 @@ class CityTableModel(QAbstractTableModel):
             if col in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
                 return Qt.AlignmentFlag.AlignCenter
 
-        if role == Qt.ItemDataRole.CheckStateRole and col == 0:
+        if role == Qt.ItemDataRole.CheckStateRole and col == CHECK_COLUMN:
             return (
                 Qt.CheckState.Checked
                 if self.checked_states[row]
@@ -143,20 +150,20 @@ class CityTableModel(QAbstractTableModel):
             )
 
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            if col == 0:
+            if col == CHECK_COLUMN:
                 return None
 
-            if col == 1:
+            if col == CITY_NAME_COLUMN:
                 return city.name
-            if col == 2:
+            if col == REGION_COLUMN:
                 return city.region
-            if col == 3:
+            if col == LAT_COLUMN:
                 return str(city.lat)
-            if col == 4:
+            if col == LON_COLUMN:
                 return str(city.lon)
-            if col == 5:
+            if col == TIMEZONE_COLUMN:
                 return city.timezone
-            if col == 6:
+            if col == ELEVATION_COLUMN:
                 return str(city.elevation)
             if col == STATUS_COLUMN:
                 return build_city_sunset_status_text(city)
@@ -200,17 +207,17 @@ class CityTableModel(QAbstractTableModel):
             col = index.column()
 
             try:
-                if col == 1:
+                if col == CITY_NAME_COLUMN:
                     city.name = value
-                elif col == 2:
+                elif col == REGION_COLUMN:
                     city.region = value
-                elif col == 3:
+                elif col == LAT_COLUMN:
                     city.lat = float(value.replace(",", "."))
-                elif col == 4:
+                elif col == LON_COLUMN:
                     city.lon = float(value.replace(",", "."))
-                elif col == 5:
+                elif col == TIMEZONE_COLUMN:
                     city.timezone = value
-                elif col == 6:
+                elif col == ELEVATION_COLUMN:
                     city.elevation = int(value)
 
                 # Обновляем все затронутые роли
