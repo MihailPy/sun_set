@@ -151,21 +151,15 @@ class CityTableModel(QAbstractTableModel):
             )
 
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            if col == CHECK_COLUMN:
-                return None
-
-            if col == CITY_NAME_COLUMN:
-                return city.name
-            if col == REGION_COLUMN:
-                return city.region
-            if col == LAT_COLUMN:
-                return str(city.lat)
-            if col == LON_COLUMN:
-                return str(city.lon)
-            if col == TIMEZONE_COLUMN:
-                return city.timezone
-            if col == ELEVATION_COLUMN:
-                return str(city.elevation)
+            if col in (
+                CITY_NAME_COLUMN,
+                REGION_COLUMN,
+                LAT_COLUMN,
+                LON_COLUMN,
+                TIMEZONE_COLUMN,
+                ELEVATION_COLUMN,
+            ):
+                return self.get_city_cell_value(city, col)
             if col == STATUS_COLUMN:
                 return build_city_sunset_status_text(city)
             if col == SUNSET_DATA_COLUMN:
@@ -305,3 +299,19 @@ class CityTableModel(QAbstractTableModel):
     def update_status_for_row(self, row: int) -> None:
 
         self.refresh_status_row(row)
+
+    def get_city_cell_value(self, city: City, col: int) -> str | None:
+        if col == CITY_NAME_COLUMN:
+            return city.name
+        if col == REGION_COLUMN:
+            return city.region
+        if col == LAT_COLUMN:
+            return str(city.lat)
+        if col == LON_COLUMN:
+            return str(city.lon)
+        if col == TIMEZONE_COLUMN:
+            return city.timezone
+        if col == ELEVATION_COLUMN:
+            return str(city.elevation)
+
+        return None
