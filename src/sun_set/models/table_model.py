@@ -64,7 +64,7 @@ class CheckBoxHeader(QHeaderView):
         super().paintSection(painter, rect, logicalIndex)
         painter.restore()
 
-        if logicalIndex == 0:
+        if logicalIndex == CHECK_COLUMN:
             style = self.style()
             # 2. Проверяем наличие стиля
             if style is None:
@@ -88,7 +88,7 @@ class CheckBoxHeader(QHeaderView):
         if e is None:
             return
 
-        if self.logicalIndexAt(e.pos()) == 0:
+        if self.logicalIndexAt(e.pos()) == CHECK_COLUMN:
             self.is_checked = not self.is_checked
             self.updateSection(0)
 
@@ -137,7 +137,7 @@ class CityTableModel(QAbstractTableModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         base_flags = super().flags(index)
-        if index.column() == 0:
+        if index.column() == CHECK_COLUMN:
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
         if index.column() in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
             return Qt.ItemFlag.ItemIsEnabled
@@ -194,7 +194,7 @@ class CityTableModel(QAbstractTableModel):
         if not index.isValid():
             return False
 
-        if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
+        if role == Qt.ItemDataRole.CheckStateRole and index.column() == CHECK_COLUMN:
             if isinstance(value, Qt.CheckState):
                 is_checked = value == Qt.CheckState.Checked
             else:
@@ -250,8 +250,8 @@ class CityTableModel(QAbstractTableModel):
     def select_all(self, state: bool) -> None:
         self.checked_states = [state] * len(self.cities)
         self.dataChanged.emit(
-            self.index(0, 0),
-            self.index(len(self.cities) - 1, 0),
+            self.index(0, CHECK_COLUMN),
+            self.index(len(self.cities) - 1, CHECK_COLUMN),
             [Qt.ItemDataRole.CheckStateRole],
         )
         self.selection_changed.emit()
