@@ -8,12 +8,20 @@ from PyQt6.QtWidgets import QApplication
 from sun_set.models.city import City
 from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
+    CHECK_COLUMN,
+    CITY_NAME_COLUMN,
+    ELEVATION_COLUMN,
+    LAT_COLUMN,
+    LON_COLUMN,
+    REGION_COLUMN,
     STATUS_COLUMN,
     SUNSET_DATA_COLUMN,
+    TIMEZONE_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     build_city_sunset_status_text,
     can_open_city_sunset_data,
+    is_editable_city_column,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -145,38 +153,38 @@ class TestCityTableModel:
     def test_flags(self, table_model):
         """Тест флагов для разных колонок"""
         # Колонка с чекбоксом
-        index = table_model.index(0, 0)
+        index = table_model.index(0, CHECK_COLUMN)
         flags = table_model.flags(index)
         assert flags & Qt.ItemFlag.ItemIsUserCheckable
 
         # Колонка с кнопками
-        index = table_model.index(0, 7)
+        index = table_model.index(0, STATUS_COLUMN)
         flags = table_model.flags(index)
         assert flags & Qt.ItemFlag.ItemIsEnabled
 
         # Обычная колонка
-        index = table_model.index(0, 1)
+        index = table_model.index(0, CITY_NAME_COLUMN)
         flags = table_model.flags(index)
         assert flags & Qt.ItemFlag.ItemIsEditable
 
     def test_data_display_role(self, table_model, sample_city):
         """Тест получения данных для отображения"""
-        index = table_model.index(0, 1)
+        index = table_model.index(0, CITY_NAME_COLUMN)
         assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == sample_city.name
 
-        index = table_model.index(0, 2)
+        index = table_model.index(0, REGION_COLUMN)
         assert (
             table_model.data(index, Qt.ItemDataRole.DisplayRole) == sample_city.region
         )
 
-        index = table_model.index(0, 3)
+        index = table_model.index(0, LAT_COLUMN)
         assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == str(
             sample_city.lat
         )
 
     def test_data_check_state_role(self, table_model):
         """Тест состояния чекбокса"""
-        index = table_model.index(0, 0)
+        index = table_model.index(0, CHECK_COLUMN)
 
         state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
         assert state == Qt.CheckState.Unchecked
@@ -209,7 +217,7 @@ class TestCityTableModel:
         assert build_city_sunset_status_text(sample_city) == "Ошибка расчёта"
 
     def test_data_status_column(self, table_model, sample_city):
-        index = table_model.index(0, 7)
+        index = table_model.index(0, STATUS_COLUMN)
 
         sample_city.sunset_data.hash_before_edit = sample_city.get_stable_hash()
         sample_city.sunset_data.source = Source.CALCULATED
@@ -233,7 +241,7 @@ class TestCityTableModel:
 
     def test_set_data_check_state(self, table_model):
         """Тест установки состояния чекбокса"""
-        index = table_model.index(0, 0)
+        index = table_model.index(0, CHECK_COLUMN)
 
         result = table_model.setData(
             index, Qt.CheckState.Checked.value, Qt.ItemDataRole.CheckStateRole
@@ -244,7 +252,7 @@ class TestCityTableModel:
 
     def test_set_data_edit_role(self, table_model):
         """Тест редактирования данных"""
-        index = table_model.index(0, 1)
+        index = table_model.index(0, CITY_NAME_COLUMN)
 
         new_name = "Новое название"
         result = table_model.setData(index, new_name, Qt.ItemDataRole.EditRole)
@@ -254,7 +262,7 @@ class TestCityTableModel:
 
     def test_set_data_edit_role_float(self, table_model):
         """Тест редактирования float значений"""
-        index = table_model.index(0, 3)
+        index = table_model.index(0, LAT_COLUMN)
 
         result = table_model.setData(index, "70.5", Qt.ItemDataRole.EditRole)
 
@@ -268,7 +276,7 @@ class TestCityTableModel:
 
     def test_set_data_invalid_value(self, table_model):
         """Тест установки невалидного значения"""
-        index = table_model.index(0, 3)
+        index = table_model.index(0, LAT_COLUMN)
 
         result = table_model.setData(index, "invalid", Qt.ItemDataRole.EditRole)
 
@@ -363,7 +371,7 @@ class TestCityTableModel:
 
         table_model.dataChanged.connect(on_data_changed)
 
-        index = table_model.index(0, 1)
+        index = table_model.index(0, CITY_NAME_COLUMN)
         table_model.setData(index, "Новое имя", Qt.ItemDataRole.EditRole)
 
         assert signal_received is True
@@ -400,3 +408,15 @@ class TestCityTableModel:
         index = table_model.index(0, SUNSET_DATA_COLUMN)
 
         assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == ""
+
+    def test_is_editable_city_column(self):
+        assert is_editable_city_column(CITY_NAME_COLUMN)
+        assert is_editable_city_column(REGION_COLUMN)
+        assert is_editable_city_column(LAT_COLUMN)
+        assert is_editable_city_column(LON_COLUMN)
+        assert is_editable_city_column(TIMEZONE_COLUMN)
+        assert is_editable_city_column(ELEVATION_COLUMN)
+
+        assert not is_editable_city_column(CHECK_COLUMN)
+        assert not is_editable_city_column(STATUS_COLUMN)
+        assert not is_editable_city_column(SUNSET_DATA_COLUMN)
