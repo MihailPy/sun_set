@@ -10,14 +10,18 @@ from sun_set.models.sunset import Source, YearData
 from sun_set.models.table_model import (
     CHECK_COLUMN,
     CITY_NAME_COLUMN,
+    ELEVATION_COLUMN,
     LAT_COLUMN,
+    LON_COLUMN,
     REGION_COLUMN,
     STATUS_COLUMN,
     SUNSET_DATA_COLUMN,
+    TIMEZONE_COLUMN,
     CheckBoxHeader,
     CityTableModel,
     build_city_sunset_status_text,
     can_open_city_sunset_data,
+    is_editable_city_column,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -404,3 +408,15 @@ class TestCityTableModel:
         index = table_model.index(0, SUNSET_DATA_COLUMN)
 
         assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == ""
+
+    def test_is_editable_city_column(self):
+        assert is_editable_city_column(CITY_NAME_COLUMN)
+        assert is_editable_city_column(REGION_COLUMN)
+        assert is_editable_city_column(LAT_COLUMN)
+        assert is_editable_city_column(LON_COLUMN)
+        assert is_editable_city_column(TIMEZONE_COLUMN)
+        assert is_editable_city_column(ELEVATION_COLUMN)
+
+        assert not is_editable_city_column(CHECK_COLUMN)
+        assert not is_editable_city_column(STATUS_COLUMN)
+        assert not is_editable_city_column(SUNSET_DATA_COLUMN)
