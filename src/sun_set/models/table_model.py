@@ -36,6 +36,18 @@ CITY_TABLE_HEADERS = [
     "Статус",
     "Данные заката",
 ]
+EDITABLE_CITY_COLUMNS = {
+    CITY_NAME_COLUMN,
+    REGION_COLUMN,
+    LAT_COLUMN,
+    LON_COLUMN,
+    TIMEZONE_COLUMN,
+    ELEVATION_COLUMN,
+}
+
+
+def is_editable_city_column(col: int) -> bool:
+    return col in EDITABLE_CITY_COLUMNS
 
 
 class CheckBoxHeader(QHeaderView):
@@ -129,7 +141,10 @@ class CityTableModel(QAbstractTableModel):
             return base_flags | Qt.ItemFlag.ItemIsUserCheckable
         if index.column() in (STATUS_COLUMN, SUNSET_DATA_COLUMN):
             return Qt.ItemFlag.ItemIsEnabled
-        return base_flags | Qt.ItemFlag.ItemIsEditable
+        if is_editable_city_column(index.column()):
+            return base_flags | Qt.ItemFlag.ItemIsEditable
+
+        return base_flags
 
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
@@ -151,14 +166,7 @@ class CityTableModel(QAbstractTableModel):
             )
 
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            if col in (
-                CITY_NAME_COLUMN,
-                REGION_COLUMN,
-                LAT_COLUMN,
-                LON_COLUMN,
-                TIMEZONE_COLUMN,
-                ELEVATION_COLUMN,
-            ):
+            if is_editable_city_column(col):
                 return self.get_city_cell_value(city, col)
             if col == STATUS_COLUMN:
                 return build_city_sunset_status_text(city)
@@ -200,6 +208,9 @@ class CityTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.EditRole:
             city = self.cities[index.row()]
             col = index.column()
+
+            if not is_editable_city_column(col):
+                return False
 
             try:
                 if not self.set_city_cell_value(city, col, value):
