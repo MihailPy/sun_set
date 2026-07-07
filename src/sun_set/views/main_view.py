@@ -595,7 +595,7 @@ class MainWindow(QMainWindow):
         if self.model is None:
             return
 
-        self.model.remove_checked_cities()
+        self.model.remove_selected_cities()
         self.resize_table_columns()
 
         self.cities = self.model.cities

@@ -245,7 +245,7 @@ class CityTableModel(QAbstractTableModel):
             return [self.cities[i] for i in selected_state_indices]
         return None
 
-    def remove_checked_cities(self):
+    def remove_selected_cities(self):
         indices_to_remove = [i for i, val in enumerate(self.selected_rows) if val]
         indices_to_remove.sort(reverse=True)
 

@@ -292,13 +292,13 @@ class TestCityTableModel:
         table_model.select_all(False)
         assert not any(table_model.selected_rows)
 
-    def test_remove_checked_cities(self, table_model):
+    def test_remove_selected_cities(self, table_model):
         """Тест удаления отмеченных городов"""
         initial_count = table_model.rowCount()
 
         table_model.selected_rows[0] = True
 
-        table_model.remove_checked_cities()
+        table_model.remove_selected_cities()
 
         assert table_model.rowCount() == initial_count - 1
         assert len(table_model.cities) == initial_count - 1
