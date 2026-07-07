@@ -240,13 +240,15 @@ class CityTableModel(QAbstractTableModel):
         self.selection_changed.emit()
 
     def get_selected_cities(self) -> list[City] | None:
-        selected_state_indices = [i for i, val in enumerate(self.selected_rows) if val]
-        if len(selected_state_indices) > 0:
-            return [self.cities[i] for i in selected_state_indices]
+        selected_row_indexes = self.get_selected_row_indexes()
+
+        if selected_row_indexes:
+            return [self.cities[index] for index in selected_row_indexes]
+
         return None
 
     def remove_selected_cities(self):
-        indices_to_remove = [i for i, val in enumerate(self.selected_rows) if val]
+        indices_to_remove = self.get_selected_row_indexes()
         indices_to_remove.sort(reverse=True)
 
         for row in indices_to_remove:
@@ -318,3 +320,6 @@ class CityTableModel(QAbstractTableModel):
             return True
 
         return False
+
+    def get_selected_row_indexes(self) -> list[int]:
+        return [index for index, selected in enumerate(self.selected_rows) if selected]
