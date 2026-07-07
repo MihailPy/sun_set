@@ -136,3 +136,19 @@ def second_test_city(test_city: City) -> City:
     city = copy.deepcopy(test_city)
     city.name = "Test City Two"
     return city
+
+
+@pytest.fixture
+def sample_city():
+    """Создает City с тестовыми данными, фикстура"""
+    return City(
+        name="Москва",
+        region="Московская область",
+        lat=55.7558,
+        lon=37.6173,
+        timezone="Europe/Moscow",
+        elevation=156,
+        sunset_data=YearData(
+            year=2033, source=Source.CALCULATED, hash_before_edit=None, months=None
+        ),
+    )
