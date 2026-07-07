@@ -109,7 +109,7 @@ class CityTableModel(QAbstractTableModel):
         super().__init__()
         self.cities = cities
         self.headers = CITY_TABLE_HEADERS.copy()
-        self.checked_states = [False] * len(cities)
+        self.selected_rows = [False] * len(cities)
         self._updating = False
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -144,7 +144,7 @@ class CityTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.CheckStateRole and col == CHECK_COLUMN:
             return (
                 Qt.CheckState.Checked
-                if self.checked_states[row]
+                if self.selected_rows[row]
                 else Qt.CheckState.Unchecked
             )
 
@@ -183,7 +183,7 @@ class CityTableModel(QAbstractTableModel):
             else:
                 is_checked = value == Qt.CheckState.Checked.value
 
-            self.checked_states[index.row()] = is_checked
+            self.selected_rows[index.row()] = is_checked
             self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])
             self.selection_changed.emit()
             return True
@@ -227,11 +227,11 @@ class CityTableModel(QAbstractTableModel):
 
         self.beginInsertRows(QModelIndex(), last_row, last_row)
         self.cities.append(city)
-        self.checked_states.append(False)
+        self.selected_rows.append(False)
         self.endInsertRows()
 
     def select_all(self, state: bool) -> None:
-        self.checked_states = [state] * len(self.cities)
+        self.selected_rows = [state] * len(self.cities)
         self.dataChanged.emit(
             self.index(0, CHECK_COLUMN),
             self.index(len(self.cities) - 1, CHECK_COLUMN),
@@ -240,19 +240,19 @@ class CityTableModel(QAbstractTableModel):
         self.selection_changed.emit()
 
     def get_selected_cities(self) -> list[City] | None:
-        selected_state_indices = [i for i, val in enumerate(self.checked_states) if val]
+        selected_state_indices = [i for i, val in enumerate(self.selected_rows) if val]
         if len(selected_state_indices) > 0:
             return [self.cities[i] for i in selected_state_indices]
         return None
 
     def remove_checked_cities(self):
-        indices_to_remove = [i for i, val in enumerate(self.checked_states) if val]
+        indices_to_remove = [i for i, val in enumerate(self.selected_rows) if val]
         indices_to_remove.sort(reverse=True)
 
         for row in indices_to_remove:
             self.beginRemoveRows(QModelIndex(), row, row)
             del self.cities[row]
-            del self.checked_states[row]
+            del self.selected_rows[row]
             self.endRemoveRows()
 
     def refresh_status_column(self) -> None:

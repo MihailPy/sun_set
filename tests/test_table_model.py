@@ -167,7 +167,7 @@ class TestCityTableModel:
         state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
         assert state == Qt.CheckState.Unchecked
 
-        table_model.checked_states[0] = True
+        table_model.selected_rows[0] = True
         state = table_model.data(index, Qt.ItemDataRole.CheckStateRole)
         assert state == Qt.CheckState.Checked
 
@@ -203,7 +203,7 @@ class TestCityTableModel:
         )
 
         assert result is True
-        assert table_model.checked_states[0] is True
+        assert table_model.selected_rows[0] is True
 
     def test_set_data_edit_role(self, table_model):
         """Тест редактирования данных"""
@@ -280,29 +280,29 @@ class TestCityTableModel:
 
         assert table_model.rowCount() == initial_count + 1
         assert table_model.cities[-1] == new_city
-        assert len(table_model.checked_states) == initial_count + 1
-        assert table_model.checked_states[-1] is False
+        assert len(table_model.selected_rows) == initial_count + 1
+        assert table_model.selected_rows[-1] is False
 
     def test_select_all(self, table_model):
         """Тест выбора всех элементов"""
         table_model.select_all(True)
 
-        assert all(table_model.checked_states)
+        assert all(table_model.selected_rows)
 
         table_model.select_all(False)
-        assert not any(table_model.checked_states)
+        assert not any(table_model.selected_rows)
 
     def test_remove_checked_cities(self, table_model):
         """Тест удаления отмеченных городов"""
         initial_count = table_model.rowCount()
 
-        table_model.checked_states[0] = True
+        table_model.selected_rows[0] = True
 
         table_model.remove_checked_cities()
 
         assert table_model.rowCount() == initial_count - 1
         assert len(table_model.cities) == initial_count - 1
-        assert len(table_model.checked_states) == initial_count - 1
+        assert len(table_model.selected_rows) == initial_count - 1
 
     @patch("sun_set.services.city_service.get_city_sunset")
     def test_update_cities_sunset(self, mock_get_sunset, sample_city):
