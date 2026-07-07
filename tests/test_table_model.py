@@ -283,13 +283,13 @@ class TestCityTableModel:
         assert len(table_model.selected_rows) == initial_count + 1
         assert table_model.selected_rows[-1] is False
 
-    def test_select_all(self, table_model):
+    def test_set_all_rows_selected(self, table_model):
         """Тест выбора всех элементов"""
-        table_model.select_all(True)
+        table_model.set_all_rows_selected(True)
 
         assert all(table_model.selected_rows)
 
-        table_model.select_all(False)
+        table_model.set_all_rows_selected(False)
         assert not any(table_model.selected_rows)
 
     def test_remove_selected_cities(self, table_model):

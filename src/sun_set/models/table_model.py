@@ -97,7 +97,7 @@ class CheckBoxHeader(QHeaderView):
 
             model = self.model()
             if isinstance(model, CityTableModel):
-                model.select_all(self.is_checked)
+                model.set_all_rows_selected(self.is_checked)
         else:
             super().mousePressEvent(e)
 
@@ -230,7 +230,7 @@ class CityTableModel(QAbstractTableModel):
         self.selected_rows.append(False)
         self.endInsertRows()
 
-    def select_all(self, state: bool) -> None:
+    def set_all_rows_selected(self, state: bool) -> None:
         self.selected_rows = [state] * len(self.cities)
         self.dataChanged.emit(
             self.index(0, CHECK_COLUMN),
