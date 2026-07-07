@@ -353,3 +353,10 @@ class TestCityTableModel:
         index = table_model.index(0, SUNSET_DATA_COLUMN)
 
         assert table_model.data(index, Qt.ItemDataRole.DisplayRole) == ""
+
+    def test_get_selected_row_indexes(self, table_model, sample_city):
+        table_model.cities.append(sample_city)
+        table_model.cities.append(sample_city)
+        table_model.selected_rows = [True, False, True]
+
+        assert table_model.get_selected_row_indexes() == [0, 2]
