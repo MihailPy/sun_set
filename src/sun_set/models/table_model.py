@@ -56,7 +56,7 @@ def is_editable_city_column(col: int) -> bool:
 class CheckBoxHeader(QHeaderView):
     def __init__(self, orientation, parent=None):
         super().__init__(orientation, parent)
-        self.is_checked = False
+        self.is_all_rows_selected = False
 
     def paintSection(self, painter, rect, logicalIndex):
         # 1. Проверяем, что painter существует
@@ -80,7 +80,7 @@ class CheckBoxHeader(QHeaderView):
                 QStyle.StateFlag.State_Enabled | QStyle.StateFlag.State_Active
             )
 
-            if self.is_checked:
+            if self.is_all_rows_selected:
                 option.state |= QStyle.StateFlag.State_On
             else:
                 option.state |= QStyle.StateFlag.State_Off
@@ -92,12 +92,12 @@ class CheckBoxHeader(QHeaderView):
             return
 
         if self.logicalIndexAt(e.pos()) == CHECK_COLUMN:
-            self.is_checked = not self.is_checked
+            self.is_all_rows_selected = not self.is_all_rows_selected
             self.updateSection(0)
 
             model = self.model()
             if isinstance(model, CityTableModel):
-                model.set_all_rows_selected(self.is_checked)
+                model.set_all_rows_selected(self.is_all_rows_selected)
         else:
             super().mousePressEvent(e)
 

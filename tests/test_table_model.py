@@ -62,7 +62,7 @@ def checkbox_header(qapp):
 class TestCheckBoxHeader:
     def test_initial_state(self, checkbox_header):
         """Тест начального состояния"""
-        assert checkbox_header.is_checked is False
+        assert checkbox_header.is_all_rows_selected is False
 
     def test_paint_section_with_null_painter(self, checkbox_header):
         """Тест отрисовки с None painter"""
@@ -93,10 +93,10 @@ class TestCheckBoxHeader:
         event.pos.return_value = QPoint(10, 10)
 
         with patch.object(CheckBoxHeader, "logicalIndexAt", return_value=0):
-            initial_state = checkbox_header.is_checked
+            initial_state = checkbox_header.is_all_rows_selected
             checkbox_header.mousePressEvent(event)
 
-            assert checkbox_header.is_checked != initial_state
+            assert checkbox_header.is_all_rows_selected != initial_state
 
     def test_mouse_press_event_other_column(self, checkbox_header):
         """Тест клика по другой колонке"""
@@ -109,10 +109,10 @@ class TestCheckBoxHeader:
         )
 
         with patch.object(CheckBoxHeader, "logicalIndexAt", return_value=1):
-            initial_state = checkbox_header.is_checked
+            initial_state = checkbox_header.is_all_rows_selected
             checkbox_header.mousePressEvent(event)
 
-            assert checkbox_header.is_checked == initial_state
+            assert checkbox_header.is_all_rows_selected == initial_state
 
     def test_mouse_press_event_null(self, checkbox_header):
         """Тест с None событием"""
