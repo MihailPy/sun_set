@@ -93,16 +93,20 @@ class CheckBoxHeader(QHeaderView):
 
         if self.logicalIndexAt(e.pos()) == CHECK_COLUMN:
             self.toggle_all_rows_selected()
+            self.apply_all_rows_selection()
+            return
 
-            model = self.model()
-            if isinstance(model, CityTableModel):
-                model.set_all_rows_selected(self.is_all_rows_selected)
-        else:
-            super().mousePressEvent(e)
+        super().mousePressEvent(e)
 
     def toggle_all_rows_selected(self) -> None:
         self.is_all_rows_selected = not self.is_all_rows_selected
         self.updateSection(0)
+
+    def apply_all_rows_selection(self) -> None:
+        model = self.model()
+
+        if isinstance(model, CityTableModel):
+            model.set_all_rows_selected(self.is_all_rows_selected)
 
 
 class CityTableModel(QAbstractTableModel):
