@@ -16,6 +16,8 @@ from sun_set.models.table_model import (
     SUNSET_DATA_COLUMN,
     CheckBoxHeader,
     CityTableModel,
+    parse_float_cell_value,
+    parse_int_cell_value,
 )
 from sun_set.services.city_service import update_cities_sunset
 
@@ -360,3 +362,15 @@ class TestCityTableModel:
         table_model.selected_rows = [True, False, True]
 
         assert table_model.get_selected_row_indexes() == [0, 2]
+
+
+def test_parse_float_cell_value_with_dot():
+    assert parse_float_cell_value("55.75") == 55.75
+
+
+def test_parse_float_cell_value_with_comma():
+    assert parse_float_cell_value("55,75") == 55.75
+
+
+def test_parse_int_cell_value():
+    assert parse_int_cell_value("150") == 150
