@@ -53,6 +53,14 @@ def is_editable_city_column(col: int) -> bool:
     return col in EDITABLE_CITY_COLUMNS
 
 
+def parse_float_cell_value(value: Any) -> float:
+    return float(str(value).replace(",", "."))
+
+
+def parse_int_cell_value(value: Any) -> int:
+    return int(str(value))
+
+
 class CheckBoxHeader(QHeaderView):
     def __init__(self, orientation, parent=None):
         super().__init__(orientation, parent)
@@ -314,16 +322,16 @@ class CityTableModel(QAbstractTableModel):
             city.region = value
             return True
         if col == LAT_COLUMN:
-            city.lat = float(value.replace(",", "."))
+            city.lat = parse_float_cell_value(value)
             return True
         if col == LON_COLUMN:
-            city.lon = float(value.replace(",", "."))
+            city.lon = parse_float_cell_value(value)
             return True
         if col == TIMEZONE_COLUMN:
             city.timezone = value
             return True
         if col == ELEVATION_COLUMN:
-            city.elevation = int(value)
+            city.elevation = parse_int_cell_value(value)
             return True
 
         return False
