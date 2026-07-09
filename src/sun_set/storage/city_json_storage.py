@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from enum import Enum
+from json import JSONDecodeError
 from pathlib import Path
 
 from dacite import Config, DaciteError, from_dict
@@ -55,6 +56,12 @@ def load_project_from_json(
                 None,
             )
 
+        if not isinstance(data, dict):
+            return (
+                None,
+                "Ошибка в структуре данных файла: корневой элемент должен быть объектом проекта или списком городов.",
+            )
+
         project = from_dict(
             data_class=ProjectData,
             data=data,
@@ -65,6 +72,8 @@ def load_project_from_json(
 
     except FileNotFoundError:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
+    except JSONDecodeError:
+        return None, "Ошибка: файл не является корректным JSON."
     except DaciteError as error:
         return None, f"Ошибка в структуре данных файла: {error}"
     except Exception as error:
@@ -89,6 +98,13 @@ def save_cities_to_json(cities: list[City], filename: str) -> None:
 def load_cities_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
     try:
         data_list = read_json(Path(file_path))
+
+        if not isinstance(data_list, list):
+            return (
+                None,
+                "Ошибка в структуре данных файла: корневой элемент должен быть списком городов.",
+            )
+
         config = Config(cast=[Enum])
 
         cities = [
@@ -101,6 +117,8 @@ def load_cities_from_json(file_path: str) -> tuple[list[City] | None, str | None
 
     except FileNotFoundError:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
+    except JSONDecodeError:
+        return None, "Ошибка: файл не является корректным JSON."
     except DaciteError as error:
         return None, f"Ошибка в структуре данных файла: {error}"
     except Exception as error:

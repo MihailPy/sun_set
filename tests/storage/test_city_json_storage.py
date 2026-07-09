@@ -157,3 +157,124 @@ def test_load_legacy_city_list_as_project(tmp_path):
     assert project.cities[0].name == "Amsterdam"
     assert project.weekday1 == DEFAULT_WEEKDAY_1
     assert project.weekday2 == DEFAULT_WEEKDAY_2
+
+
+def test_load_project_from_invalid_json(tmp_path):
+    path = tmp_path / "broken.json"
+    path.write_text("{ broken json", encoding="utf-8")
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert error == "Ошибка: файл не является корректным JSON."
+
+
+def test_load_project_from_empty_file(tmp_path):
+    path = tmp_path / "empty.json"
+    path.write_text("", encoding="utf-8")
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert error == "Ошибка: файл не является корректным JSON."
+
+
+def test_load_project_from_missing_file(tmp_path):
+    path = tmp_path / "missing.json"
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error == "Ошибка: Файл не найден. Проверьте путь к файлу."
+
+
+def test_load_project_from_invalid_project_structure(tmp_path):
+    path = tmp_path / "invalid_project.json"
+    write_json(
+        path,
+        {
+            "version": "not-a-number",
+            "cities": "not-a-list",
+        },
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_legacy_city_list_with_invalid_city_structure(tmp_path):
+    path = tmp_path / "legacy_invalid_city.json"
+    write_json(
+        path,
+        [
+            {
+                "name": "Amsterdam",
+                "lat": "not-a-number",
+            }
+        ],
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_project_from_json_with_unsupported_root_type(tmp_path):
+    path = tmp_path / "invalid_root.json"
+    write_json(path, "not-a-project")
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_cities_from_json_with_unsupported_root_type(tmp_path):
+    path = tmp_path / "invalid_cities_root.json"
+    write_json(path, "not-a-city-list")
+
+    cities, error = load_cities_from_json(str(path))
+
+    assert cities is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_legacy_city_list_ignores_non_dict_items(tmp_path):
+    path = tmp_path / "legacy_with_garbage.json"
+    write_json(
+        path,
+        [
+            "not-a-city",
+            123,
+            {
+                "name": "Amsterdam",
+                "region": "North Holland",
+                "lat": 52.37,
+                "lon": 4.89,
+                "timezone": "Europe/Amsterdam",
+                "elevation": 0,
+                "sunset_data": {
+                    "year": 2027,
+                    "source": Source.CALCULATED.value,
+                    "hash_before_edit": None,
+                    "months": None,
+                },
+            },
+        ],
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert project is not None
+    assert len(project.cities) == 1
+    assert project.cities[0].name == "Amsterdam"
