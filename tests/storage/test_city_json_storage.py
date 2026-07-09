@@ -188,3 +188,20 @@ def test_load_project_from_missing_file(tmp_path):
 
     assert project is None
     assert error == "Ошибка: Файл не найден. Проверьте путь к файлу."
+
+
+def test_load_project_from_invalid_project_structure(tmp_path):
+    path = tmp_path / "invalid_project.json"
+    write_json(
+        path,
+        {
+            "version": "not-a-number",
+            "cities": "not-a-list",
+        },
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
