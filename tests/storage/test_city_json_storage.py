@@ -157,3 +157,34 @@ def test_load_legacy_city_list_as_project(tmp_path):
     assert project.cities[0].name == "Amsterdam"
     assert project.weekday1 == DEFAULT_WEEKDAY_1
     assert project.weekday2 == DEFAULT_WEEKDAY_2
+
+
+def test_load_project_from_invalid_json(tmp_path):
+    path = tmp_path / "broken.json"
+    path.write_text("{ broken json", encoding="utf-8")
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка при чтении JSON-файла" in error
+
+
+def test_load_project_from_empty_file(tmp_path):
+    path = tmp_path / "empty.json"
+    path.write_text("", encoding="utf-8")
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка при чтении JSON-файла" in error
+
+
+def test_load_project_from_missing_file(tmp_path):
+    path = tmp_path / "missing.json"
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error == "Ошибка: Файл не найден. Проверьте путь к файлу."
