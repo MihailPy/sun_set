@@ -235,3 +235,14 @@ def test_load_project_from_json_with_unsupported_root_type(tmp_path):
     assert project is None
     assert error is not None
     assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_cities_from_json_with_unsupported_root_type(tmp_path):
+    path = tmp_path / "invalid_cities_root.json"
+    write_json(path, "not-a-city-list")
+
+    cities, error = load_cities_from_json(str(path))
+
+    assert cities is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error

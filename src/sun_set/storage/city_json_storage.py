@@ -98,6 +98,13 @@ def save_cities_to_json(cities: list[City], filename: str) -> None:
 def load_cities_from_json(file_path: str) -> tuple[list[City] | None, str | None]:
     try:
         data_list = read_json(Path(file_path))
+
+        if not isinstance(data_list, list):
+            return (
+                None,
+                "Ошибка в структуре данных файла: корневой элемент должен быть списком городов.",
+            )
+
         config = Config(cast=[Enum])
 
         cities = [
