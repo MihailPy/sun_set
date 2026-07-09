@@ -56,6 +56,12 @@ def load_project_from_json(
                 None,
             )
 
+        if not isinstance(data, dict):
+            return (
+                None,
+                "Ошибка в структуре данных файла: корневой элемент должен быть объектом проекта или списком городов.",
+            )
+
         project = from_dict(
             data_class=ProjectData,
             data=data,
