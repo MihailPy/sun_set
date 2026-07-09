@@ -167,7 +167,7 @@ def test_load_project_from_invalid_json(tmp_path):
 
     assert project is None
     assert error is not None
-    assert "Ошибка при чтении JSON-файла" in error
+    assert error == "Ошибка: файл не является корректным JSON."
 
 
 def test_load_project_from_empty_file(tmp_path):
@@ -178,7 +178,7 @@ def test_load_project_from_empty_file(tmp_path):
 
     assert project is None
     assert error is not None
-    assert "Ошибка при чтении JSON-файла" in error
+    assert error == "Ошибка: файл не является корректным JSON."
 
 
 def test_load_project_from_missing_file(tmp_path):

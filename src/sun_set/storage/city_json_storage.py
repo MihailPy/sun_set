@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from enum import Enum
+from json import JSONDecodeError
 from pathlib import Path
 
 from dacite import Config, DaciteError, from_dict
@@ -65,6 +66,8 @@ def load_project_from_json(
 
     except FileNotFoundError:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
+    except JSONDecodeError:
+        return None, "Ошибка: файл не является корректным JSON."
     except DaciteError as error:
         return None, f"Ошибка в структуре данных файла: {error}"
     except Exception as error:
@@ -101,6 +104,8 @@ def load_cities_from_json(file_path: str) -> tuple[list[City] | None, str | None
 
     except FileNotFoundError:
         return None, "Ошибка: Файл не найден. Проверьте путь к файлу."
+    except JSONDecodeError:
+        return None, "Ошибка: файл не является корректным JSON."
     except DaciteError as error:
         return None, f"Ошибка в структуре данных файла: {error}"
     except Exception as error:
