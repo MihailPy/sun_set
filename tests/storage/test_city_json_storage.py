@@ -205,3 +205,22 @@ def test_load_project_from_invalid_project_structure(tmp_path):
     assert project is None
     assert error is not None
     assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_legacy_city_list_with_invalid_city_structure(tmp_path):
+    path = tmp_path / "legacy_invalid_city.json"
+    write_json(
+        path,
+        [
+            {
+                "name": "Amsterdam",
+                "lat": "not-a-number",
+            }
+        ],
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert project is None
+    assert error is not None
+    assert "Ошибка в структуре данных файла" in error
