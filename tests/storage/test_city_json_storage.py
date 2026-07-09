@@ -246,3 +246,35 @@ def test_load_cities_from_json_with_unsupported_root_type(tmp_path):
     assert cities is None
     assert error is not None
     assert "Ошибка в структуре данных файла" in error
+
+
+def test_load_legacy_city_list_ignores_non_dict_items(tmp_path):
+    path = tmp_path / "legacy_with_garbage.json"
+    write_json(
+        path,
+        [
+            "not-a-city",
+            123,
+            {
+                "name": "Amsterdam",
+                "region": "North Holland",
+                "lat": 52.37,
+                "lon": 4.89,
+                "timezone": "Europe/Amsterdam",
+                "elevation": 0,
+                "sunset_data": {
+                    "year": 2027,
+                    "source": Source.CALCULATED.value,
+                    "hash_before_edit": None,
+                    "months": None,
+                },
+            },
+        ],
+    )
+
+    project, error = load_project_from_json(str(path))
+
+    assert error is None
+    assert project is not None
+    assert len(project.cities) == 1
+    assert project.cities[0].name == "Amsterdam"
