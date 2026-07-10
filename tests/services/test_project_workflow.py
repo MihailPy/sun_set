@@ -53,11 +53,46 @@ def test_execute_project_save_success(mock_save_project):
 
 
 @patch("sun_set.services.project_workflow.save_project")
-def test_execute_project_save_error(mock_save_project):
+def test_execute_project_save_permission_error(mock_save_project):
     project = Mock()
-    mock_save_project.side_effect = RuntimeError("Нет доступа")
+    mock_save_project.side_effect = PermissionError
 
     result = execute_project_save(project, "project.json")
 
     assert isinstance(result, ProjectSaveError)
-    assert result.message == "Нет доступа"
+    assert result.message == ("Нет прав для сохранения файла в выбранное место.")
+
+
+@patch("sun_set.services.project_workflow.save_project")
+def test_execute_project_save_directory_error(mock_save_project):
+    project = Mock()
+    mock_save_project.side_effect = IsADirectoryError
+
+    result = execute_project_save(project, "project.json")
+
+    assert isinstance(result, ProjectSaveError)
+    assert result.message == "Вместо файла указан путь к папке."
+
+
+@patch("sun_set.services.project_workflow.save_project")
+def test_execute_project_save_os_error(mock_save_project):
+    project = Mock()
+    mock_save_project.side_effect = OSError("Диск недоступен")
+
+    result = execute_project_save(project, "project.json")
+
+    assert isinstance(result, ProjectSaveError)
+    assert result.message == "Не удалось сохранить проект: Диск недоступен"
+
+
+@patch("sun_set.services.project_workflow.save_project")
+def test_execute_project_save_unexpected_error(mock_save_project):
+    project = Mock()
+    mock_save_project.side_effect = RuntimeError("Неизвестная ошибка")
+
+    result = execute_project_save(project, "project.json")
+
+    assert isinstance(result, ProjectSaveError)
+    assert result.message == (
+        "Непредвиденная ошибка при сохранении проекта: Неизвестная ошибка"
+    )

@@ -50,5 +50,18 @@ def execute_project_save(
         save_project(project, file_path)
         return ProjectSaveSuccess(file_path=file_path)
 
+    except PermissionError:
+        return ProjectSaveError(
+            message="Нет прав для сохранения файла в выбранное место."
+        )
+
+    except IsADirectoryError:
+        return ProjectSaveError(message="Вместо файла указан путь к папке.")
+
+    except OSError as error:
+        return ProjectSaveError(message=f"Не удалось сохранить проект: {error}")
+
     except Exception as error:
-        return ProjectSaveError(message=str(error))
+        return ProjectSaveError(
+            message=f"Непредвиденная ошибка при сохранении проекта: {error}"
+        )
