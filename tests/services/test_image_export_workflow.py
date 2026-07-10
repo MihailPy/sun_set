@@ -231,14 +231,16 @@ def test_execute_image_export_settings_load_image_export_error(
     tmp_path,
 ):
     settings_path = tmp_path / "settings.json"
+    error = ImageExportError("boom")
 
-    mock_load_export_settings.side_effect = ImageExportError("boom")
+    mock_load_export_settings.side_effect = error
     mock_get_image_export_error_message.return_value = "Ошибка настроек"
 
     result = execute_image_export_settings_load(settings_path)
 
     assert isinstance(result, ImageExportSettingsLoadError)
     assert result.message == "Ошибка настроек"
+    mock_get_image_export_error_message.assert_called_once_with(error)
 
 
 @patch("sun_set.services.image_export_workflow.load_export_settings")
