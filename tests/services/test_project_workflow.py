@@ -96,3 +96,11 @@ def test_execute_project_save_unexpected_error(mock_save_project):
     assert result.message == (
         "Непредвиденная ошибка при сохранении проекта: Неизвестная ошибка"
     )
+
+
+def test_execute_project_save_empty_path():
+    project = Mock()
+
+    result = execute_project_save(project, "")
+
+    assert isinstance(result, ProjectSaveError)
