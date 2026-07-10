@@ -48,7 +48,7 @@ def test_load_export_settings_invalid_json(tmp_path):
     bad_file = tmp_path / "broken.json"
     bad_file.write_text("{ invalid json }", encoding="utf-8")
 
-    with pytest.raises(json.JSONDecodeError):
+    with pytest.raises(ExportSettingsError, match="корректным JSON"):
         load_export_settings(bad_file)
 
 
@@ -58,9 +58,36 @@ def test_load_export_settings_missing_keys(tmp_path):
     config_file = tmp_path / "incomplete.json"
     config_file.write_text(json.dumps(incomplete_data), encoding="utf-8")
 
-    # dacite выбросит ошибку, если не найдет нужных ключей для датакласса
-    with pytest.raises(Exception):
+    with pytest.raises(
+        ExportSettingsError,
+        match="Некорректная структура",
+    ):
         load_export_settings(config_file)
+
+
+def test_load_export_settings_missing_file(tmp_path):
+    path = tmp_path / "missing.json"
+
+    with pytest.raises(
+        ExportSettingsError,
+        match="Файл настроек экспорта не найден",
+    ):
+        load_export_settings(path)
+
+
+def test_load_export_settings_invalid_root(tmp_path):
+    path = tmp_path / "settings.json"
+
+    path.write_text(
+        json.dumps(["invalid"]),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ExportSettingsError,
+        match="Корневой элемент",
+    ):
+        load_export_settings(path)
 
 
 def test_load_example_default_white_settings():
