@@ -1,3 +1,5 @@
+import pytest
+
 from sun_set.storage.json_storage import read_json, write_json
 
 
@@ -21,3 +23,8 @@ def test_write_json_creates_parent_directory(tmp_path):
 
     assert path.exists()
     assert read_json(path) == {"ok": True}
+
+
+def test_write_json_to_directory(tmp_path):
+    with pytest.raises(IsADirectoryError):
+        write_json(tmp_path, {"test": True})
