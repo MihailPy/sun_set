@@ -1,9 +1,10 @@
 # dataclass-модели настроек
 
 from dataclasses import asdict, dataclass
+from json import JSONDecodeError
 from pathlib import Path
 
-from dacite import Config, from_dict
+from dacite import Config, DaciteError, from_dict
 
 from sun_set.image_export.errors import ExportSettingsError
 from sun_set.storage.json_storage import read_json, write_json
@@ -46,23 +47,48 @@ class ExportImageSettings:
 
 
 def load_export_settings(path: Path) -> ExportImageSettings:
-    data = read_json(path)
+    try:
+        data = read_json(path)
 
-    settings = from_dict(
-        data_class=ExportImageSettings,
-        data=data,
-        config=Config(
-            cast=[int],
-            type_hooks={
-                dict[int, MonthBlockSettings]: lambda d: {
-                    int(k): from_dict(MonthBlockSettings, v) for k, v in d.items()
-                }
-            },
-        ),
-    )
+        if not isinstance(data, dict):
+            raise ExportSettingsError(
+                "Корневой элемент файла настроек должен быть объектом."
+            )
 
-    validate_export_settings(settings)
-    return settings
+        settings = from_dict(
+            data_class=ExportImageSettings,
+            data=data,
+            config=Config(
+                cast=[int],
+                type_hooks={
+                    dict[int, MonthBlockSettings]: lambda values: {
+                        int(key): from_dict(MonthBlockSettings, value)
+                        for key, value in values.items()
+                    }
+                },
+            ),
+        )
+
+        validate_export_settings(settings)
+        return settings
+
+    except FileNotFoundError as error:
+        raise ExportSettingsError("Файл настроек экспорта не найден.") from error
+
+    except JSONDecodeError as error:
+        raise ExportSettingsError(
+            "Файл настроек экспорта не является корректным JSON."
+        ) from error
+
+    except DaciteError as error:
+        raise ExportSettingsError(
+            f"Некорректная структура настроек экспорта: {error}"
+        ) from error
+
+    except (TypeError, ValueError) as error:
+        raise ExportSettingsError(
+            f"Некорректные значения в настройках экспорта: {error}"
+        ) from error
 
 
 def save_export_settings(settings: ExportImageSettings, path: Path) -> None:
