@@ -11,6 +11,7 @@ from sun_set.models.sunset import (
     YearData,
 )
 from sun_set.services.project_workflow import (
+    ProjectLoadError,
     ProjectLoadSuccess,
     ProjectSaveSuccess,
     execute_project_load,
@@ -193,3 +194,22 @@ def test_project_with_edited_sunset_data_roundtrip(tmp_path):
     assert loaded_entry.weekday == 4
     assert loaded_entry.time == "14:30"
     assert loaded_entry.source == Source.EDITED
+
+
+def test_invalid_project_json_returns_load_error(tmp_path):
+    path = tmp_path / "broken_project.json"
+    path.write_text("{ invalid json", encoding="utf-8")
+
+    result = execute_project_load(str(path))
+
+    assert isinstance(result, ProjectLoadError)
+    assert result.message == "Ошибка: файл не является корректным JSON."
+
+
+def test_missing_project_file_returns_load_error(tmp_path):
+    path = tmp_path / "missing_project.json"
+
+    result = execute_project_load(str(path))
+
+    assert isinstance(result, ProjectLoadError)
+    assert result.message == ("Ошибка: Файл не найден. Проверьте путь к файлу.")
