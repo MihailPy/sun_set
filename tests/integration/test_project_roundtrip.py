@@ -102,3 +102,27 @@ def test_legacy_city_list_migrates_to_project_format(tmp_path):
     assert isinstance(reload_result, ProjectLoadSuccess)
     assert len(reload_result.project.cities) == 1
     assert reload_result.project.cities[0].name == "Amsterdam"
+
+
+def test_empty_project_save_and_load_roundtrip(tmp_path):
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path=None,
+        export_output_dir=None,
+    )
+
+    path = tmp_path / "empty_project.json"
+
+    save_result = execute_project_save(project, str(path))
+
+    assert isinstance(save_result, ProjectSaveSuccess)
+
+    load_result = execute_project_load(str(path))
+
+    assert isinstance(load_result, ProjectLoadSuccess)
+    assert load_result.project.cities == []
+    assert load_result.project.export_settings_path is None
+    assert load_result.project.export_output_dir is None
