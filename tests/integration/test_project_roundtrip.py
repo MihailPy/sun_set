@@ -4,7 +4,12 @@ from sun_set.constants.project_defaults import (
 )
 from sun_set.models.city import City
 from sun_set.models.project_data import ProjectData
-from sun_set.models.sunset import Source, YearData
+from sun_set.models.sunset import (
+    MonthData,
+    Source,
+    SunsetEntry,
+    YearData,
+)
 from sun_set.services.project_workflow import (
     ProjectLoadSuccess,
     ProjectSaveSuccess,
@@ -126,3 +131,65 @@ def test_empty_project_save_and_load_roundtrip(tmp_path):
     assert load_result.project.cities == []
     assert load_result.project.export_settings_path is None
     assert load_result.project.export_output_dir is None
+
+
+def test_project_with_edited_sunset_data_roundtrip(tmp_path):
+    city = City(
+        name="Murmansk",
+        region="Murmansk Oblast",
+        lat=68.97,
+        lon=33.08,
+        timezone="Europe/Moscow",
+        elevation=50,
+        sunset_data=YearData(
+            year=2027,
+            source=Source.EDITED,
+            hash_before_edit="saved-hash",
+            months=[
+                MonthData(
+                    month=1,
+                    days=[
+                        SunsetEntry(
+                            day=1,
+                            weekday=4,
+                            time="14:30",
+                            source=Source.EDITED,
+                        )
+                    ],
+                )
+            ],
+        ),
+    )
+
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[city],
+        export_settings_path=None,
+        export_output_dir=None,
+    )
+
+    path = tmp_path / "edited_project.json"
+
+    save_result = execute_project_save(project, str(path))
+    assert isinstance(save_result, ProjectSaveSuccess)
+
+    load_result = execute_project_load(str(path))
+    assert isinstance(load_result, ProjectLoadSuccess)
+
+    loaded_city = load_result.project.cities[0]
+
+    assert loaded_city.sunset_data.source == Source.EDITED
+    assert loaded_city.sunset_data.hash_before_edit == "saved-hash"
+    assert loaded_city.sunset_data.months is not None
+
+    loaded_month = loaded_city.sunset_data.months[0]
+    assert loaded_month.month == 1
+    assert len(loaded_month.days) == 1
+
+    loaded_entry = loaded_month.days[0]
+    assert loaded_entry.day == 1
+    assert loaded_entry.weekday == 4
+    assert loaded_entry.time == "14:30"
+    assert loaded_entry.source == Source.EDITED
