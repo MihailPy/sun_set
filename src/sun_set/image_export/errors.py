@@ -29,7 +29,7 @@ def get_user_friendly_error(error: Exception) -> str:
         return "В настройках расположения нет координат для одного из месяцев."
 
     if isinstance(error, ExportSettingsError):
-        return "Ошибка в JSON-настройках экспорта."
+        return str(error)
 
     if isinstance(error, ImageExportError):
         return str(error)
