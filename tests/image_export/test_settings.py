@@ -133,14 +133,20 @@ def test_validate_export_settings_valid(export_settings):
 def test_validate_export_settings_invalid_width(export_settings):
     export_settings.image.width = 0
 
-    with pytest.raises(ExportSettingsError):
+    with pytest.raises(
+        ExportSettingsError,
+        match="Image width must be greater than 0",
+    ):
         validate_export_settings(export_settings)
 
 
 def test_validate_export_settings_missing_month(export_settings):
     del export_settings.layout.month_blocks[12]
 
-    with pytest.raises(ExportSettingsError):
+    with pytest.raises(
+        ExportSettingsError,
+        match="Missing month blocks: 12",
+    ):
         validate_export_settings(export_settings)
 
 
