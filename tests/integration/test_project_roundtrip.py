@@ -13,6 +13,7 @@ from sun_set.models.sunset import (
 from sun_set.services.project_workflow import (
     ProjectLoadError,
     ProjectLoadSuccess,
+    ProjectSaveError,
     ProjectSaveSuccess,
     execute_project_load,
     execute_project_save,
@@ -213,3 +214,34 @@ def test_missing_project_file_returns_load_error(tmp_path):
 
     assert isinstance(result, ProjectLoadError)
     assert result.message == ("Ошибка: Файл не найден. Проверьте путь к файлу.")
+
+
+def test_project_save_to_directory_returns_error(tmp_path):
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path=None,
+        export_output_dir=None,
+    )
+
+    result = execute_project_save(project, str(tmp_path))
+
+    assert isinstance(result, ProjectSaveError)
+    assert result.message == "Вместо файла указан путь к папке."
+
+
+def test_project_save_with_empty_path_returns_error():
+    project = ProjectData(
+        year=2027,
+        weekday1=4,
+        weekday2=5,
+        cities=[],
+        export_settings_path=None,
+        export_output_dir=None,
+    )
+
+    result = execute_project_save(project, "")
+
+    assert isinstance(result, ProjectSaveError)
