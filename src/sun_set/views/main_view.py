@@ -45,6 +45,7 @@ from sun_set.models.table_model import (
     CityTableModel,
     can_open_city_sunset_data,
 )
+from sun_set.resources import get_user_guide_path
 from sun_set.services.dialog_service import (
     ask_retry,
     choose_directory,
@@ -94,6 +95,7 @@ from sun_set.services.sunset_workflow import (
 )
 from sun_set.views.about_dialog import AboutDialog
 from sun_set.views.delegates.custom_delegate import CityDelegate
+from sun_set.views.help_dialog import HelpDialog
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
 from sun_set.views.sunset_table_view import YearEditorWindow
@@ -158,6 +160,9 @@ class MainWindow(QMainWindow):
             about_action = QAction("О программе", self)
             about_action.triggered.connect(self.open_about_dialog)
             help_menu.addAction(about_action)
+            help_action = QAction("Руководство пользователя", self)
+            help_action.triggered.connect(self.open_help_dialog)
+            help_menu.addAction(help_action)
 
     def _setup_city_group(self) -> None:
         city_group = QWidget()
@@ -979,4 +984,11 @@ class MainWindow(QMainWindow):
 
     def open_about_dialog(self) -> None:
         dialog = AboutDialog(self)
+        dialog.exec()
+
+    def open_help_dialog(self) -> None:
+        dialog = HelpDialog(
+            guide_path=get_user_guide_path(),
+            parent=self,
+        )
         dialog.exec()

@@ -363,3 +363,24 @@ class TestMainWindow:
 
         mock_about_dialog.assert_called_once_with(main_window)
         dialog.exec.assert_called_once_with()
+
+    @patch("sun_set.views.main_view.HelpDialog")
+    @patch("sun_set.views.main_view.get_user_guide_path")
+    def test_open_help_dialog(
+        self,
+        mock_get_user_guide_path,
+        mock_help_dialog,
+        main_window,
+        tmp_path,
+    ):
+        guide_path = tmp_path / "user_guide.md"
+        mock_get_user_guide_path.return_value = guide_path
+        dialog = mock_help_dialog.return_value
+
+        main_window.open_help_dialog()
+
+        mock_help_dialog.assert_called_once_with(
+            guide_path=guide_path,
+            parent=main_window,
+        )
+        dialog.exec.assert_called_once_with()
