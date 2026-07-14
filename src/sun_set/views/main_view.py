@@ -92,6 +92,7 @@ from sun_set.services.sunset_workflow import (
     create_city_for_year,
     execute_sunset_update,
 )
+from sun_set.views.about_dialog import AboutDialog
 from sun_set.views.delegates.custom_delegate import CityDelegate
 from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
 from sun_set.views.image_preview_dialog import ImagePreviewDialog
@@ -151,6 +152,12 @@ class MainWindow(QMainWindow):
             file_menu.addAction(self.btn_choose_file)
             file_menu.addAction(self.btn_save_file)
             file_menu.addAction(self.btn_save_file_as)
+
+        help_menu = menu.addMenu("&Справка")
+        if help_menu:
+            about_action = QAction("О программе", self)
+            about_action.triggered.connect(self.open_about_dialog)
+            help_menu.addAction(about_action)
 
     def _setup_city_group(self) -> None:
         city_group = QWidget()
@@ -969,3 +976,7 @@ class MainWindow(QMainWindow):
     def show_table_view(self) -> None:
         self.table_view.show()
         self.initial_prompt_text.hide()
+
+    def open_about_dialog(self) -> None:
+        dialog = AboutDialog(self)
+        dialog.exec()
