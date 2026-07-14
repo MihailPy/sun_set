@@ -354,3 +354,12 @@ class TestMainWindow:
         main_window.handle_table_click(index)
 
         mock_open_city_sunset_data.assert_not_called()
+
+    @patch("sun_set.views.main_view.AboutDialog")
+    def test_open_about_dialog(self, mock_about_dialog, main_window):
+        dialog = mock_about_dialog.return_value
+
+        main_window.open_about_dialog()
+
+        mock_about_dialog.assert_called_once_with(main_window)
+        dialog.exec.assert_called_once_with()
