@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_submodules
@@ -56,9 +57,10 @@ collect = COLLECT(
     name="SunSet",
 )
 
-app = BUNDLE(
-    collect,
-    name="SunSet.app",
-    icon=None,
-    bundle_identifier="com.mihailpy.sunset",
-)
+if sys.platform == "darwin":
+    app = BUNDLE(
+        collect,
+        name="SunSet.app",
+        icon=None,
+        bundle_identifier="com.mihailpy.sunset",
+    )

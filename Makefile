@@ -1,3 +1,5 @@
+.PHONY: build
+
 lint:
 		uv run pre-commit run --all
 
@@ -21,3 +23,6 @@ cov:
 
 coverage:
 		uv run pytest --cov=src --cov-report=term-missing --cov-report=html
+
+build:
+		uv run python scripts/build_app.py
