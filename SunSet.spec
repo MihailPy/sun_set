@@ -8,6 +8,17 @@ project_root = Path(SPECPATH)
 
 hidden_imports = collect_submodules("astral")
 
+icon_path = None
+
+if sys.platform == "darwin":
+    icon_path = str(
+        project_root / "assets" / "icons" / "sunset.icns"
+    )
+elif sys.platform == "win32":
+    icon_path = str(
+        project_root / "assets" / "icons" / "sunset.ico"
+    )
+
 datas = [
     (
         str(project_root / "docs" / "user_guide.md"),
@@ -45,6 +56,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
+    icon=icon_path,
 )
 
 collect = COLLECT(
@@ -61,6 +73,6 @@ if sys.platform == "darwin":
     app = BUNDLE(
         collect,
         name="SunSet.app",
-        icon=None,
+        icon=icon_path,
         bundle_identifier="com.mihailpy.sunset",
     )
