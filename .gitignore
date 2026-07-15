@@ -11,6 +11,7 @@ dist/
 build/
 out/
 bin/
+!tests/build/
 
 # Logs and databases
 *.log
