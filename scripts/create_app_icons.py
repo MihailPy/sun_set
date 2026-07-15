@@ -7,7 +7,6 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ICONS_DIR = PROJECT_ROOT / "assets" / "icons"
 
@@ -27,9 +26,10 @@ def interpolate_color(
     end: tuple[int, int, int],
     ratio: float,
 ) -> tuple[int, int, int]:
-    return tuple(
-        interpolate_channel(start_channel, end_channel, ratio)
-        for start_channel, end_channel in zip(start, end, strict=True)
+    return (
+        interpolate_channel(start[0], end[0], ratio),
+        interpolate_channel(start[1], end[1], ratio),
+        interpolate_channel(start[2], end[2], ratio),
     )
 
 
