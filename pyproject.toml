@@ -3,6 +3,7 @@ name = "sun-set"
 version = "1.0.0"
 description = "Desktop application for calculating, editing, and exporting sunset data."
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.13"
 dependencies = [
   "astral>=3.2",

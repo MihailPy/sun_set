@@ -167,3 +167,7 @@ CLI-скрипт зарегистрирован в `pyproject.toml`:
 [project.scripts]
 start-app = "sun_set.main:main"
 ```
+
+## Лицензия
+
+Проект распространяется по лицензии MIT.
