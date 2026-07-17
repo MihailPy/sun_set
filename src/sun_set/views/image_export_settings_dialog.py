@@ -283,7 +283,7 @@ class ImageExportSettingsDialog(QDialog):
         month_block.y = self.month_y_spin.value()
 
     def select_template_path(self) -> None:
-        file_path, _ = choose_file(
+        file_path = choose_file(
             self,
             "Выберите шаблон изображения",
             "Images (*.png *.jpg *.jpeg)",
@@ -299,7 +299,7 @@ class ImageExportSettingsDialog(QDialog):
         self.schedule_preview_update()
 
     def select_font_path(self) -> None:
-        file_path, _ = choose_file(
+        file_path = choose_file(
             self,
             "Выберите шрифт",
             "Fonts (*.ttf *.otf)",
@@ -368,11 +368,11 @@ class ImageExportSettingsDialog(QDialog):
         if self.settings_path is not None:
             start_path = str(self.settings_path)
 
-        settings_file, _ = choose_save_file(
+        settings_file = choose_save_file(
             self,
             "Сохранить настройки экспорта как",
-            start_path,
             "JSON files (*.json)",
+            start_path,
         )
 
         if not settings_file:

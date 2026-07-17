@@ -169,3 +169,62 @@ def test_image_export_settings_dialog_update_preview_without_city(
     dialog.update_preview()
 
     assert dialog.preview_label.text() == "Выберите город для предпросмотра."
+
+
+def test_save_settings_as_uses_correct_dialog_arguments(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    target_path = tmp_path / "settings.json"
+    captured = {}
+
+    def fake_choose_save_file(
+        parent,
+        title,
+        file_filter,
+        initial_path="",
+    ):
+        captured["title"] = title
+        captured["file_filter"] = file_filter
+        captured["initial_path"] = initial_path
+        return str(target_path)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_save_file",
+        fake_choose_save_file,
+    )
+
+    monkeypatch.setattr(dialog, "save_settings", lambda: None)
+
+    dialog.save_settings_as()
+
+    assert captured["file_filter"] == "JSON files (*.json)"
+    assert captured["initial_path"] == ""
+    assert dialog.settings_path == target_path
+
+
+def test_save_settings_as_adds_json_suffix(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    target_path = tmp_path / "settings"
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_save_file",
+        lambda *args, **kwargs: str(target_path),
+    )
+    monkeypatch.setattr(dialog, "save_settings", lambda: None)
+
+    dialog.save_settings_as()
+
+    assert dialog.settings_path == target_path.with_suffix(".json")
