@@ -228,3 +228,80 @@ def test_save_settings_as_adds_json_suffix(
     dialog.save_settings_as()
 
     assert dialog.settings_path == target_path.with_suffix(".json")
+
+
+def test_dialog_initially_has_no_unsaved_changes(qtbot, export_settings):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.is_dirty is False
+    assert dialog.windowTitle() == dialog.WINDOW_TITLE
+
+
+def test_dialog_marks_changes_in_window_title(qtbot, export_settings):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    assert dialog.is_dirty is True
+    assert dialog.windowTitle() == f"{dialog.WINDOW_TITLE} *"
+
+
+def test_dialog_becomes_clean_after_save(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=tmp_path / "settings.json",
+    )
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.save_export_settings",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.show_information",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    assert dialog.is_dirty is True
+
+    dialog.save_settings()
+
+    assert dialog.is_dirty is False
+    assert dialog.windowTitle() == dialog.WINDOW_TITLE
+
+
+def test_dialog_stays_dirty_when_save_fails(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=tmp_path / "settings.json",
+    )
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.save_export_settings",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OSError("save failed")),
+    )
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.show_error",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+    dialog.save_settings()
+
+    assert dialog.is_dirty is True
+    assert dialog.windowTitle() == f"{dialog.WINDOW_TITLE} *"

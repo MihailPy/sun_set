@@ -32,6 +32,8 @@ from sun_set.services.dialog_service import (
 
 
 class ImageExportSettingsDialog(QDialog):
+    WINDOW_TITLE = "Настройки экспорта изображения"
+
     def __init__(
         self,
         settings: ExportImageSettings,
@@ -44,8 +46,9 @@ class ImageExportSettingsDialog(QDialog):
         self.settings = settings
         self.settings_path = settings_path
         self.city = city
+        self.is_dirty = False
 
-        self.setWindowTitle("Настройки экспорта изображения")
+        self.update_window_title()
         self.resize(1200, 800)
 
         self.width_spin = QSpinBox()
@@ -257,10 +260,43 @@ class ImageExportSettingsDialog(QDialog):
         self.month_x_spin.valueChanged.connect(self.schedule_preview_update)
         self.month_y_spin.valueChanged.connect(self.schedule_preview_update)
 
+        self.width_spin.valueChanged.connect(self.mark_dirty)
+        self.height_spin.valueChanged.connect(self.mark_dirty)
+        self.background_color_edit.textChanged.connect(self.mark_dirty)
+        self.template_path_edit.textChanged.connect(self.mark_dirty)
+        self.font_path_edit.textChanged.connect(self.mark_dirty)
+        self.font_size_spin.valueChanged.connect(self.mark_dirty)
+        self.text_color_edit.textChanged.connect(self.mark_dirty)
+
+        self.row_height_spin.valueChanged.connect(self.mark_dirty)
+        self.first_column_offset_x_spin.valueChanged.connect(self.mark_dirty)
+        self.second_column_offset_x_spin.valueChanged.connect(self.mark_dirty)
+
+        self.month_x_spin.valueChanged.connect(self.mark_dirty)
+        self.month_y_spin.valueChanged.connect(self.mark_dirty)
+
         self.update_preview()
 
     def get_selected_month(self) -> int:
         return int(self.month_combo.currentData())
+
+    def update_window_title(self) -> None:
+        suffix = " *" if self.is_dirty else ""
+        self.setWindowTitle(f"{self.WINDOW_TITLE}{suffix}")
+
+    def mark_dirty(self) -> None:
+        if self.is_dirty:
+            return
+
+        self.is_dirty = True
+        self.update_window_title()
+
+    def mark_clean(self) -> None:
+        if not self.is_dirty:
+            return
+
+        self.is_dirty = False
+        self.update_window_title()
 
     def load_selected_month_position(self) -> None:
         month = self.get_selected_month()
@@ -356,6 +392,8 @@ class ImageExportSettingsDialog(QDialog):
             )
             return
 
+        self.mark_clean()
+
         show_information(
             self,
             "Сохранение настроек",
@@ -397,6 +435,8 @@ class ImageExportSettingsDialog(QDialog):
             month_block.x += dx
             month_block.y += dy
 
+        self.mark_dirty()
+
         self.load_selected_month_position()
 
         self.shift_x_spin.setValue(0)
@@ -417,6 +457,8 @@ class ImageExportSettingsDialog(QDialog):
         target_block.x = source_block.x
         target_block.y = source_block.y
 
+        self.mark_dirty()
+
         self.schedule_preview_update()
 
         if self.get_selected_month() == target_month:
@@ -426,6 +468,7 @@ class ImageExportSettingsDialog(QDialog):
         self.update_settings_from_fields()
         save_export_settings(self.settings, path)
         self.settings_path = path
+        self.mark_dirty()
 
     def set_preview_image(self, image: Image.Image) -> None:
         self.current_preview_image = image
