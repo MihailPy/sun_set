@@ -121,3 +121,21 @@ def ask_open_folder_after_export(
 
 def open_directory(path: Path) -> None:
     QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
+
+
+def ask_save_discard_cancel(
+    parent: QWidget,
+    title: str,
+    message: str,
+) -> QMessageBox.StandardButton:
+    return QMessageBox.question(
+        parent,
+        title,
+        message,
+        (
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel
+        ),
+        QMessageBox.StandardButton.Save,
+    )

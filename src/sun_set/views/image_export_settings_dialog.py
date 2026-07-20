@@ -4,7 +4,7 @@ from typing import cast
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt6.QtCore import QTimer
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QCloseEvent, QPixmap
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QScrollArea,
     QSpinBox,
@@ -24,6 +25,7 @@ from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_e
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import ExportImageSettings, save_export_settings
 from sun_set.services.dialog_service import (
+    ask_save_discard_cancel,
     choose_file,
     choose_save_file,
     show_error,
@@ -194,7 +196,7 @@ class ImageExportSettingsDialog(QDialog):
 
         self.save_button.clicked.connect(self.save_settings)
         self.save_as_button.clicked.connect(self.save_settings_as)
-        self.close_button.clicked.connect(self.reject)
+        self.close_button.clicked.connect(self.close)
 
         self.preview_label = QLabel()
         self.preview_label.setScaledContents(False)
@@ -368,10 +370,9 @@ class ImageExportSettingsDialog(QDialog):
             self.second_column_offset_x_spin.value()
         )
 
-    def save_settings(self) -> None:
+    def save_settings(self) -> bool:
         if self.settings_path is None:
-            self.save_settings_as()
-            return
+            return self.save_settings_as()
 
         self.update_settings_from_fields()
 
@@ -383,14 +384,14 @@ class ImageExportSettingsDialog(QDialog):
                 "Ошибка сохранения настроек",
                 get_user_friendly_error(error),
             )
-            return
+            return False
         except Exception as error:
             show_error(
                 self,
                 "Ошибка сохранения настроек",
                 str(error),
             )
-            return
+            return False
 
         self.mark_clean()
 
@@ -399,8 +400,9 @@ class ImageExportSettingsDialog(QDialog):
             "Сохранение настроек",
             "Настройки сохранены.",
         )
+        return True
 
-    def save_settings_as(self) -> None:
+    def save_settings_as(self) -> bool:
         start_path = ""
 
         if self.settings_path is not None:
@@ -414,7 +416,7 @@ class ImageExportSettingsDialog(QDialog):
         )
 
         if not settings_file:
-            return
+            return False
 
         path = Path(settings_file)
 
@@ -422,7 +424,7 @@ class ImageExportSettingsDialog(QDialog):
             path = path.with_suffix(".json")
 
         self.settings_path = path
-        self.save_settings()
+        return self.save_settings()
 
     def shift_all_months(self) -> None:
         dx = self.shift_x_spin.value()
@@ -538,3 +540,30 @@ class ImageExportSettingsDialog(QDialog):
 
         self.preview_label.setPixmap(pixmap)
         self.preview_label.resize(pixmap.size())
+
+    def confirm_close(self) -> bool:
+        if not self.is_dirty:
+            return True
+
+        result = ask_save_discard_cancel(
+            self,
+            "Несохранённые изменения",
+            "Настройки экспорта были изменены. Сохранить изменения?",
+        )
+
+        if result == QMessageBox.StandardButton.Save:
+            return self.save_settings()
+
+        if result == QMessageBox.StandardButton.Discard:
+            return True
+
+        return False
+
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
+        if a0 is None:
+            return
+
+        if self.confirm_close():
+            a0.accept()
+        else:
+            a0.ignore()

@@ -1,4 +1,5 @@
 from PIL import Image
+from PyQt6.QtWidgets import QMessageBox
 
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import (
@@ -305,3 +306,97 @@ def test_dialog_stays_dirty_when_save_fails(
 
     assert dialog.is_dirty is True
     assert dialog.windowTitle() == f"{dialog.WINDOW_TITLE} *"
+
+
+def test_clean_dialog_closes_without_confirmation(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    def unexpected_confirmation(*args, **kwargs):
+        raise AssertionError("Confirmation should not be shown")
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_save_discard_cancel",
+        unexpected_confirmation,
+    )
+
+    assert dialog.confirm_close() is True
+
+
+def test_dirty_dialog_can_discard_changes(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_save_discard_cancel",
+        lambda *args, **kwargs: QMessageBox.StandardButton.Discard,
+    )
+
+    assert dialog.confirm_close() is True
+
+
+def test_dirty_dialog_can_cancel_close(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_save_discard_cancel",
+        lambda *args, **kwargs: QMessageBox.StandardButton.Cancel,
+    )
+
+    assert dialog.confirm_close() is False
+    assert dialog.is_dirty is True
+
+
+def test_dirty_dialog_closes_after_successful_save(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_save_discard_cancel",
+        lambda *args, **kwargs: QMessageBox.StandardButton.Save,
+    )
+    monkeypatch.setattr(dialog, "save_settings", lambda: True)
+
+    assert dialog.confirm_close() is True
+
+
+def test_dirty_dialog_stays_open_when_save_is_cancelled(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_save_discard_cancel",
+        lambda *args, **kwargs: QMessageBox.StandardButton.Save,
+    )
+    monkeypatch.setattr(dialog, "save_settings", lambda: False)
+
+    assert dialog.confirm_close() is False
