@@ -30,3 +30,8 @@
 - Упрощение `MainWindow` и `CityTableModel`.
 - Интеграционные тесты сохранения и загрузки проектов.
 - Автоматические сборки через GitHub Actions.
+
+### Fixed
+
+- Fixed image export settings file dialogs.
+- Fixed crash when saving image export settings.
