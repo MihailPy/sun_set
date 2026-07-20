@@ -47,6 +47,11 @@ class ImageExportSettingsDialog(QDialog):
 
         self.settings = settings
         self.settings_path = settings_path
+
+        self.settings_path_edit = QLineEdit()
+        self.settings_path_edit.setReadOnly(True)
+        self.update_settings_path_field()
+
         self.city = city
         self.is_dirty = False
 
@@ -124,6 +129,7 @@ class ImageExportSettingsDialog(QDialog):
         self.load_selected_month_position()
 
         form_layout = QFormLayout()
+        form_layout.addRow("Файл настроек:", self.settings_path_edit)
         form_layout.addRow("Ширина:", self.width_spin)
         form_layout.addRow("Высота:", self.height_spin)
         form_layout.addRow("Цвет фона:", self.background_color_edit)
@@ -423,8 +429,16 @@ class ImageExportSettingsDialog(QDialog):
         if path.suffix.lower() != ".json":
             path = path.with_suffix(".json")
 
+        previous_path = self.settings_path
         self.settings_path = path
-        return self.save_settings()
+
+        if not self.save_settings():
+            self.settings_path = previous_path
+            self.update_settings_path_field()
+            return False
+
+        self.update_settings_path_field()
+        return True
 
     def shift_all_months(self) -> None:
         dx = self.shift_x_spin.value()
@@ -567,3 +581,13 @@ class ImageExportSettingsDialog(QDialog):
             a0.accept()
         else:
             a0.ignore()
+
+    def update_settings_path_field(self) -> None:
+        if self.settings_path is None:
+            self.settings_path_edit.setText("Файл не выбран")
+            self.settings_path_edit.setToolTip("")
+            return
+
+        path_text = str(self.settings_path)
+        self.settings_path_edit.setText(path_text)
+        self.settings_path_edit.setToolTip(path_text)

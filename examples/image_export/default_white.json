@@ -1,68 +1,68 @@
 {
-  "image": {
-    "width": 2384,
-    "height": 3508,
-    "background_color": "#ffffff",
-    "template_path": "examples/image_export/graf.jpg"
-  },
-  "text": {
-    "font_path": "examples/image_export/Arial Black.ttf",
-    "font_size": 54,
-    "color": "#000000"
-  },
-  "layout": {
-    "row_height": 75,
-    "first_column_offset_x": 10,
-    "second_column_offset_x": 320,
-    "month_blocks": {
-      "1": {
-        "x": 100,
-        "y": 810
-      },
-      "2": {
-        "x": 870,
-        "y": 810
-      },
-      "3": {
-        "x": 1635,
-        "y": 810
-      },
-      "4": {
-        "x": 100,
-        "y": 1504
-      },
-      "5": {
-        "x": 870,
-        "y": 1504
-      },
-      "6": {
-        "x": 1635,
-        "y": 1504
-      },
-      "7": {
-        "x": 100,
-        "y": 2194
-      },
-      "8": {
-        "x": 870,
-        "y": 2194
-      },
-      "9": {
-        "x": 1635,
-        "y": 2194
-      },
-      "10": {
-        "x": 100,
-        "y": 2890
-      },
-      "11": {
-        "x": 870,
-        "y": 2890
-      },
-      "12": {
-        "x": 1635,
-        "y": 2890
-      }
+    "image": {
+        "width": 2384,
+        "height": 3508,
+        "background_color": "#ffffff",
+        "template_path": "/Users/mihailpy/Desktop/sunset test/graf.jpg"
+    },
+    "text": {
+        "font_path": "/Users/mihailpy/Desktop/sunset test/Arial Black.ttf",
+        "font_size": 54,
+        "color": "#000000"
+    },
+    "layout": {
+        "row_height": 75,
+        "first_column_offset_x": 10,
+        "second_column_offset_x": 320,
+        "month_blocks": {
+            "1": {
+                "x": 100,
+                "y": 810
+            },
+            "2": {
+                "x": 870,
+                "y": 810
+            },
+            "3": {
+                "x": 1635,
+                "y": 810
+            },
+            "4": {
+                "x": 100,
+                "y": 1504
+            },
+            "5": {
+                "x": 870,
+                "y": 1504
+            },
+            "6": {
+                "x": 1635,
+                "y": 1504
+            },
+            "7": {
+                "x": 100,
+                "y": 2194
+            },
+            "8": {
+                "x": 870,
+                "y": 2194
+            },
+            "9": {
+                "x": 1635,
+                "y": 2194
+            },
+            "10": {
+                "x": 100,
+                "y": 2890
+            },
+            "11": {
+                "x": 870,
+                "y": 2890
+            },
+            "12": {
+                "x": 1635,
+                "y": 2890
+            }
+        }
     }
-  }
 }

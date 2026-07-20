@@ -181,8 +181,8 @@ def test_save_settings_as_uses_correct_dialog_arguments(
     dialog = ImageExportSettingsDialog(export_settings)
     qtbot.addWidget(dialog)
 
-    target_path = tmp_path / "settings.json"
-    captured = {}
+    selected_path = tmp_path / "settings.json"
+    captured_arguments = {}
 
     def fake_choose_save_file(
         parent,
@@ -190,23 +190,26 @@ def test_save_settings_as_uses_correct_dialog_arguments(
         file_filter,
         initial_path="",
     ):
-        captured["title"] = title
-        captured["file_filter"] = file_filter
-        captured["initial_path"] = initial_path
-        return str(target_path)
+        captured_arguments["parent"] = parent
+        captured_arguments["title"] = title
+        captured_arguments["file_filter"] = file_filter
+        captured_arguments["initial_path"] = initial_path
+        return str(selected_path)
 
     monkeypatch.setattr(
         "sun_set.views.image_export_settings_dialog.choose_save_file",
         fake_choose_save_file,
     )
+    monkeypatch.setattr(
+        dialog,
+        "save_settings",
+        lambda: True,
+    )
 
-    monkeypatch.setattr(dialog, "save_settings", lambda: None)
+    result = dialog.save_settings_as()
 
-    dialog.save_settings_as()
-
-    assert captured["file_filter"] == "JSON files (*.json)"
-    assert captured["initial_path"] == ""
-    assert dialog.settings_path == target_path
+    assert result is True
+    assert dialog.settings_path == selected_path
 
 
 def test_save_settings_as_adds_json_suffix(
@@ -218,17 +221,22 @@ def test_save_settings_as_adds_json_suffix(
     dialog = ImageExportSettingsDialog(export_settings)
     qtbot.addWidget(dialog)
 
-    target_path = tmp_path / "settings"
+    selected_path = tmp_path / "settings"
 
     monkeypatch.setattr(
         "sun_set.views.image_export_settings_dialog.choose_save_file",
-        lambda *args, **kwargs: str(target_path),
+        lambda *args, **kwargs: str(selected_path),
     )
-    monkeypatch.setattr(dialog, "save_settings", lambda: None)
+    monkeypatch.setattr(
+        dialog,
+        "save_settings",
+        lambda: True,
+    )
 
-    dialog.save_settings_as()
+    result = dialog.save_settings_as()
 
-    assert dialog.settings_path == target_path.with_suffix(".json")
+    assert result is True
+    assert dialog.settings_path == selected_path.with_suffix(".json")
 
 
 def test_dialog_initially_has_no_unsaved_changes(qtbot, export_settings):
@@ -400,3 +408,83 @@ def test_dirty_dialog_stays_open_when_save_is_cancelled(
     monkeypatch.setattr(dialog, "save_settings", lambda: False)
 
     assert dialog.confirm_close() is False
+
+
+def test_dialog_shows_missing_settings_path(qtbot, export_settings):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.settings_path_edit.text() == "Файл не выбран"
+
+
+def test_dialog_shows_current_settings_path(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    settings_path = tmp_path / "export-settings.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=settings_path,
+    )
+    qtbot.addWidget(dialog)
+
+    assert dialog.settings_path_edit.text() == str(settings_path)
+    assert dialog.settings_path_edit.toolTip() == str(settings_path)
+
+
+def test_save_as_updates_displayed_settings_path(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    selected_path = tmp_path / "new-settings"
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_save_file",
+        lambda *args, **kwargs: str(selected_path),
+    )
+    monkeypatch.setattr(
+        dialog,
+        "save_settings",
+        lambda: True,
+    )
+
+    assert dialog.save_settings_as() is True
+    assert dialog.settings_path == selected_path.with_suffix(".json")
+    assert dialog.settings_path_edit.text() == str(selected_path.with_suffix(".json"))
+
+
+def test_save_as_restores_previous_path_when_save_fails(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    previous_path = tmp_path / "previous.json"
+    selected_path = tmp_path / "new.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=previous_path,
+    )
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_save_file",
+        lambda *args, **kwargs: str(selected_path),
+    )
+    monkeypatch.setattr(
+        dialog,
+        "save_settings",
+        lambda: False,
+    )
+
+    assert dialog.save_settings_as() is False
+    assert dialog.settings_path == previous_path
+    assert dialog.settings_path_edit.text() == str(previous_path)
