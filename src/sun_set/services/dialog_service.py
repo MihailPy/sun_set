@@ -139,3 +139,19 @@ def ask_save_discard_cancel(
         ),
         QMessageBox.StandardButton.Save,
     )
+
+
+def ask_confirmation(
+    parent: QWidget,
+    title: str,
+    message: str,
+) -> bool:
+    result = QMessageBox.question(
+        parent,
+        title,
+        message,
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
+    )
+
+    return result == QMessageBox.StandardButton.Yes

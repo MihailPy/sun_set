@@ -29,6 +29,7 @@ from sun_set.image_export.settings import (
     save_export_settings,
 )
 from sun_set.services.dialog_service import (
+    ask_confirmation,
     ask_save_discard_cancel,
     choose_file,
     choose_save_file,
@@ -495,8 +496,10 @@ class ImageExportSettingsDialog(QDialog):
     def save_to_path(self, path: Path) -> None:
         self.update_settings_from_fields()
         save_export_settings(self.settings, path)
+
         self.settings_path = path
-        self.mark_dirty()
+        self.update_settings_path_field()
+        self.mark_clean()
 
     def set_preview_image(self, image: Image.Image) -> None:
         self.current_preview_image = image
@@ -646,7 +649,21 @@ class ImageExportSettingsDialog(QDialog):
         self.load_selected_month_position()
 
     def reset_settings(self) -> None:
-        self.settings = create_default_export_settings()
+        confirmed = ask_confirmation(
+            self,
+            "Сброс настроек",
+            "Вернуть все настройки экспорта к значениям по умолчанию?",
+        )
+
+        if not confirmed:
+            return
+
+        defaults = create_default_export_settings()
+
+        self.settings.image = defaults.image
+        self.settings.text = defaults.text
+        self.settings.layout = defaults.layout
+
         self.load_settings_into_fields()
         self.mark_dirty()
         self.schedule_preview_update()

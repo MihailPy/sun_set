@@ -542,6 +542,7 @@ def test_saved_preview_scale_is_loaded(
 
 def test_reset_settings_restores_default_values(
     qtbot,
+    monkeypatch,
     export_settings,
 ):
     dialog = ImageExportSettingsDialog(export_settings)
@@ -551,6 +552,11 @@ def test_reset_settings_restores_default_values(
     dialog.height_spin.setValue(3000)
     dialog.background_color_edit.setText("#123456")
     dialog.font_size_spin.setValue(72)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: True,
+    )
 
     dialog.reset_settings()
 
@@ -564,12 +570,18 @@ def test_reset_settings_restores_default_values(
 
 def test_reset_settings_marks_dialog_dirty(
     qtbot,
+    monkeypatch,
     export_settings,
 ):
     dialog = ImageExportSettingsDialog(export_settings)
     qtbot.addWidget(dialog)
 
     dialog.mark_clean()
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: True,
+    )
 
     dialog.reset_settings()
 
@@ -578,6 +590,7 @@ def test_reset_settings_marks_dialog_dirty(
 
 def test_reset_settings_restores_month_positions(
     qtbot,
+    monkeypatch,
     export_settings,
 ):
     dialog = ImageExportSettingsDialog(export_settings)
@@ -587,6 +600,11 @@ def test_reset_settings_restores_month_positions(
     dialog.month_x_spin.setValue(999)
     dialog.month_y_spin.setValue(888)
 
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: True,
+    )
+
     dialog.reset_settings()
 
     defaults = create_default_export_settings()
@@ -594,3 +612,62 @@ def test_reset_settings_restores_month_positions(
 
     assert dialog.month_x_spin.value() == default_month.x
     assert dialog.month_y_spin.value() == default_month.y
+
+
+def test_reset_settings_preserves_settings_object(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: True,
+    )
+
+    dialog.reset_settings()
+
+    assert dialog.settings is export_settings
+    assert export_settings.image.width == 1000
+
+
+def test_save_to_path_marks_dialog_clean(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(dialog.width_spin.value() + 1)
+
+    assert dialog.is_dirty is True
+
+    path = tmp_path / "settings.json"
+    dialog.save_to_path(path)
+
+    assert dialog.is_dirty is False
+    assert dialog.settings_path == path
+    assert dialog.settings_path_edit.text() == str(path)
+
+
+def test_reset_settings_can_be_cancelled(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(2000)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: False,
+    )
+
+    dialog.reset_settings()
+
+    assert dialog.width_spin.value() == 2000
