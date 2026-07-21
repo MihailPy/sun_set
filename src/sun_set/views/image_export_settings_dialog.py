@@ -26,7 +26,9 @@ from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import (
     ExportImageSettings,
     create_default_export_settings,
+    load_month_positions,
     save_export_settings,
+    save_month_positions,
 )
 from sun_set.services.dialog_service import (
     ask_confirmation,
@@ -133,6 +135,12 @@ class ImageExportSettingsDialog(QDialog):
         self.copy_month_position_button = QPushButton("Копировать координаты месяца")
         self.copy_month_position_button.clicked.connect(self.copy_month_position)
 
+        self.import_month_positions_button = QPushButton("Импортировать координаты")
+        self.export_month_positions_button = QPushButton("Экспортировать координаты")
+
+        self.import_month_positions_button.clicked.connect(self.import_month_positions)
+        self.export_month_positions_button.clicked.connect(self.export_month_positions)
+
         self.load_selected_month_position()
 
         form_layout = QFormLayout()
@@ -177,6 +185,15 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow("Месяц:", self.month_combo)
         form_layout.addRow("X месяца:", self.month_x_spin)
         form_layout.addRow("Y месяца:", self.month_y_spin)
+
+        form_layout.addRow(
+            "",
+            self.import_month_positions_button,
+        )
+        form_layout.addRow(
+            "",
+            self.export_month_positions_button,
+        )
 
         self.button_box = QDialogButtonBox()
         self.save_button = cast(
@@ -665,5 +682,79 @@ class ImageExportSettingsDialog(QDialog):
         self.settings.layout = defaults.layout
 
         self.load_settings_into_fields()
+        self.mark_dirty()
+        self.schedule_preview_update()
+
+    def export_month_positions(self) -> None:
+        selected_file = choose_save_file(
+            self,
+            "Экспортировать координаты месяцев",
+            "JSON files (*.json)",
+        )
+
+        if not selected_file:
+            return
+
+        path = Path(selected_file)
+
+        if path.suffix.lower() != ".json":
+            path = path.with_suffix(".json")
+
+        try:
+            save_month_positions(
+                self.settings.layout.month_blocks,
+                path,
+            )
+        except ExportSettingsError as error:
+            show_error(
+                self,
+                "Ошибка экспорта координат",
+                get_user_friendly_error(error),
+            )
+            return
+        except Exception as error:
+            show_error(
+                self,
+                "Ошибка экспорта координат",
+                str(error),
+            )
+            return
+
+        show_information(
+            self,
+            "Экспорт координат",
+            "Координаты месяцев экспортированы.",
+        )
+
+    def import_month_positions(self) -> None:
+        selected_file = choose_file(
+            self,
+            "Импортировать координаты месяцев",
+            "JSON files (*.json)",
+        )
+
+        if not selected_file:
+            return
+
+        try:
+            month_blocks = load_month_positions(Path(selected_file))
+        except ExportSettingsError as error:
+            show_error(
+                self,
+                "Ошибка импорта координат",
+                get_user_friendly_error(error),
+            )
+            return
+        except Exception as error:
+            show_error(
+                self,
+                "Ошибка импорта координат",
+                str(error),
+            )
+            return
+
+        self.settings.layout.month_blocks = month_blocks
+
+        self.load_selected_month_position()
         self.mark_dirty()
         self.schedule_preview_update()

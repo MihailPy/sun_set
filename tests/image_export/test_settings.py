@@ -9,9 +9,12 @@ from sun_set.image_export.settings import (
     ImageSettings,
     create_default_export_settings,
     load_export_settings,
+    load_month_positions,
     save_export_settings,
+    save_month_positions,
     validate_export_settings,
 )
+from sun_set.storage.json_storage import write_json
 
 
 def test_load_export_settings_success(tmp_path: Path, valid_settings_dict):
@@ -158,3 +161,36 @@ def test_create_default_export_settings_is_valid():
     assert settings.image.width == 1000
     assert settings.image.height == 1400
     assert len(settings.layout.month_blocks) == 12
+
+
+def test_save_and_load_month_positions(
+    tmp_path,
+):
+    settings = create_default_export_settings()
+    path = tmp_path / "positions.json"
+
+    save_month_positions(
+        settings.layout.month_blocks,
+        path,
+    )
+
+    loaded = load_month_positions(path)
+
+    assert loaded == settings.layout.month_blocks
+
+
+def test_load_month_positions_rejects_missing_month(
+    tmp_path,
+):
+    path = tmp_path / "positions.json"
+
+    write_json(
+        path,
+        {str(month): {"x": month, "y": month} for month in range(1, 12)},
+    )
+
+    with pytest.raises(
+        ExportSettingsError,
+        match="Missing month blocks",
+    ):
+        load_month_positions(path)

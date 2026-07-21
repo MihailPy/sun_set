@@ -151,3 +151,70 @@ def create_default_export_settings() -> ExportImageSettings:
             },
         ),
     )
+
+
+def save_month_positions(
+    month_blocks: dict[int, MonthBlockSettings],
+    path: Path,
+) -> None:
+    missing_months = [month for month in range(1, 13) if month not in month_blocks]
+
+    if missing_months:
+        missing_text = ", ".join(str(month) for month in missing_months)
+        raise ExportSettingsError(f"Missing month blocks: {missing_text}")
+
+    unexpected_months = [month for month in month_blocks if month not in range(1, 13)]
+
+    if unexpected_months:
+        unexpected_text = ", ".join(str(month) for month in unexpected_months)
+        raise ExportSettingsError(f"Unexpected month blocks: {unexpected_text}")
+
+    data = {str(month): asdict(month_blocks[month]) for month in range(1, 13)}
+
+    write_json(path, data)
+
+
+def load_month_positions(
+    path: Path,
+) -> dict[int, MonthBlockSettings]:
+    try:
+        data = read_json(path)
+
+        if not isinstance(data, dict):
+            raise ExportSettingsError(
+                "Корневой элемент файла координат должен быть объектом."
+            )
+
+        month_blocks = {
+            int(month): from_dict(
+                MonthBlockSettings,
+                values,
+            )
+            for month, values in data.items()
+        }
+
+        missing_months = [month for month in range(1, 13) if month not in month_blocks]
+
+        if missing_months:
+            missing_text = ", ".join(str(month) for month in missing_months)
+            raise ExportSettingsError(f"Missing month blocks: {missing_text}")
+
+        return month_blocks
+
+    except FileNotFoundError as error:
+        raise ExportSettingsError("Файл координат месяцев не найден.") from error
+
+    except JSONDecodeError as error:
+        raise ExportSettingsError(
+            "Файл координат месяцев не является корректным JSON."
+        ) from error
+
+    except DaciteError as error:
+        raise ExportSettingsError(
+            f"Некорректная структура координат месяцев: {error}"
+        ) from error
+
+    except (TypeError, ValueError) as error:
+        raise ExportSettingsError(
+            f"Некорректные значения координат месяцев: {error}"
+        ) from error

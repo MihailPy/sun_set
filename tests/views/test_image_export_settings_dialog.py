@@ -7,6 +7,8 @@ from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import (
     create_default_export_settings,
     load_export_settings,
+    load_month_positions,
+    save_month_positions,
     validate_export_settings,
 )
 from sun_set.views.image_export_settings_dialog import (
@@ -671,3 +673,66 @@ def test_reset_settings_can_be_cancelled(
     dialog.reset_settings()
 
     assert dialog.width_spin.value() == 2000
+
+
+def test_import_month_positions_updates_settings(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    imported_settings = create_default_export_settings()
+
+    for month, block in imported_settings.layout.month_blocks.items():
+        block.x = month * 100
+        block.y = month * 200
+
+    path = tmp_path / "positions.json"
+
+    save_month_positions(
+        imported_settings.layout.month_blocks,
+        path,
+    )
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_file",
+        lambda *args, **kwargs: str(path),
+    )
+
+    dialog.import_month_positions()
+
+    assert export_settings.layout.month_blocks[1].x == 100
+    assert export_settings.layout.month_blocks[1].y == 200
+    assert dialog.is_dirty is True
+
+
+def test_export_month_positions_creates_file(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    path_without_suffix = tmp_path / "positions"
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_save_file",
+        lambda *args, **kwargs: str(path_without_suffix),
+    )
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.show_information",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.export_month_positions()
+
+    saved_path = path_without_suffix.with_suffix(".json")
+    loaded = load_month_positions(saved_path)
+
+    assert loaded == export_settings.layout.month_blocks
+    assert dialog.is_dirty is False
