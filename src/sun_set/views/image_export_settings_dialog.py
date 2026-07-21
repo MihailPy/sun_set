@@ -3,7 +3,7 @@ from typing import cast
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QSettings, QTimer
 from PyQt6.QtGui import QCloseEvent, QPixmap
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -31,6 +31,8 @@ from sun_set.services.dialog_service import (
     show_error,
     show_information,
 )
+
+PREVIEW_SCALE_SETTINGS_KEY = "image_export/preview_scale"
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -221,10 +223,8 @@ class ImageExportSettingsDialog(QDialog):
         self.preview_scale_combo.addItem("100%", 1.0)
         self.preview_scale_combo.addItem("125%", 1.25)
         self.preview_scale_combo.addItem("150%", 1.5)
-        self.preview_scale_combo.setCurrentText("По ширине")
-        self.preview_scale_combo.currentIndexChanged.connect(
-            self.refresh_preview_pixmap
-        )
+        self.load_preview_scale()
+        self.preview_scale_combo.currentIndexChanged.connect(self.save_preview_scale)
         self.preview_scale_combo.currentIndexChanged.connect(
             self.refresh_preview_pixmap
         )
@@ -591,3 +591,24 @@ class ImageExportSettingsDialog(QDialog):
         path_text = str(self.settings_path)
         self.settings_path_edit.setText(path_text)
         self.settings_path_edit.setToolTip(path_text)
+
+    def load_preview_scale(self) -> None:
+        settings = QSettings()
+        saved_scale = settings.value(
+            PREVIEW_SCALE_SETTINGS_KEY,
+            "fit_width",
+        )
+
+        index = self.preview_scale_combo.findData(saved_scale)
+
+        if index == -1:
+            index = self.preview_scale_combo.findData("fit_width")
+
+        self.preview_scale_combo.setCurrentIndex(index)
+
+    def save_preview_scale(self) -> None:
+        settings = QSettings()
+        settings.setValue(
+            PREVIEW_SCALE_SETTINGS_KEY,
+            self.preview_scale_combo.currentData(),
+        )

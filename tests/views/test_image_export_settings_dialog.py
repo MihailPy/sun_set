@@ -1,4 +1,6 @@
+import pytest
 from PIL import Image
+from PyQt6.QtCore import QSettings
 from PyQt6.QtWidgets import QMessageBox
 
 from sun_set.image_export.service import build_city_image_preview_from_settings
@@ -7,7 +9,20 @@ from sun_set.image_export.settings import (
     load_export_settings,
     validate_export_settings,
 )
-from sun_set.views.image_export_settings_dialog import ImageExportSettingsDialog
+from sun_set.views.image_export_settings_dialog import (
+    PREVIEW_SCALE_SETTINGS_KEY,
+    ImageExportSettingsDialog,
+)
+
+
+@pytest.fixture(autouse=True)
+def clear_preview_scale_setting():
+    settings = QSettings()
+    settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
+
+    yield
+
+    settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
 
 
 def test_image_export_settings_dialog_created(qtbot, export_settings):
@@ -488,3 +503,38 @@ def test_save_as_restores_previous_path_when_save_fails(
     assert dialog.save_settings_as() is False
     assert dialog.settings_path == previous_path
     assert dialog.settings_path_edit.text() == str(previous_path)
+
+
+def test_preview_scale_is_saved(
+    qtbot,
+    export_settings,
+):
+    settings = QSettings()
+    settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
+
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    index = dialog.preview_scale_combo.findData(1.0)
+    dialog.preview_scale_combo.setCurrentIndex(index)
+
+    assert (
+        settings.value(
+            PREVIEW_SCALE_SETTINGS_KEY,
+            type=float,
+        )
+        == 1.0
+    )
+
+
+def test_saved_preview_scale_is_loaded(
+    qtbot,
+    export_settings,
+):
+    settings = QSettings()
+    settings.setValue(PREVIEW_SCALE_SETTINGS_KEY, 0.75)
+
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.preview_scale_combo.currentData() == 0.75
