@@ -23,7 +23,11 @@ from PyQt6.QtWidgets import (
 
 from sun_set.image_export.errors import ExportSettingsError, get_user_friendly_error
 from sun_set.image_export.service import build_city_image_preview_from_settings
-from sun_set.image_export.settings import ExportImageSettings, save_export_settings
+from sun_set.image_export.settings import (
+    ExportImageSettings,
+    create_default_export_settings,
+    save_export_settings,
+)
 from sun_set.services.dialog_service import (
     ask_save_discard_cancel,
     choose_file,
@@ -195,6 +199,13 @@ class ImageExportSettingsDialog(QDialog):
                 QDialogButtonBox.ButtonRole.ActionRole,
             ),
         )
+        self.reset_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Сбросить",
+                QDialogButtonBox.ButtonRole.ResetRole,
+            ),
+        )
         self.close_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -204,6 +215,7 @@ class ImageExportSettingsDialog(QDialog):
 
         self.save_button.clicked.connect(self.save_settings)
         self.save_as_button.clicked.connect(self.save_settings_as)
+        self.reset_button.clicked.connect(self.reset_settings)
         self.close_button.clicked.connect(self.close)
 
         self.preview_label = QLabel()
@@ -612,3 +624,29 @@ class ImageExportSettingsDialog(QDialog):
             PREVIEW_SCALE_SETTINGS_KEY,
             self.preview_scale_combo.currentData(),
         )
+
+    def load_settings_into_fields(self) -> None:
+        self.width_spin.setValue(self.settings.image.width)
+        self.height_spin.setValue(self.settings.image.height)
+        self.background_color_edit.setText(self.settings.image.background_color)
+        self.template_path_edit.setText(self.settings.image.template_path or "")
+
+        self.font_path_edit.setText(self.settings.text.font_path or "")
+        self.font_size_spin.setValue(self.settings.text.font_size)
+        self.text_color_edit.setText(self.settings.text.color)
+
+        self.row_height_spin.setValue(self.settings.layout.row_height)
+        self.first_column_offset_x_spin.setValue(
+            self.settings.layout.first_column_offset_x
+        )
+        self.second_column_offset_x_spin.setValue(
+            self.settings.layout.second_column_offset_x
+        )
+
+        self.load_selected_month_position()
+
+    def reset_settings(self) -> None:
+        self.settings = create_default_export_settings()
+        self.load_settings_into_fields()
+        self.mark_dirty()
+        self.schedule_preview_update()

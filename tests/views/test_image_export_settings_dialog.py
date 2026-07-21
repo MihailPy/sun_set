@@ -538,3 +538,59 @@ def test_saved_preview_scale_is_loaded(
     qtbot.addWidget(dialog)
 
     assert dialog.preview_scale_combo.currentData() == 0.75
+
+
+def test_reset_settings_restores_default_values(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(2000)
+    dialog.height_spin.setValue(3000)
+    dialog.background_color_edit.setText("#123456")
+    dialog.font_size_spin.setValue(72)
+
+    dialog.reset_settings()
+
+    defaults = create_default_export_settings()
+
+    assert dialog.width_spin.value() == defaults.image.width
+    assert dialog.height_spin.value() == defaults.image.height
+    assert dialog.background_color_edit.text() == defaults.image.background_color
+    assert dialog.font_size_spin.value() == defaults.text.font_size
+
+
+def test_reset_settings_marks_dialog_dirty(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.mark_clean()
+
+    dialog.reset_settings()
+
+    assert dialog.is_dirty is True
+
+
+def test_reset_settings_restores_month_positions(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.month_combo.setCurrentIndex(0)
+    dialog.month_x_spin.setValue(999)
+    dialog.month_y_spin.setValue(888)
+
+    dialog.reset_settings()
+
+    defaults = create_default_export_settings()
+    default_month = defaults.layout.month_blocks[1]
+
+    assert dialog.month_x_spin.value() == default_month.x
+    assert dialog.month_y_spin.value() == default_month.y
