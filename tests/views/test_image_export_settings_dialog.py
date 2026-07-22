@@ -1,8 +1,8 @@
 import pytest
 from PIL import Image
 from PyQt6.QtCore import QSettings
-from PyQt6.QtGui import QKeySequence
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtGui import QColor, QKeySequence
+from PyQt6.QtWidgets import QColorDialog, QMessageBox, QWidget
 
 from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import (
@@ -13,6 +13,7 @@ from sun_set.image_export.settings import (
     save_month_positions,
     validate_export_settings,
 )
+from sun_set.services.dialog_service import choose_color
 from sun_set.views.image_export_settings_dialog import (
     MONTH_NAMES,
     PREVIEW_SCALE_SETTINGS_KEY,
@@ -1072,3 +1073,108 @@ def test_reload_enabled_with_settings_path(
 
     assert dialog.reload_button.isEnabled() is True
     assert dialog.reload_action.isEnabled() is True
+
+
+def test_choose_color_returns_selected_color(
+    monkeypatch,
+    qtbot,
+):
+    parent = QWidget()
+    qtbot.addWidget(parent)
+
+    monkeypatch.setattr(
+        QColorDialog,
+        "getColor",
+        lambda *args, **kwargs: QColor("#123456"),
+    )
+
+    assert (
+        choose_color(
+            parent,
+            "Выберите цвет",
+            "#ffffff",
+        )
+        == "#123456"
+    )
+
+
+def test_choose_color_returns_none_when_cancelled(
+    monkeypatch,
+    qtbot,
+):
+    parent = QWidget()
+    qtbot.addWidget(parent)
+
+    monkeypatch.setattr(
+        QColorDialog,
+        "getColor",
+        lambda *args, **kwargs: QColor(),
+    )
+
+    assert (
+        choose_color(
+            parent,
+            "Выберите цвет",
+            "#ffffff",
+        )
+        is None
+    )
+
+
+def test_select_background_color_updates_field(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_color",
+        lambda *args, **kwargs: "#123456",
+    )
+
+    dialog.select_background_color()
+
+    assert dialog.background_color_edit.text() == "#123456"
+    assert dialog.is_dirty is True
+
+
+def test_cancel_background_color_keeps_value(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    original_color = dialog.background_color_edit.text()
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_color",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.select_background_color()
+
+    assert dialog.background_color_edit.text() == original_color
+    assert dialog.is_dirty is False
+
+
+def test_select_text_color_updates_field(
+    qtbot,
+    monkeypatch,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.choose_color",
+        lambda *args, **kwargs: "#abcdef",
+    )
+
+    dialog.select_text_color()
+
+    assert dialog.text_color_edit.text() == "#abcdef"
+    assert dialog.is_dirty is True

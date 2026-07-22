@@ -1,8 +1,13 @@
 from pathlib import Path
 
 from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QDesktopServices
-from PyQt6.QtWidgets import QFileDialog, QMessageBox, QWidget
+from PyQt6.QtGui import QColor, QDesktopServices
+from PyQt6.QtWidgets import (
+    QColorDialog,
+    QFileDialog,
+    QMessageBox,
+    QWidget,
+)
 
 
 def show_warning(
@@ -155,3 +160,20 @@ def ask_confirmation(
     )
 
     return result == QMessageBox.StandardButton.Yes
+
+
+def choose_color(
+    parent: QWidget,
+    title: str,
+    initial_color: str,
+) -> str | None:
+    color = QColorDialog.getColor(
+        QColor(initial_color),
+        parent,
+        title,
+    )
+
+    if not color.isValid():
+        return None
+
+    return color.name()

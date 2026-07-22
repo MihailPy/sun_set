@@ -39,6 +39,7 @@ from sun_set.image_export.settings import (
 from sun_set.services.dialog_service import (
     ask_confirmation,
     ask_save_discard_cancel,
+    choose_color,
     choose_file,
     choose_save_file,
     show_error,
@@ -105,6 +106,10 @@ class ImageExportSettingsDialog(QDialog):
         self.height_spin.setValue(settings.image.height)
 
         self.background_color_edit = QLineEdit(settings.image.background_color)
+
+        self.background_color_button = QPushButton("Выбрать...")
+        self.background_color_button.clicked.connect(self.select_background_color)
+
         self.template_path_edit = QLineEdit(settings.image.template_path or "")
 
         self.font_path_edit = QLineEdit(settings.text.font_path or "")
@@ -114,6 +119,9 @@ class ImageExportSettingsDialog(QDialog):
         self.font_size_spin.setValue(settings.text.font_size)
 
         self.text_color_edit = QLineEdit(settings.text.color)
+
+        self.text_color_button = QPushButton("Выбрать...")
+        self.text_color_button.clicked.connect(self.select_text_color)
 
         self.row_height_spin = QSpinBox()
         self.row_height_spin.setRange(1, 1000)
@@ -172,11 +180,22 @@ class ImageExportSettingsDialog(QDialog):
 
         self.load_selected_month_position()
 
+        background_color_layout = QHBoxLayout()
+        background_color_layout.addWidget(self.background_color_edit)
+        background_color_layout.addWidget(self.background_color_button)
+
+        text_color_layout = QHBoxLayout()
+        text_color_layout.addWidget(self.text_color_edit)
+        text_color_layout.addWidget(self.text_color_button)
+
         form_layout = QFormLayout()
         form_layout.addRow("Файл настроек:", self.settings_path_edit)
         form_layout.addRow("Ширина:", self.width_spin)
         form_layout.addRow("Высота:", self.height_spin)
-        form_layout.addRow("Цвет фона:", self.background_color_edit)
+        form_layout.addRow(
+            "Цвет фона:",
+            background_color_layout,
+        )
         self.template_path_button = QPushButton("Выбрать...")
         self.template_path_button.clicked.connect(self.select_template_path)
 
@@ -194,7 +213,10 @@ class ImageExportSettingsDialog(QDialog):
         form_layout.addRow("Шаблон:", template_path_layout)
         form_layout.addRow("Шрифт:", font_path_layout)
         form_layout.addRow("Размер шрифта:", self.font_size_spin)
-        form_layout.addRow("Цвет текста:", self.text_color_edit)
+        form_layout.addRow(
+            "Цвет текста:",
+            text_color_layout,
+        )
         form_layout.addRow("Высота строки:", self.row_height_spin)
         form_layout.addRow(
             "Смещение первой колонки X:", self.first_column_offset_x_spin
@@ -911,3 +933,27 @@ class ImageExportSettingsDialog(QDialog):
         self.preview_button.setToolTip("Обновить предпросмотр (F5)")
         self.reload_button.setToolTip("Перезагрузить настройки из файла (Ctrl+R)")
         self.reset_button.setToolTip("Вернуть настройки по умолчанию (Ctrl+0)")
+
+    def select_background_color(self) -> None:
+        color = choose_color(
+            self,
+            "Выберите цвет фона",
+            self.background_color_edit.text(),
+        )
+
+        if color is None:
+            return
+
+        self.background_color_edit.setText(color)
+
+    def select_text_color(self) -> None:
+        color = choose_color(
+            self,
+            "Выберите цвет текста",
+            self.text_color_edit.text(),
+        )
+
+        if color is None:
+            return
+
+        self.text_color_edit.setText(color)
