@@ -1,6 +1,7 @@
 import pytest
 from PIL import Image
 from PyQt6.QtCore import QSettings
+from PyQt6.QtGui import QKeySequence
 from PyQt6.QtWidgets import QMessageBox
 
 from sun_set.image_export.service import build_city_image_preview_from_settings
@@ -960,3 +961,114 @@ def test_reload_settings_keeps_current_values_on_error(
 
     assert dialog.width_spin.value() == original_width
     assert dialog.settings is export_settings
+
+
+def test_save_action_saves_settings(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=path,
+    )
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.show_information",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.width_spin.setValue(1400)
+
+    dialog.save_action.trigger()
+
+    loaded = load_export_settings(path)
+
+    assert loaded.image.width == 1400
+    assert dialog.is_dirty is False
+
+
+def test_save_shortcut_saves_settings(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=path,
+    )
+    qtbot.addWidget(dialog)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.show_information",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.width_spin.setValue(1400)
+    dialog.save_action.trigger()
+
+    loaded = load_export_settings(path)
+
+    assert loaded.image.width == 1400
+    assert dialog.is_dirty is False
+
+
+def test_preview_action_uses_refresh_shortcut(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert (
+        dialog.refresh_preview_action.shortcut().toString()
+        == QKeySequence(QKeySequence.StandardKey.Refresh).toString()
+    )
+
+
+def test_export_settings_shortcuts(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.save_action.shortcut() == QKeySequence(QKeySequence.StandardKey.Save)
+    assert dialog.save_as_action.shortcut() == QKeySequence(
+        QKeySequence.StandardKey.SaveAs
+    )
+    assert dialog.reload_action.shortcut() == QKeySequence("Ctrl+R")
+    assert dialog.reset_action.shortcut() == QKeySequence("Ctrl+0")
+
+
+def test_reload_disabled_without_settings_path(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.reload_button.isEnabled() is False
+    assert dialog.reload_action.isEnabled() is False
+
+
+def test_reload_enabled_with_settings_path(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=tmp_path / "settings.json",
+    )
+    qtbot.addWidget(dialog)
+
+    assert dialog.reload_button.isEnabled() is True
+    assert dialog.reload_action.isEnabled() is True

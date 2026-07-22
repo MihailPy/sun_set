@@ -4,7 +4,12 @@ from typing import cast
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt6.QtCore import QSettings, QTimer
-from PyQt6.QtGui import QCloseEvent, QPixmap
+from PyQt6.QtGui import (
+    QAction,
+    QCloseEvent,
+    QKeySequence,
+    QPixmap,
+)
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -348,6 +353,10 @@ class ImageExportSettingsDialog(QDialog):
         self.month_y_spin.valueChanged.connect(self.mark_dirty)
 
         self.update_preview()
+
+        self.setup_shortcuts()
+
+        self.update_reload_button_state()
 
     def get_selected_month(self) -> int:
         return int(self.month_combo.currentData())
@@ -819,7 +828,12 @@ class ImageExportSettingsDialog(QDialog):
         )
 
     def update_reload_button_state(self) -> None:
-        self.reload_button.setEnabled(self.settings_path is not None)
+        is_available = self.settings_path is not None
+
+        self.reload_button.setEnabled(is_available)
+
+        if hasattr(self, "reload_action"):
+            self.reload_action.setEnabled(is_available)
 
     def reload_settings_from_file(self) -> None:
         if self.settings_path is None:
@@ -862,3 +876,38 @@ class ImageExportSettingsDialog(QDialog):
         self.load_settings_into_fields()
         self.mark_clean()
         self.schedule_preview_update()
+
+    def setup_shortcuts(self) -> None:
+        self.save_action = QAction(self)
+        self.save_action.setShortcut(QKeySequence.StandardKey.Save)
+        self.save_action.triggered.connect(self.save_settings)
+        self.addAction(self.save_action)
+
+        self.save_as_action = QAction(self)
+        self.save_as_action.setShortcut(QKeySequence.StandardKey.SaveAs)
+        self.save_as_action.triggered.connect(self.save_settings_as)
+        self.addAction(self.save_as_action)
+
+        self.refresh_preview_action = QAction(self)
+        self.refresh_preview_action.setShortcut(QKeySequence.StandardKey.Refresh)
+        self.refresh_preview_action.triggered.connect(self.update_preview)
+        self.addAction(self.refresh_preview_action)
+
+        self.reload_action = QAction(self)
+        self.reload_action.setShortcut(QKeySequence("Ctrl+R"))
+        self.reload_action.triggered.connect(self.reload_settings_from_file)
+        self.addAction(self.reload_action)
+
+        self.reset_action = QAction(self)
+        self.reset_action.setShortcut(QKeySequence("Ctrl+0"))
+        self.reset_action.triggered.connect(self.reset_settings)
+        self.addAction(self.reset_action)
+
+        self.save_button.setToolTip("Сохранить настройки (Ctrl+S)")
+
+        self.save_as_button.setToolTip(
+            "Сохранить настройки в другой файл (Ctrl+Shift+S)"
+        )
+        self.preview_button.setToolTip("Обновить предпросмотр (F5)")
+        self.reload_button.setToolTip("Перезагрузить настройки из файла (Ctrl+R)")
+        self.reset_button.setToolTip("Вернуть настройки по умолчанию (Ctrl+0)")
