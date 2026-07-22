@@ -14,18 +14,21 @@ from sun_set.image_export.settings import (
 from sun_set.views.image_export_settings_dialog import (
     MONTH_NAMES,
     PREVIEW_SCALE_SETTINGS_KEY,
+    SELECTED_MONTH_SETTINGS_KEY,
     ImageExportSettingsDialog,
 )
 
 
 @pytest.fixture(autouse=True)
-def clear_preview_scale_setting():
+def clear_image_export_dialog_settings():
     settings = QSettings()
     settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
+    settings.remove(SELECTED_MONTH_SETTINGS_KEY)
 
     yield
 
     settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
+    settings.remove(SELECTED_MONTH_SETTINGS_KEY)
 
 
 def test_image_export_settings_dialog_created(qtbot, export_settings):
@@ -779,3 +782,58 @@ def test_selected_month_uses_combo_data(
 
     assert dialog.month_combo.currentText() == "Июнь"
     assert dialog.get_selected_month() == 6
+
+
+def test_selected_month_is_saved(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    october_index = dialog.month_combo.findData(10)
+    dialog.month_combo.setCurrentIndex(october_index)
+
+    settings = QSettings()
+
+    assert (
+        settings.value(
+            SELECTED_MONTH_SETTINGS_KEY,
+            type=int,
+        )
+        == 10
+    )
+
+
+def test_saved_selected_month_is_loaded(
+    qtbot,
+    export_settings,
+):
+    settings = QSettings()
+    settings.setValue(
+        SELECTED_MONTH_SETTINGS_KEY,
+        7,
+    )
+
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.get_selected_month() == 7
+    assert dialog.month_combo.currentText() == "Июль"
+
+
+def test_invalid_saved_month_falls_back_to_january(
+    qtbot,
+    export_settings,
+):
+    settings = QSettings()
+    settings.setValue(
+        SELECTED_MONTH_SETTINGS_KEY,
+        99,
+    )
+
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.get_selected_month() == 1
+    assert dialog.month_combo.currentText() == "Январь"

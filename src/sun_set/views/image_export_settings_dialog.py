@@ -40,6 +40,7 @@ from sun_set.services.dialog_service import (
 )
 
 PREVIEW_SCALE_SETTINGS_KEY = "image_export/preview_scale"
+SELECTED_MONTH_SETTINGS_KEY = "image_export/selected_month"
 MONTH_NAMES = (
     "Январь",
     "Февраль",
@@ -124,6 +125,7 @@ class ImageExportSettingsDialog(QDialog):
 
         self.month_combo = QComboBox()
         fill_month_combo(self.month_combo)
+        self.load_selected_month()
 
         self.month_x_spin = QSpinBox()
         self.month_x_spin.setRange(-10000, 10000)
@@ -132,6 +134,7 @@ class ImageExportSettingsDialog(QDialog):
         self.month_y_spin.setRange(-10000, 10000)
 
         self.month_combo.currentIndexChanged.connect(self.load_selected_month_position)
+        self.month_combo.currentIndexChanged.connect(self.save_selected_month)
         self.month_x_spin.valueChanged.connect(self.update_selected_month_position)
         self.month_y_spin.valueChanged.connect(self.update_selected_month_position)
 
@@ -778,3 +781,25 @@ class ImageExportSettingsDialog(QDialog):
         self.load_selected_month_position()
         self.mark_dirty()
         self.schedule_preview_update()
+
+    def load_selected_month(self) -> None:
+        settings = QSettings()
+        saved_month = settings.value(
+            SELECTED_MONTH_SETTINGS_KEY,
+            1,
+            type=int,
+        )
+
+        index = self.month_combo.findData(saved_month)
+
+        if index == -1:
+            index = self.month_combo.findData(1)
+
+        self.month_combo.setCurrentIndex(index)
+
+    def save_selected_month(self) -> None:
+        settings = QSettings()
+        settings.setValue(
+            SELECTED_MONTH_SETTINGS_KEY,
+            self.get_selected_month(),
+        )
