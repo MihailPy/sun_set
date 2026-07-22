@@ -12,6 +12,7 @@ from sun_set.image_export.settings import (
     validate_export_settings,
 )
 from sun_set.views.image_export_settings_dialog import (
+    MONTH_NAMES,
     PREVIEW_SCALE_SETTINGS_KEY,
     ImageExportSettingsDialog,
 )
@@ -736,3 +737,45 @@ def test_export_month_positions_creates_file(
 
     assert loaded == export_settings.layout.month_blocks
     assert dialog.is_dirty is False
+
+
+def test_month_combo_shows_month_names(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.month_combo.count() == 12
+    assert dialog.month_combo.itemText(0) == "Январь"
+    assert dialog.month_combo.itemText(11) == "Декабрь"
+
+    assert dialog.month_combo.itemData(0) == 1
+    assert dialog.month_combo.itemData(11) == 12
+
+
+def test_copy_month_combos_show_month_names(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.copy_source_month_combo.itemText(0) == MONTH_NAMES[0]
+    assert dialog.copy_target_month_combo.itemText(11) == MONTH_NAMES[11]
+
+    assert dialog.copy_source_month_combo.itemData(0) == 1
+    assert dialog.copy_target_month_combo.itemData(11) == 12
+
+
+def test_selected_month_uses_combo_data(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.month_combo.setCurrentIndex(5)
+
+    assert dialog.month_combo.currentText() == "Июнь"
+    assert dialog.get_selected_month() == 6

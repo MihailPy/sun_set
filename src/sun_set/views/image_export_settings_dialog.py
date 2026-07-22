@@ -40,6 +40,28 @@ from sun_set.services.dialog_service import (
 )
 
 PREVIEW_SCALE_SETTINGS_KEY = "image_export/preview_scale"
+MONTH_NAMES = (
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+)
+
+
+def fill_month_combo(combo: QComboBox) -> None:
+    for month, month_name in enumerate(
+        MONTH_NAMES,
+        start=1,
+    ):
+        combo.addItem(month_name, month)
 
 
 class ImageExportSettingsDialog(QDialog):
@@ -101,8 +123,7 @@ class ImageExportSettingsDialog(QDialog):
         )
 
         self.month_combo = QComboBox()
-        for month in range(1, 13):
-            self.month_combo.addItem(str(month), month)
+        fill_month_combo(self.month_combo)
 
         self.month_x_spin = QSpinBox()
         self.month_x_spin.setRange(-10000, 10000)
@@ -128,9 +149,8 @@ class ImageExportSettingsDialog(QDialog):
         self.copy_source_month_combo = QComboBox()
         self.copy_target_month_combo = QComboBox()
 
-        for month in range(1, 13):
-            self.copy_source_month_combo.addItem(str(month), month)
-            self.copy_target_month_combo.addItem(str(month), month)
+        fill_month_combo(self.copy_source_month_combo)
+        fill_month_combo(self.copy_target_month_combo)
 
         self.copy_month_position_button = QPushButton("Копировать координаты месяца")
         self.copy_month_position_button.clicked.connect(self.copy_month_position)
