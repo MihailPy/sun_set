@@ -8,6 +8,7 @@ from sun_set.image_export.settings import (
     create_default_export_settings,
     load_export_settings,
     load_month_positions,
+    save_export_settings,
     save_month_positions,
     validate_export_settings,
 )
@@ -837,3 +838,125 @@ def test_invalid_saved_month_falls_back_to_january(
 
     assert dialog.get_selected_month() == 1
     assert dialog.month_combo.currentText() == "Январь"
+
+
+def test_reload_button_disabled_without_settings_path(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    assert dialog.reload_button.isEnabled() is False
+
+
+def test_reload_button_enabled_with_settings_path(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=tmp_path / "settings.json",
+    )
+    qtbot.addWidget(dialog)
+
+    assert dialog.reload_button.isEnabled() is True
+
+
+def test_reload_settings_restores_values_from_file(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+
+    saved_settings = create_default_export_settings()
+    saved_settings.image.width = 1400
+    saved_settings.text.font_size = 48
+    saved_settings.layout.month_blocks[1].x = 321
+
+    save_export_settings(saved_settings, path)
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=path,
+    )
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(2000)
+    dialog.font_size_spin.setValue(90)
+    dialog.month_x_spin.setValue(999)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: True,
+    )
+
+    dialog.reload_settings_from_file()
+
+    assert dialog.width_spin.value() == 1400
+    assert dialog.font_size_spin.value() == 48
+    assert dialog.month_x_spin.value() == 321
+
+    assert export_settings.image.width == 1400
+    assert export_settings.text.font_size == 48
+    assert export_settings.layout.month_blocks[1].x == 321
+
+    assert dialog.is_dirty is False
+
+
+def test_reload_settings_can_be_cancelled(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+    save_export_settings(export_settings, path)
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=path,
+    )
+    qtbot.addWidget(dialog)
+
+    dialog.width_spin.setValue(2000)
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.ask_confirmation",
+        lambda *args, **kwargs: False,
+    )
+
+    dialog.reload_settings_from_file()
+
+    assert dialog.width_spin.value() == 2000
+    assert dialog.is_dirty is True
+
+
+def test_reload_settings_keeps_current_values_on_error(
+    qtbot,
+    monkeypatch,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "missing.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=path,
+    )
+    qtbot.addWidget(dialog)
+
+    original_width = dialog.width_spin.value()
+
+    monkeypatch.setattr(
+        "sun_set.views.image_export_settings_dialog.show_error",
+        lambda *args, **kwargs: None,
+    )
+
+    dialog.reload_settings_from_file()
+
+    assert dialog.width_spin.value() == original_width
+    assert dialog.settings is export_settings

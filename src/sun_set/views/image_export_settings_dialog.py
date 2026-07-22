@@ -26,6 +26,7 @@ from sun_set.image_export.service import build_city_image_preview_from_settings
 from sun_set.image_export.settings import (
     ExportImageSettings,
     create_default_export_settings,
+    load_export_settings,
     load_month_positions,
     save_export_settings,
     save_month_positions,
@@ -240,6 +241,13 @@ class ImageExportSettingsDialog(QDialog):
                 QDialogButtonBox.ButtonRole.ActionRole,
             ),
         )
+        self.reload_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Перезагрузить",
+                QDialogButtonBox.ButtonRole.ActionRole,
+            ),
+        )
         self.reset_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -254,8 +262,11 @@ class ImageExportSettingsDialog(QDialog):
             ),
         )
 
+        self.update_reload_button_state()
+
         self.save_button.clicked.connect(self.save_settings)
         self.save_as_button.clicked.connect(self.save_settings_as)
+        self.reload_button.clicked.connect(self.reload_settings_from_file)
         self.reset_button.clicked.connect(self.reset_settings)
         self.close_button.clicked.connect(self.close)
 
@@ -488,9 +499,11 @@ class ImageExportSettingsDialog(QDialog):
         if not self.save_settings():
             self.settings_path = previous_path
             self.update_settings_path_field()
+            self.update_reload_button_state()
             return False
 
         self.update_settings_path_field()
+        self.update_reload_button_state()
         return True
 
     def shift_all_months(self) -> None:
@@ -539,6 +552,7 @@ class ImageExportSettingsDialog(QDialog):
 
         self.settings_path = path
         self.update_settings_path_field()
+        self.update_reload_button_state()
         self.mark_clean()
 
     def set_preview_image(self, image: Image.Image) -> None:
@@ -803,3 +817,48 @@ class ImageExportSettingsDialog(QDialog):
             SELECTED_MONTH_SETTINGS_KEY,
             self.get_selected_month(),
         )
+
+    def update_reload_button_state(self) -> None:
+        self.reload_button.setEnabled(self.settings_path is not None)
+
+    def reload_settings_from_file(self) -> None:
+        if self.settings_path is None:
+            return
+
+        if self.is_dirty:
+            confirmed = ask_confirmation(
+                self,
+                "Перезагрузка настроек",
+                (
+                    "Несохранённые изменения будут потеряны. "
+                    "Перезагрузить настройки из файла?"
+                ),
+            )
+
+            if not confirmed:
+                return
+
+        try:
+            loaded_settings = load_export_settings(self.settings_path)
+        except ExportSettingsError as error:
+            show_error(
+                self,
+                "Ошибка загрузки настроек",
+                get_user_friendly_error(error),
+            )
+            return
+        except Exception as error:
+            show_error(
+                self,
+                "Ошибка загрузки настроек",
+                str(error),
+            )
+            return
+
+        self.settings.image = loaded_settings.image
+        self.settings.text = loaded_settings.text
+        self.settings.layout = loaded_settings.layout
+
+        self.load_settings_into_fields()
+        self.mark_clean()
+        self.schedule_preview_update()
