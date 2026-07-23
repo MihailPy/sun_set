@@ -189,7 +189,6 @@ class ImageExportSettingsDialog(QDialog):
         text_color_layout.addWidget(self.text_color_button)
 
         form_layout = QFormLayout()
-        form_layout.addRow("Файл настроек:", self.settings_path_edit)
         form_layout.addRow("Ширина:", self.width_spin)
         form_layout.addRow("Высота:", self.height_spin)
         form_layout.addRow(
@@ -354,6 +353,13 @@ class ImageExportSettingsDialog(QDialog):
         right_widget = QWidget()
         right_layout = QVBoxLayout(right_widget)
         right_layout.setSpacing(8)
+
+        settings_path_layout = QHBoxLayout()
+
+        settings_path_layout.addWidget(QLabel("Файл:"))
+        settings_path_layout.addWidget(self.settings_path_edit)
+
+        right_layout.addLayout(settings_path_layout)
 
         right_layout.addWidget(form_scroll_area)
 
@@ -725,7 +731,7 @@ class ImageExportSettingsDialog(QDialog):
     def update_settings_path_field(self) -> None:
         if self.settings_path is None:
             self.settings_path_edit.setText("Файл не выбран")
-            self.settings_path_edit.setToolTip("")
+            self.settings_path_edit.setToolTip(str(self.settings_path))
             return
 
         path_text = str(self.settings_path)

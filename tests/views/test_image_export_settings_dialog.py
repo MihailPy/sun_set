@@ -1178,3 +1178,19 @@ def test_select_text_color_updates_field(
 
     assert dialog.text_color_edit.text() == "#abcdef"
     assert dialog.is_dirty is True
+
+
+def test_settings_path_is_visible_outside_scroll_area(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+        settings_path=path,
+    )
+    qtbot.addWidget(dialog)
+
+    assert dialog.settings_path_edit.text() == str(path)
