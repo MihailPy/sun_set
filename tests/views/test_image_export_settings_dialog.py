@@ -1240,3 +1240,19 @@ def test_dialog_uses_last_settings_path(
     qtbot.addWidget(dialog)
 
     assert dialog.settings_path == path
+
+
+def test_loading_settings_into_fields_does_not_mark_dirty(
+    qtbot,
+    export_settings,
+):
+    dialog = ImageExportSettingsDialog(export_settings)
+    qtbot.addWidget(dialog)
+
+    dialog.mark_clean()
+
+    dialog.settings.image.width = 2000
+
+    dialog.load_settings_into_fields()
+
+    assert dialog.is_dirty is False

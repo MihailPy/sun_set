@@ -792,24 +792,59 @@ class ImageExportSettingsDialog(QDialog):
         )
 
     def load_settings_into_fields(self) -> None:
-        self.width_spin.setValue(self.settings.image.width)
-        self.height_spin.setValue(self.settings.image.height)
-        self.background_color_edit.setText(self.settings.image.background_color)
-        self.template_path_edit.setText(self.settings.image.template_path or "")
-
-        self.font_path_edit.setText(self.settings.text.font_path or "")
-        self.font_size_spin.setValue(self.settings.text.font_size)
-        self.text_color_edit.setText(self.settings.text.color)
-
-        self.row_height_spin.setValue(self.settings.layout.row_height)
-        self.first_column_offset_x_spin.setValue(
-            self.settings.layout.first_column_offset_x
-        )
-        self.second_column_offset_x_spin.setValue(
-            self.settings.layout.second_column_offset_x
+        widgets = (
+            self.width_spin,
+            self.height_spin,
+            self.font_size_spin,
+            self.row_height_spin,
+            self.first_column_offset_x_spin,
+            self.second_column_offset_x_spin,
+            self.month_x_spin,
+            self.month_y_spin,
         )
 
-        self.load_selected_month_position()
+        for widget in widgets:
+            widget.blockSignals(True)
+
+        self.background_color_edit.blockSignals(True)
+        self.template_path_edit.blockSignals(True)
+        self.font_path_edit.blockSignals(True)
+        self.text_color_edit.blockSignals(True)
+
+        try:
+            self.width_spin.setValue(self.settings.image.width)
+            self.height_spin.setValue(self.settings.image.height)
+
+            self.background_color_edit.setText(self.settings.image.background_color)
+
+            self.template_path_edit.setText(self.settings.image.template_path or "")
+
+            self.font_path_edit.setText(self.settings.text.font_path or "")
+
+            self.font_size_spin.setValue(self.settings.text.font_size)
+
+            self.text_color_edit.setText(self.settings.text.color)
+
+            self.row_height_spin.setValue(self.settings.layout.row_height)
+
+            self.first_column_offset_x_spin.setValue(
+                self.settings.layout.first_column_offset_x
+            )
+
+            self.second_column_offset_x_spin.setValue(
+                self.settings.layout.second_column_offset_x
+            )
+
+            self.load_selected_month_position()
+
+        finally:
+            for widget in widgets:
+                widget.blockSignals(False)
+
+            self.background_color_edit.blockSignals(False)
+            self.template_path_edit.blockSignals(False)
+            self.font_path_edit.blockSignals(False)
+            self.text_color_edit.blockSignals(False)
 
     def reset_settings(self) -> None:
         confirmed = ask_confirmation(
