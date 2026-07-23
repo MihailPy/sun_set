@@ -3,7 +3,7 @@ from typing import cast
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
-from PyQt6.QtCore import QSettings, QTimer
+from PyQt6.QtCore import QSettings, Qt, QTimer
 from PyQt6.QtGui import (
     QAction,
     QCloseEvent,
@@ -253,6 +253,13 @@ class ImageExportSettingsDialog(QDialog):
                 "Сохранить", QDialogButtonBox.ButtonRole.AcceptRole
             ),
         )
+        self.close_button = cast(
+            QPushButton,
+            self.button_box.addButton(
+                "Закрыть", QDialogButtonBox.ButtonRole.RejectRole
+            ),
+        )
+
         self.preview_button = cast(
             QPushButton,
             self.button_box.addButton(
@@ -282,12 +289,14 @@ class ImageExportSettingsDialog(QDialog):
                 QDialogButtonBox.ButtonRole.ResetRole,
             ),
         )
-        self.close_button = cast(
-            QPushButton,
-            self.button_box.addButton(
-                "Закрыть", QDialogButtonBox.ButtonRole.RejectRole
-            ),
-        )
+
+        file_actions_layout = QHBoxLayout()
+        file_actions_layout.addWidget(self.save_as_button)
+        file_actions_layout.addWidget(self.reload_button)
+
+        preview_actions_layout = QHBoxLayout()
+        preview_actions_layout.addWidget(self.reset_button)
+        preview_actions_layout.addWidget(self.preview_button)
 
         self.update_reload_button_state()
 
@@ -322,18 +331,49 @@ class ImageExportSettingsDialog(QDialog):
 
         self.current_preview_image = None
 
-        left_layout = QVBoxLayout()
+        left_widget = QWidget()
+        left_layout = QVBoxLayout(left_widget)
+
         left_layout.addWidget(self.preview_scale_combo)
         left_layout.addWidget(self.preview_scroll_area)
         left_layout.addWidget(self.preview_error_label)
 
-        right_layout = QVBoxLayout()
-        right_layout.addLayout(form_layout)
+        # Прячем большую форму в прокрутку
+        form_widget = QWidget()
+        form_widget.setLayout(form_layout)
+
+        form_scroll_area = QScrollArea()
+        form_scroll_area.setWidget(form_widget)
+        form_scroll_area.setWidgetResizable(True)
+        form_scroll_area.setMinimumHeight(500)
+        form_scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        # Правая панель
+        right_widget = QWidget()
+        right_layout = QVBoxLayout(right_widget)
+        right_layout.setSpacing(8)
+
+        right_layout.addWidget(form_scroll_area)
+
+        actions_layout = QHBoxLayout()
+
+        actions_layout.addWidget(self.reset_button)
+        actions_layout.addWidget(self.preview_button)
+        actions_layout.addWidget(self.save_as_button)
+        actions_layout.addWidget(self.reload_button)
+
+        right_layout.addLayout(actions_layout)
         right_layout.addWidget(self.button_box)
 
+        right_widget.setMinimumWidth(500)
+        right_widget.setMaximumWidth(560)
+
+        # Главный layout
         main_layout = QHBoxLayout(self)
-        main_layout.addLayout(left_layout, stretch=3)
-        main_layout.addLayout(right_layout, stretch=1)
+        main_layout.addWidget(left_widget, stretch=1)
+        main_layout.addWidget(right_widget)
 
         self.preview_update_timer = QTimer(self)
         self.preview_update_timer.setSingleShot(True)
