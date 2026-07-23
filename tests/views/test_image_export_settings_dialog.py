@@ -15,6 +15,7 @@ from sun_set.image_export.settings import (
 )
 from sun_set.services.dialog_service import choose_color
 from sun_set.views.image_export_settings_dialog import (
+    LAST_SETTINGS_PATH_KEY,
     MONTH_NAMES,
     PREVIEW_SCALE_SETTINGS_KEY,
     SELECTED_MONTH_SETTINGS_KEY,
@@ -27,11 +28,13 @@ def clear_image_export_dialog_settings():
     settings = QSettings()
     settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
     settings.remove(SELECTED_MONTH_SETTINGS_KEY)
+    settings.remove(LAST_SETTINGS_PATH_KEY)
 
     yield
 
     settings.remove(PREVIEW_SCALE_SETTINGS_KEY)
     settings.remove(SELECTED_MONTH_SETTINGS_KEY)
+    settings.remove(LAST_SETTINGS_PATH_KEY)
 
 
 def test_image_export_settings_dialog_created(qtbot, export_settings):
@@ -1194,3 +1197,46 @@ def test_settings_path_is_visible_outside_scroll_area(
     qtbot.addWidget(dialog)
 
     assert dialog.settings_path_edit.text() == str(path)
+
+
+def test_save_updates_last_settings_path(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+    )
+    qtbot.addWidget(dialog)
+
+    dialog.save_to_path(path)
+
+    qsettings = QSettings()
+
+    assert qsettings.value(LAST_SETTINGS_PATH_KEY) == str(path)
+
+
+def test_dialog_uses_last_settings_path(
+    qtbot,
+    export_settings,
+    tmp_path,
+):
+    path = tmp_path / "settings.json"
+
+    path.touch()
+
+    settings = QSettings()
+    settings.setValue(
+        LAST_SETTINGS_PATH_KEY,
+        str(path),
+    )
+
+    dialog = ImageExportSettingsDialog(
+        export_settings,
+    )
+
+    qtbot.addWidget(dialog)
+
+    assert dialog.settings_path == path

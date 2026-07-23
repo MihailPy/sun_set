@@ -48,6 +48,7 @@ from sun_set.services.dialog_service import (
 
 PREVIEW_SCALE_SETTINGS_KEY = "image_export/preview_scale"
 SELECTED_MONTH_SETTINGS_KEY = "image_export/selected_month"
+LAST_SETTINGS_PATH_KEY = "image_export/last_settings_path"
 MONTH_NAMES = (
     "Январь",
     "Февраль",
@@ -85,7 +86,7 @@ class ImageExportSettingsDialog(QDialog):
         super().__init__(parent)
 
         self.settings = settings
-        self.settings_path = settings_path
+        self.settings_path = settings_path or self.load_last_settings_path()
 
         self.settings_path_edit = QLineEdit()
         self.settings_path_edit.setReadOnly(True)
@@ -628,9 +629,39 @@ class ImageExportSettingsDialog(QDialog):
         save_export_settings(self.settings, path)
 
         self.settings_path = path
+        self.save_last_settings_path()
         self.update_settings_path_field()
         self.update_reload_button_state()
         self.mark_clean()
+
+    def save_last_settings_path(self) -> None:
+        if self.settings_path is None:
+            return
+
+        settings = QSettings()
+
+        settings.setValue(
+            LAST_SETTINGS_PATH_KEY,
+            str(self.settings_path),
+        )
+
+    def load_last_settings_path(self) -> Path | None:
+        settings = QSettings()
+
+        value = settings.value(
+            LAST_SETTINGS_PATH_KEY,
+            "",
+        )
+
+        if not value:
+            return None
+
+        path = Path(value)
+
+        if not path.exists():
+            return None
+
+        return path
 
     def set_preview_image(self, image: Image.Image) -> None:
         self.current_preview_image = image
