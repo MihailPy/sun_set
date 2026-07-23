@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 from typing import cast
 
@@ -260,35 +261,17 @@ class ImageExportSettingsDialog(QDialog):
             ),
         )
 
-        self.preview_button = cast(
-            QPushButton,
-            self.button_box.addButton(
-                "Обновить предпросмотр",
-                QDialogButtonBox.ButtonRole.ActionRole,
-            ),
-        )
+        self.preview_button = QPushButton("Обновить предпросмотр")
         self.preview_button.clicked.connect(self.update_preview)
-        self.save_as_button = cast(
-            QPushButton,
-            self.button_box.addButton(
-                "Сохранить как",
-                QDialogButtonBox.ButtonRole.ActionRole,
-            ),
-        )
-        self.reload_button = cast(
-            QPushButton,
-            self.button_box.addButton(
-                "Перезагрузить",
-                QDialogButtonBox.ButtonRole.ActionRole,
-            ),
-        )
-        self.reset_button = cast(
-            QPushButton,
-            self.button_box.addButton(
-                "Сбросить",
-                QDialogButtonBox.ButtonRole.ResetRole,
-            ),
-        )
+        self.save_as_button = QPushButton("Сохранить как")
+
+        self.save_as_button.clicked.connect(self.save_settings_as)
+        self.reload_button = QPushButton("Перезагрузить")
+
+        self.reload_button.clicked.connect(self.reload_settings_from_file)
+        self.reset_button = QPushButton("Сбросить")
+
+        self.reset_button.clicked.connect(self.reset_settings)
 
         file_actions_layout = QHBoxLayout()
         file_actions_layout.addWidget(self.save_as_button)
@@ -624,15 +607,33 @@ class ImageExportSettingsDialog(QDialog):
         if self.get_selected_month() == target_month:
             self.load_selected_month_position()
 
-    def save_to_path(self, path: Path) -> None:
+    def save_to_path(self, path: Path) -> bool:
         self.update_settings_from_fields()
-        save_export_settings(self.settings, path)
+
+        try:
+            save_export_settings(self.settings, path)
+        except ExportSettingsError as error:
+            show_error(
+                self,
+                "Ошибка сохранения настроек",
+                get_user_friendly_error(error),
+            )
+            return False
+        except Exception as error:
+            show_error(
+                self,
+                "Ошибка сохранения настроек",
+                str(error),
+            )
+            return False
 
         self.settings_path = path
         self.save_last_settings_path()
         self.update_settings_path_field()
         self.update_reload_button_state()
         self.mark_clean()
+
+        return True
 
     def save_last_settings_path(self) -> None:
         if self.settings_path is None:
@@ -762,7 +763,7 @@ class ImageExportSettingsDialog(QDialog):
     def update_settings_path_field(self) -> None:
         if self.settings_path is None:
             self.settings_path_edit.setText("Файл не выбран")
-            self.settings_path_edit.setToolTip(str(self.settings_path))
+            self.settings_path_edit.setToolTip("")
             return
 
         path_text = str(self.settings_path)
@@ -822,9 +823,9 @@ class ImageExportSettingsDialog(QDialog):
 
         defaults = create_default_export_settings()
 
-        self.settings.image = defaults.image
-        self.settings.text = defaults.text
-        self.settings.layout = defaults.layout
+        self.settings.image = deepcopy(defaults.image)
+        self.settings.text = deepcopy(defaults.text)
+        self.settings.layout = deepcopy(defaults.layout)
 
         self.load_settings_into_fields()
         self.mark_dirty()
